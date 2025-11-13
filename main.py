@@ -2,7 +2,7 @@
 from flask import Flask, request, jsonify, abort
 from model import UsuarioModel
 from bson.errors import InvalidId
-
+import os
 app = Flask(__name__)
 user_model = UsuarioModel()
 
