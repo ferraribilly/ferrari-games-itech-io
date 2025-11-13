@@ -12,7 +12,7 @@ def create_app():
     app.secret_key = os.environ.get("SECRET_KEY", "chave_super_secreta_troque_isto")
 
     # MongoDB config
-    app.config["MONGO_URI"] = os.environ.get("MONGO_URI", "mongodb+srv://<username>:<password>@<cluster-url>/<db-name>?retryWrites=true&w=majority")
+    app.config["MONGO_URI"] = os.environ.get("MONGO_URI","mongodb+srv:// Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo")
 
     mongo.init_app(app)
     app.register_blueprint(main_bp)
