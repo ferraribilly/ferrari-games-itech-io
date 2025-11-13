@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from datetime import datetime, timezone, timedelta
 from model import Usuario
+from model import get_db_status
 import re
 import random
 from loteria_caixa import Federal
@@ -13,7 +14,31 @@ from urllib3 import disable_warnings, exceptions
 main_bp = Blueprint('main', __name__)
 
 
+@main_bp.route('/status_conexao', methods=['GET'])
+def status_conexao():
+    """
+    Rota para testar a conexão com o MongoDB.
+    """
+    if get_db_status():
+        return jsonify(
+            {
+                "status": "OK",
+                "database_connection": "Successful"
+            }
+        ), 200
+    else:
+        return jsonify(
+            {
+                "status": "Error",
+                "database_connection": "Failed"
+            }
+        ), 500
 
+
+@app.route('/teste')
+def home():
+    return "Aplicação Flask em execução. Use a rota /status_conexao para testar o MongoDB."
+        
 # -----------------------
 # Helpers
 # -----------------------
