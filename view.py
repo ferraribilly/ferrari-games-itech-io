@@ -57,59 +57,60 @@ def validar_cpf(cpf_raw):
 # -----------------------
 
 
-@main_bp.route('/registrar_usuario', methods=['POST'])
-def adicionar_usuario():
-    data = request.get_json() or request.form
+# views.py
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
+from models import User, mongo
+import main # Importa a instância do app e login_manager de main.py
 
-    nome = data.get('nome')
-    sobrenome = data.get('sobrenome')
-    email = data.get('email')
-    cpf = data.get('cpf')
-    chave_pix = data.get('chave_pix')
-    convite_ganbista = data.get('convite_ganbista') or data.get('public_key_admin')
-    senha = data.get('senha')
-    data_nascimento_str = data.get('data_nascimento')
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('painel'))
+    if request.method == 'POST':
+        cpf = request.form.get('cpf')
+        nome = request.form.get('nome')
+        sobrenome = request.form.get('sobrenome')
+        email = request.form.get('email')
+        chave_pix = request.form.get('chave_pix')
+        convite_ganbista = request.form.get('convite_ganbista')
+        password = request.form.get('password')
+        existing_usuario = Usuario.find_by_cpf(cpf)
+        if existing_usuario:
+            flash('Este email já está registrado.', 'danger')
+            return redirect(url_for('register'))
+        
+        hashed_password = Usuario.set_password(password)
+        new_usuario = Usuario(nome, sobrenome, cpf, chave_pix, convite_ganbista email, hashed_password)
+        new_usuario.save()
+        flash('Registro realizado com sucesso! Faça login.', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html')
 
-    if not all([nome, sobrenome, email, cpf, chave_pix, convite_ganbista, senha, data_nascimento_str]):
-        return jsonify({"status": "error", "message": "Todos os campos são obrigatórios!"}), 400
-
-    if not validar_cpf(cpf):
-        return jsonify({"status": "error", "message": "CPF inválido (deve conter 11 dígitos)."}), 400
-
-    try:
-        data_nascimento = datetime.strptime(data_nascimento_str, '%Y-%m-%d').date()
-    except ValueError:
-        return jsonify({"status": "error", "message": "Data de nascimento inválida! Use YYYY-MM-DD."}), 400
-
-    idade = calcular_idade(data_nascimento)
-    if idade < 18:
-        return redirect(url_for('main.proibido'))
-
-    cpf_limpo = re.sub(r'\D', '', cpf)
-    usuario_existente = Usuario.find_by_cpf(cpf_limpo)
-    if usuario_existente:
-        return jsonify({"status": "error", "message": "Este CPF já está cadastrado!"}), 400
-
-    novo_usuario = Usuario(nome, sobrenome, cpf_limpo, data_nascimento, email, chave_pix, convite_ganbista, senha)
-    usuario_id = novo_usuario.save()
-    session['user_id'] = str(usuario_id)
-
-    return jsonify({"status": "success", "message": "Usuário registrado com sucesso!"})
-
-@main_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json() or request.form
-    cpf = data.get('cpf')
-    if not cpf:
-        return jsonify({"status": "error", "message": "Informe o CPF!"}), 400
+    if current_usuario.is_authenticated:
+        return redirect(url_for('painel'))
+    if request.method == 'POST':
+        cpf = request.form.get('cpf')
+        password = request.form.get('password')
+        usuario = Usuario.find_by_cpf(cpf)
+        if usuario and Usuario.check_password(usuario.password_hash, password):
+            login_usuario(usuario)
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('painel'))
+        else:
+            flash('Login inválido. Verifique email e senha.', 'danger')
+    return render_template('jogo_bixo/registro.html')
 
-    cpf_limpo = re.sub(r'\D', '', cpf)
-    usuario = Usuario.find_by_cpf(cpf_limpo)
-    if not usuario:
-        return jsonify({"status": "error", "message": "CPF não encontrado! Faça o cadastro primeiro."}), 400
+@login_required
+def painel():
+    return render_template('jogo_bixo/painel.html', user=current_user)
 
-    session['user_id'] = str(usuario['_id'])
-    return jsonify({"status": "success", "message": f"Bem-vindo {usuario['nome']}!", "redirect": url_for('main.painel')})
+@login_required
+def logout():
+    logout_usuario()
+    flash('Você foi desconectado.', 'info')
+    return redirect(url_for('login'))
+
 
 
 @main_bp.route('/loading')

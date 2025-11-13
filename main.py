@@ -1,5 +1,8 @@
 from flask import Flask
-from pymongo import MongoClient
+from flask_login import LoginManager
+from model import mongo, Usuario  # Alterado de User para Usuario
+# Importa as funções de view para conectar as rotas
+from views import register, login, painel, logout
 from view import main_bp
 import os
 from dotenv import load_dotenv
@@ -8,16 +11,24 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__)
+    app.config["MONGO_URI"] = "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
     app.secret_key = os.environ.get("SECRET_KEY", "chave_super_secreta_troque_isto")
 
-    # MongoDB config
-    mongo_uri = os.environ.get(
-        "MONGO_URI",
-        
-        "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
-    )
-    mongo = MongoClient(mongo_uri)
-    app.mongo = mongo  # salva conexão no app
+    mongo.init_app(app)
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'login'  # Define para onde redirecionar se o login for necessário
+
+    @login_manager.user_loader
+    def load_usuario(usuario_id):
+        return Usuario.get_by_id(usuario_id)  # Alterado de User para Usuario
+
+    # Conecta as rotas (views) ao app
+    app.add_url_rule('/register', 'register', register, methods=['GET', 'POST'])
+    app.add_url_rule('/login', 'login', login, methods=['GET', 'POST'])
+    app.add_url_rule('/painel', 'painel', painel)
+    app.add_url_rule('/logout', 'logout', logout)
+    app.add_url_rule('/', 'index', login)  # Redireciona a página inicial para o login
 
     app.register_blueprint(main_bp)
     return app
