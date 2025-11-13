@@ -1,39 +1,65 @@
-from flask import Flask
-from flask_login import LoginManager
-from model import mongo, Usuario  # Alterado de User para Usuario
-# Importa as funções de view para conectar as rotas
-from view import register, login, painel, logout
-from view import main_bp
-import os
-from dotenv import load_dotenv
+# main.py
+from flask import Flask, request, jsonify, abort
+from model import UsuarioModel
+from bson.errors import InvalidId
 
-load_dotenv()
+app = Flask(__name__)
+user_model = UsuarioModel()
 
-def create_app():
-    app = Flask(__name__)
-    app.config["MONGO_URI"] = "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
-    app.secret_key = os.environ.get("SECRET_KEY", "chave_super_secreta_troque_isto")
+@app.route('/users', methods=['POST'])
+def create_user():
+    """Rota para criar um novo usuário."""
+    data = request.get_json()
+    if not data or 'nome' not in data or 'email' not in data:
+        return jsonify({"error": "Dados inválidos fornecidos."}), 400
+    
+    user_id = user_model.create_user(data)
+    return jsonify({"message": "Usuário criado com sucesso", "id": user_id}), 201
 
-    mongo.init_app(app)
-    login_manager = LoginManager()
-    login_manager.init_app(app)
-    login_manager.login_view = 'login'  # Define para onde redirecionar se o login for necessário
+@app.route('/users', methods=['GET'])
+def get_users():
+    """Rota para listar todos os usuários."""
+    users = user_model.get_all_users()
+    return jsonify(users), 200
 
-    @login_manager.user_loader
-    def load_usuario(usuario_id):
-        return Usuario.get_by_id(usuario_id)  # Alterado de User para Usuario
+@app.route('/users/<string:user_id>', methods=['GET'])
+def get_user(user_id):
+    """Rota para obter um usuário específico por ID."""
+    try:
+        user = user_model.get_user_by_id(user_id)
+        if user:
+            return jsonify(user), 200
+        return jsonify({"error": "Usuário não encontrado."}), 404
+    except InvalidId:
+        return jsonify({"error": "ID de usuário inválido."}), 400
 
-    # Conecta as rotas (views) ao app
-    app.add_url_rule('/register', 'register', register, methods=['GET', 'POST'])
-    app.add_url_rule('/login', 'login', login, methods=['GET', 'POST'])
-    app.add_url_rule('/painel', 'painel', painel)
-    app.add_url_rule('/logout', 'logout', logout)
-    app.add_url_rule('/', 'index', login)  # Redireciona a página inicial para o login
+@app.route('/users/<string:user_id>', methods=['PUT'])
+def update_user_route(user_id):
+    """Rota para atualizar um usuário existente."""
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Nenhum dado fornecido para atualização."}), 400
 
-    app.register_blueprint(main_bp)
-    return app
+    try:
+        modified_count = user_model.update_user(user_id, data)
+        if modified_count > 0:
+            return jsonify({"message": "Usuário atualizado com sucesso."}), 200
+        return jsonify({"error": "Usuário não encontrado ou nenhum dado alterado."}), 404
+    except InvalidId:
+        return jsonify({"error": "ID de usuário inválido."}), 400
 
-if __name__ == "__main__":
-    app = create_app()
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+
+@app.route('/users/<string:user_id>', methods=['DELETE'])
+def delete_user_route(user_id):
+    """Rota para excluir um usuário."""
+    try:
+        deleted_count = user_model.delete_user(user_id)
+        if deleted_count > 0:
+            return jsonify({"message": "Usuário excluído com sucesso."}), 200
+        return jsonify({"error": "Usuário não encontrado."}), 404
+    except InvalidId:
+        return jsonify({"error": "ID de usuário inválido."}), 400
+
+if __name__ == '__main__':
+    # Execute a aplicação Flask na porta 5000 (ou outra de sua escolha)
+    app.run(debug=True)
