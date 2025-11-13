@@ -2,7 +2,7 @@ from flask import Flask
 from flask_login import LoginManager
 from model import mongo, Usuario  # Alterado de User para Usuario
 # Importa as funções de view para conectar as rotas
-from views import register, login, painel, logout
+from view import register, login, painel, logout
 from view import main_bp
 import os
 from dotenv import load_dotenv
