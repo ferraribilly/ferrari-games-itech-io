@@ -7,6 +7,6 @@ Jinja2
 Werkzeug
 click
 itsdangerous
-pymongo
+pymongo[srv]
 Flask-PyMongo
 python-dotenv
