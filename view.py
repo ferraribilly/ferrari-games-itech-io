@@ -30,10 +30,7 @@ def validar_cpf(cpf_raw):
 # -----------------------
 # Rotas
 # -----------------------
-@main_bp.route('/')
-def index():
-    usuarios = Usuario.find_all()
-    return render_template('jogo_bixo/registro.html', usuarios=usuarios)
+
 
 @main_bp.route('/registrar_usuario', methods=['POST'])
 def adicionar_usuario():
