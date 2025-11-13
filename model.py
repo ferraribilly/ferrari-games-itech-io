@@ -13,7 +13,7 @@ client = MongoClient(mongo_uri)
 
 # Banco de dados e coleção
 db_name = "FerrariGamesItechIo"
-db = client[Usuarios]
+db = client[db_name]  # Corrigido: db_name como string
 usuarios_collection = db["usuarios"]  # cria automaticamente se não existir
 
 class Usuario:
