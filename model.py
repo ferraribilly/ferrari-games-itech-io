@@ -21,7 +21,6 @@ class UsuarioModel:
     def get_all_users(self):
         """Recupera todos os documentos (usuários) da coleção."""
         users = list(self.collection.find())
-        # Converte ObjectId para string para serialização JSON no Flask
         for user in users:
             user['_id'] = str(user['_id'])
         return users
@@ -29,6 +28,15 @@ class UsuarioModel:
     def get_user_by_id(self, user_id):
         """Recupera um único documento (usuário) por ID."""
         user = self.collection.find_one({"_id": ObjectId(user_id)})
+        if user:
+            user['_id'] = str(user['_id'])
+        return user
+
+    # ============================================================
+    # Busca por CPF (para rota de login)
+    # ============================================================
+    def get_user_by_cpf(self, cpf):
+        user = self.collection.find_one({"cpf": cpf})
         if user:
             user['_id'] = str(user['_id'])
         return user
@@ -45,4 +53,3 @@ class UsuarioModel:
         """Exclui um documento (usuário) existente."""
         result = self.collection.delete_one({"_id": ObjectId(user_id)})
         return result.deleted_count
-

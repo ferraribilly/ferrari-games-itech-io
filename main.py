@@ -1,8 +1,9 @@
 # main.py
-from flask import Flask, request, jsonify, abort, render_template
+from flask import Flask, request, jsonify, abort, render_template, redirect, url_for
 from model import UsuarioModel
 from bson.errors import InvalidId
 import os
+
 app = Flask(__name__)
 user_model = UsuarioModel()
 
@@ -10,7 +11,13 @@ user_model = UsuarioModel()
 def create_user():
     """Rota para criar um novo usuário."""
     data = request.get_json()
-    if not data or 'nome' not in data or 'email' not in data 'cpf' not in data 'data_nascimento' not in data 'chave_pix' not in data 'convite_ganbista' not in data:
+    if not data or \
+       'nome' not in data or \
+       'email' not in data or \
+       'cpf' not in data or \
+       'data_nascimento' not in data or \
+       'chave_pix' not in data or \
+       'convite_ganbista' not in data:
         return jsonify({"error": "Dados inválidos fornecidos."}), 400
     
     user_id = user_model.create_user(data)
@@ -48,7 +55,6 @@ def update_user_route(user_id):
     except InvalidId:
         return jsonify({"error": "ID de usuário inválido."}), 400
 
-
 @app.route('/users/<string:user_id>', methods=['DELETE'])
 def delete_user_route(user_id):
     """Rota para excluir um usuário."""
@@ -59,27 +65,49 @@ def delete_user_route(user_id):
         return jsonify({"error": "Usuário não encontrado."}), 404
     except InvalidId:
         return jsonify({"error": "ID de usuário inválido."}), 400
+
+# ============================
+# ROTA LOGIN VIA CPF
+# ============================
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+
+    if not data or 'cpf' not in data:
+        return jsonify({"error": "CPF obrigatório."}), 400
+
+    # Procurar usuário pelo CPF
+    users = user_model.get_all_users()
+    for user in users:
+        if user.get("cpf") == data["cpf"]:
+            user_id = str(user["_id"])
+            return jsonify({
+                "redirect": f"/loading/users/{user_id}"
+            }), 200
+
+    return jsonify({"error": "CPF não encontrado."}), 404
+
+
 # ============================
 # -Rotas do app templates
-#=============================
+# ============================
 @app.route('/')
 def criar_user():
     return render_template('jogo_bixo/registro.html')
 
 @app.route('/loading/users/<string:user_id>')
-def loading():
+def loading(user_id):
     return render_template('jogo_bixo/loading.html')
 
-@app.route('/painel/users/<string:user_id>')    
-def painel():
+@app.route('/painel/users/<string:user_id>')
+def painel(user_id):
     return render_template('jogo_bixo/painel.html')
 
-
-@app.route('/compras/app/users/<string:user_id>')    
-def compras():
+@app.route('/compras/app/users/<string:user_id>')
+def compras(user_id):
     return render_template('jogo_bixo/pagamento.html')
 
-    
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
