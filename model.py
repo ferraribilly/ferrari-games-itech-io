@@ -7,7 +7,7 @@ import os
 # Conexão MongoDB
 mongo_uri = os.environ.get(
     "MONGO_URI",
-    "mongodb://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/FerrariGamesItechIo?appName=FerrariGamesItechIo"
+    "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/FerrariGamesItechIo?appName=FerrariGamesItechIo"
 )
 client = MongoClient(mongo_uri)
 
