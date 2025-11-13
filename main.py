@@ -1,5 +1,6 @@
 # main.py
 from flask import Flask
+from flask_pymongo import PyMongo
 from model import mongo
 from view import main_bp
 import os
