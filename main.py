@@ -63,5 +63,5 @@ def delete_user_route(user_id):
 
 
 port = int(os.environ.get("PORT", 8000))
-uvicorn.run(app, host="0.0.0.0", port=port, log_level="debug")
+app.run(app, host="0.0.0.0", port=port, log_level="debug")
 
