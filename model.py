@@ -1,9 +1,19 @@
 # model.py
-from flask_pymongo import PyMongo
+from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
+import os
 
-mongo = PyMongo()
+# Conexão MongoDB
+mongo_uri = os.environ.get(
+    "MONGO_URI",
+    "mongodb://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/FerrariGamesItechIo?appName=FerrariGamesItechIo"
+)
+client = MongoClient(mongo_uri)
+
+# Especifica o banco de dados padrão
+db_name = "FerrariGamesItechIo"
+db = client[db_name]
 
 class Usuario:
     def __init__(self, nome, sobrenome, cpf, data_nascimento, email, chave_pix, convite_ganbista, senha):
@@ -18,7 +28,7 @@ class Usuario:
 
     @staticmethod
     def collection():
-        return mongo.db.usuarios
+        return db.usuarios
 
     def save(self):
         data = {
