@@ -1,18 +1,47 @@
-from flask_sqlalchemy import SQLAlchemy
+# model.py
+from flask_pymongo import PyMongo
+from bson.objectid import ObjectId
+from datetime import datetime
 
-db = SQLAlchemy()
+mongo = PyMongo()
 
-class Usuario(db.Model):
-    __tablename__ = 'usuarios'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    sobrenome = db.Column(db.String(100), nullable=False)
-    cpf = db.Column(db.String(11), unique=True, nullable=False)
-    data_nascimento = db.Column(db.Date, nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    chave_pix = db.Column(db.String(100), nullable=False)
-    convite_ganbista = db.Column(db.String(255), nullable=False)
-    senha = db.Column(db.String(255), nullable=False) # Armazenar hash da senha
+class Usuario:
+    def __init__(self, nome, sobrenome, cpf, data_nascimento, email, chave_pix, convite_ganbista, senha):
+        self.nome = nome
+        self.sobrenome = sobrenome
+        self.cpf = cpf
+        self.data_nascimento = data_nascimento
+        self.email = email
+        self.chave_pix = chave_pix
+        self.convite_ganbista = convite_ganbista
+        self.senha = senha  # hash idealmente
 
-    def __repr__(self):
-        return f'<Usuario {self.nome}>'
+    @staticmethod
+    def collection():
+        return mongo.db.usuarios
+
+    def save(self):
+        data = {
+            "nome": self.nome,
+            "sobrenome": self.sobrenome,
+            "cpf": self.cpf,
+            "data_nascimento": self.data_nascimento,
+            "email": self.email,
+            "chave_pix": self.chave_pix,
+            "convite_ganbista": self.convite_ganbista,
+            "senha": self.senha
+        }
+        result = self.collection().insert_one(data)
+        return result.inserted_id
+
+    @staticmethod
+    def find_all():
+        return list(Usuario.collection().find())
+
+    @staticmethod
+    def find_by_cpf(cpf):
+        return Usuario.collection().find_one({"cpf": cpf})
+
+    @staticmethod
+    def update_user(_id, data):
+        return Usuario.collection().update_one({"_id": ObjectId(_id)}, {"$set": data})

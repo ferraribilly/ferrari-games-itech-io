@@ -4,7 +4,7 @@ from flask import (
 )
 from datetime import datetime, timezone, timedelta
 from flask import Flask, render_template_string, url_for
-from model import db, Usuario
+from model import Usuario
 import re
 import random
 from loteria_caixa import Federal
@@ -15,21 +15,99 @@ from functools import lru_cache
 from urllib3 import disable_warnings, exceptions
 main_bp = Blueprint('main', __name__)
 
+
+
 # -----------------------
 # Helpers
 # -----------------------
 def calcular_idade(data_nascimento):
     hoje = date.today()
-    return hoje.year - data_nascimento.year - (
-        (hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day)
-    )
+    return hoje.year - data_nascimento.year - ((hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day))
 
 def validar_cpf(cpf_raw):
-    # validação simples: só dígitos e 11 caracteres
     if not cpf_raw:
         return False
     cpf = re.sub(r'\D', '', cpf_raw)
     return len(cpf) == 11
+
+# -----------------------
+# Rotas
+# -----------------------
+@main_bp.route('/')
+def index():
+    usuarios = Usuario.find_all()
+    return render_template('jogo_bixo/registro.html', usuarios=usuarios)
+
+@main_bp.route('/registrar_usuario', methods=['POST'])
+def adicionar_usuario():
+    data = request.get_json() or request.form
+
+    nome = data.get('nome')
+    sobrenome = data.get('sobrenome')
+    email = data.get('email')
+    cpf = data.get('cpf')
+    chave_pix = data.get('chave_pix')
+    convite_ganbista = data.get('convite_ganbista') or data.get('public_key_admin')
+    senha = data.get('senha')
+    data_nascimento_str = data.get('data_nascimento')
+
+    if not all([nome, sobrenome, email, cpf, chave_pix, convite_ganbista, senha, data_nascimento_str]):
+        return jsonify({"status": "error", "message": "Todos os campos são obrigatórios!"}), 400
+
+    if not validar_cpf(cpf):
+        return jsonify({"status": "error", "message": "CPF inválido (deve conter 11 dígitos)."}), 400
+
+    try:
+        data_nascimento = datetime.strptime(data_nascimento_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"status": "error", "message": "Data de nascimento inválida! Use YYYY-MM-DD."}), 400
+
+    idade = calcular_idade(data_nascimento)
+    if idade < 18:
+        return redirect(url_for('main.proibido'))
+
+    cpf_limpo = re.sub(r'\D', '', cpf)
+    usuario_existente = Usuario.find_by_cpf(cpf_limpo)
+    if usuario_existente:
+        return jsonify({"status": "error", "message": "Este CPF já está cadastrado!"}), 400
+
+    novo_usuario = Usuario(nome, sobrenome, cpf_limpo, data_nascimento, email, chave_pix, convite_ganbista, senha)
+    usuario_id = novo_usuario.save()
+    session['user_id'] = str(usuario_id)
+
+    return jsonify({"status": "success", "message": "Usuário registrado com sucesso!"})
+
+@main_bp.route('/login', methods=['POST'])
+def login():
+    data = request.get_json() or request.form
+    cpf = data.get('cpf')
+    if not cpf:
+        return jsonify({"status": "error", "message": "Informe o CPF!"}), 400
+
+    cpf_limpo = re.sub(r'\D', '', cpf)
+    usuario = Usuario.find_by_cpf(cpf_limpo)
+    if not usuario:
+        return jsonify({"status": "error", "message": "CPF não encontrado! Faça o cadastro primeiro."}), 400
+
+    session['user_id'] = str(usuario['_id'])
+    return jsonify({"status": "success", "message": f"Bem-vindo {usuario['nome']}!", "redirect": url_for('main.painel')})
+
+
+# -----------------------
+# Helpers
+# -----------------------
+#def calcular_idade(data_nascimento):
+#    hoje = date.today()
+#    return hoje.year - data_nascimento.year - (
+#        (hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day)
+#    )
+
+#def validar_cpf(cpf_raw):
+    # validação simples: só dígitos e 11 caracteres
+#    if not cpf_raw:
+#        return False
+#    cpf = re.sub(r'\D', '', cpf_raw)
+#    return len(cpf) == 11
 
 # -----------------------
 # Rotas do aplicativo
@@ -81,58 +159,58 @@ def cotacoes():
 # ===================================================================
 # Cadastro de usuário
 # ===================================================================
-@main_bp.route('/registrar_usuario', methods=['POST'])
-def adicionar_usuario():
-    data = request.get_json() or request.form  # aceita JSON ou form data
+#@main_bp.route('/registrar_usuario', methods=['POST'])
+#def adicionar_usuario():
+#    data = request.get_json() or request.form  # aceita JSON ou form data
 
-    nome = data.get('nome')
-    sobrenome = data.get('sobrenome')
-    email = data.get('email')
-    cpf = data.get('cpf')
-    chave_pix = data.get('chave_pix')
-    convite_ganbista = data.get('convite_ganbista') or data.get('public_key_admin')
-    senha = data.get('senha')
-    data_nascimento_str = data.get('data_nascimento')
+#    nome = data.get('nome')
+#    sobrenome = data.get('sobrenome')
+#    email = data.get('email')
+#    cpf = data.get('cpf')
+#    chave_pix = data.get('chave_pix')
+#    convite_ganbista = data.get('convite_ganbista') or data.get('public_key_admin')
+#    senha = data.get('senha')
+#    data_nascimento_str = data.get('data_nascimento')
 
-    if not all([nome, sobrenome, email, cpf, chave_pix, convite_ganbista, senha, data_nascimento_str]):
-        return jsonify({"status": "error", "message": "Todos os campos são obrigatórios!"}), 400
+#    if not all([nome, sobrenome, email, cpf, chave_pix, convite_ganbista, senha, data_nascimento_str]):
+#        return jsonify({"status": "error", "message": "Todos os campos são obrigatórios!"}), 400
 
-    if not validar_cpf(cpf):
-        return jsonify({"status": "error", "message": "CPF inválido (deve conter 11 dígitos)."}), 400
+#    if not validar_cpf(cpf):
+#        return jsonify({"status": "error", "message": "CPF inválido (deve conter 11 dígitos)."}), 400
 
-    try:
-        data_nascimento = datetime.strptime(data_nascimento_str, '%Y-%m-%d').date()
-    except ValueError:
-        return jsonify({"status": "error", "message": "Data de nascimento inválida! Use YYYY-MM-DD."}), 400
+#    try:
+#        data_nascimento = datetime.strptime(data_nascimento_str, '%Y-%m-%d').date()
+#    except ValueError:
+#        return jsonify({"status": "error", "message": "Data de nascimento inválida! Use YYYY-MM-DD."}), 400
 
-    idade = calcular_idade(data_nascimento)
-    if idade < 18:
-        return redirect(url_for('main.proibido'))
+#    idade = calcular_idade(data_nascimento)
+#    if idade < 18:
+#        return redirect(url_for('main.proibido'))
 
-    cpf_limpo = re.sub(r'\D', '', cpf)
-    usuario_existente = Usuario.query.filter_by(cpf=cpf_limpo).first()
-    if usuario_existente:
-        return jsonify({"status": "error", "message": "Este CPF já está cadastrado!"}), 400
+#    cpf_limpo = re.sub(r'\D', '', cpf)
+#    usuario_existente = Usuario.query.filter_by(cpf=cpf_limpo).first()
+#    if usuario_existente:
+#        return jsonify({"status": "error", "message": "Este CPF já está cadastrado!"}), 400
 
-    novo_usuario = Usuario(
-        nome=nome,
-        sobrenome=sobrenome,
-        email=email,
-        cpf=cpf_limpo,
-        chave_pix=chave_pix,
-        convite_ganbista=convite_ganbista,
-        data_nascimento=data_nascimento,
-        senha=senha  # armazenar hash idealmente
-    )
+#    novo_usuario = Usuario(
+#        nome=nome,
+#        sobrenome=sobrenome,
+#        email=email,
+#        cpf=cpf_limpo,
+#        chave_pix=chave_pix,
+#        convite_ganbista=convite_ganbista,
+#        data_nascimento=data_nascimento,
+#        senha=senha  # armazenar hash idealmente
+#    )
 
-    if hasattr(novo_usuario, 'pago'):
-        novo_usuario.pago = False
+#    if hasattr(novo_usuario, 'pago'):
+#       novo_usuario.pago = False
 
-    db.session.add(novo_usuario)
-    db.session.commit()
-    session['user_id'] = novo_usuario.id
-
-    return jsonify({"status": "success", "message": "Usuário registrado com sucesso!"})
+#   db.session.add(novo_usuario)
+#    db.session.commit()
+#   session['user_id'] = novo_usuario.id
+#
+#    return jsonify({"status": "success", "message": "Usuário registrado com sucesso!"})
 
 
 # ===================================================================
@@ -141,23 +219,23 @@ def adicionar_usuario():
 # ===================================================================
 # Login de usuário (apenas com CPF)
 # ===================================================================
-@main_bp.route('/login', methods=['POST'])
-def login():
-    data = request.get_json() or request.form
-    cpf = data.get('cpf')
+#@main_bp.route('/login', methods=['POST'])
+#def login():
+#    data = request.get_json() or request.form
+#    cpf = data.get('cpf')
+#
+#    if not cpf:
+#        return jsonify({"status": "error", "message": "Informe o CPF!"}), 400
+#
+#    cpf_limpo = re.sub(r'\D', '', cpf)
+#    usuario = Usuario.query.filter_by(cpf=cpf_limpo).first()
+#    if not usuario:
+#        return jsonify({"status": "error", "message": "CPF não encontrado! Faça o cadastro primeiro."}), 400
 
-    if not cpf:
-        return jsonify({"status": "error", "message": "Informe o CPF!"}), 400
-
-    cpf_limpo = re.sub(r'\D', '', cpf)
-    usuario = Usuario.query.filter_by(cpf=cpf_limpo).first()
-    if not usuario:
-        return jsonify({"status": "error", "message": "CPF não encontrado! Faça o cadastro primeiro."}), 400
-
-    session['user_id'] = usuario.id
+    #session['user_id'] = usuario.id
 
     # em vez de redirect do Flask, retornamos JSON para o frontend redirecionar
-    return jsonify({"status": "success", "message": f"Bem-vindo {usuario.nome}!", "redirect": url_for('main.painel')})
+    #return jsonify({"status": "success", "message": f"Bem-vindo {usuario.nome}!", "redirect": url_for('main.painel')})
 
 
 
