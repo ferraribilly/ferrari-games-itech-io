@@ -1,5 +1,5 @@
 # main.py
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, render_template
 from model import UsuarioModel
 from bson.errors import InvalidId
 import os
@@ -10,7 +10,7 @@ user_model = UsuarioModel()
 def create_user():
     """Rota para criar um novo usuário."""
     data = request.get_json()
-    if not data or 'nome' not in data or 'email' not in data:
+    if not data or 'nome' not in data or 'email' not in data 'cpf' not in data 'data_nascimento' not in data 'chave_pix' not in data 'convite_ganbista' not in data:
         return jsonify({"error": "Dados inválidos fornecidos."}), 400
     
     user_id = user_model.create_user(data)
@@ -59,9 +59,27 @@ def delete_user_route(user_id):
         return jsonify({"error": "Usuário não encontrado."}), 404
     except InvalidId:
         return jsonify({"error": "ID de usuário inválido."}), 400
+# ============================
+# -Rotas do app templates
+#=============================
+@app.route('/')
+def criar_user():
+    return render_template('jogo_bixo/registro.html')
+
+@app.route('/loading/users/<string:user_id>')
+def loading():
+    return render_template('jogo_bixo/loading.html')
+
+@app.route('/painel/users/<string:user_id>')    
+def painel():
+    return render_template('jogo_bixo/painel.html')
 
 
+@app.route('/compras/app/users/<string:user_id>')    
+def compras():
+    return render_template('jogo_bixo/pagamento.html')
 
+    
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
