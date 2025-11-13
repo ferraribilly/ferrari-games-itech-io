@@ -1,0 +1,11 @@
+<!-- templates/index.html (exemplo básico) -->
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Bem-vindo ao Bolão de Futebol</h1>
+    <ul>
+        {% for jogo in jogos %}
+            <li>{{ jogo.time_casa }} vs {{ jogo.time_visitante }} - Data: {{ jogo.data_hora }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

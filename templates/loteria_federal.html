@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lottery Spinner</title>
+    <style>
+      .spinner {
+        font-size: 64px;
+        font-weight: bold;
+      }
+      *{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .number {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="spinner">
+      <div class="number">00000</div>
+    </div>
+
+    <script>
+      const number = document.querySelector(".number");
+
+      let count = 0;
+      const interval = setInterval(() => {
+        count++;
+        const value = Math.floor(Math.random() * 80000);
+        const paddedValue = value.toString().padStart(5, "0");
+        number.textContent = paddedValue;
+        if (count >= 20 && value === 77777) {
+          clearInterval(interval);
+        } else if (count >= 20) {
+          clearInterval(interval);
+        }
+      }, 100);
+    </script>
+  </body>
+</html>
+

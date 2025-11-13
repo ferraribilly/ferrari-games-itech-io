@@ -1,0 +1,848 @@
+
+<!DOCTYPE html>    
+<html lang="pt-BR">    
+<head>    
+<meta charset="utf-8" />    
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />    
+<title>Slot — Jogo do Bicho (25 bichos)</title>    
+<style>    
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: Segoe UI, Roboto, "Helvetica Neue", Arial; -webkit-tap-highlight-color: transparent; }    
+html, body { height: 100%; }    
+body {    
+  display: flex; align-items: center; justify-content: center;    
+  overflow-y: hidden;
+  background: #000; color: #fff; position: relative; overflow-y: hidden; 
+}    
+body::before {    
+  content: ""; position: absolute; top: 0; left: 0;    
+  width: 100%; height: 100dvh;    
+  background: url("https://res.cloudinary.com/dptprh0xk/image/upload/v1762733060/estilo-de-vida-fotorrealista-cassino_hny2za.jpg") center/cover no-repeat;    
+  z-index: -2;    
+  filter: blur(0.5px) brightness(.35);    
+  animation: 40s linear infinite LoadingBarProgress;    
+}    
+@keyframes LoadingBarProgress {    
+  0% { background-position: 0 0 }    
+  100% { background-position: 125% 0 }    
+}    
+.typing-effect {
+  font-family: monospace;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 0;
+  border-right: .15em solid orange;
+
+  /* Gradiente colorido animado */
+  background: linear-gradient(90deg, #00f, #ff0, #f00, #0ff, #0f0, #f0f);
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* Animações */
+  animation:
+    typing 3.5s steps(30, end) forwards,
+    blinking .75s step-end infinite,
+    shimmer 4s infinite linear;
+}
+
+/* Efeito de digitação */
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+/* Cursor piscando */
+@keyframes blinking {
+  from, to { border-color: transparent }
+  50% { border-color: orange }
+}
+
+/* Brilho se movendo pelas cores */
+@keyframes shimmer {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+  
+:root {    
+  --reel-w: 64px;    
+  --icon-h: 64px;    
+  --reel-h: calc(var(--icon-h) * 5);    
+  --max-w: 420px;    
+  --accent: #ffcc00;    
+}    
+    
+.caixa-aposta { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1c1c1c; border: 2px solid #00ffcc; border-radius: 10px; padding: 16px; display: none; z-index: 100; width: 90%; max-width: 420px; }    
+.caixa-aposta .top { display:flex; gap:10px; align-items:center; }    
+.caixa-aposta img.sel { width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.04); }    
+.caixa-aposta h3 { color:var(--accent); font-size:1rem; margin:0; }    
+.caixa-aposta .grid-container { margin-top:12px; display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; }    
+.caixa-aposta .grid-cell {    
+  background: rgba(255,255,255,0.02);    
+  border: 1px dashed rgba(255,255,255,0.06);    
+  height: 56px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden;    
+}    
+.caixa-aposta .grid-cell img { width:100%; height:100%; object-fit:cover; display:block; }    
+.caixa-aposta label { display:block; color:#ccc; font-size:0.85rem; margin-top:8px; }    
+.caixa-aposta input[type="number"] { width:100%; padding:8px 10px; border-radius:8px; margin-top:6px; background:#2a2a2a; color:#fff; border:none; }    
+.caixa-aposta .actions { margin-top:10px; display:flex; gap:8px; }    
+.caixa-aposta button { padding:10px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }    
+.caixa-aposta .confirm { background:#00ff88; color:#000; }    
+.caixa-aposta .close { background:#cc3333; color:#fff; }    
+    
+header.topbar {    
+  display: flex; align-items: center; justify-content: center; gap: 8px;    
+  padding: trasnparent;    
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;    
+}    
+header.topbar img { width: 40px; height: 40px; border-radius: 100%; object-fit: cover; }    
+header.topbar h1 { font-size: 1rem; color: #fff; }    
+    
+.container {    
+  display: flex; flex-direction: column; align-items: center;    
+  justify-content: space-between; text-align: center;    
+  border:1px solid blue; 
+  height: 100%; width: 100%; padding-top: 56px; padding-bottom: 10px;    
+}    
+/*.machine {    
+  display: flex; flex-direction: column; align-items: center; gap: 10px;    
+  background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px;    
+  width: calc(100% - 20px); max-width: var(--max-w);    
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);    
+} 
+/*   
+/*    
+.slots-row { display: flex; gap: 6px; justify-content: center; align-items: center; padding: 6px; }    
+.reel { width: var(--reel-w); height: var(--reel-h); overflow: hidden; border-radius: 8px; background: rgba(255,255,255,0.02); position: relative; border: 1px solid rgba(255,255,255,0.04); }    
+.reel .inner { position: absolute; left: 0; top: 0; width: 100%; }    
+.reel .icon { width: 100%; height: var(--icon-h); display: block; object-fit: cover; }    
+  */  
+.center-line {    
+  width: calc(var(--reel-w)*5 + 24px); height: var(--icon-h); margin-top: -calc(var(--icon-h)/2);    
+  border: 2px solid rgba(255,255,255,0.06); border-radius: 6px;    
+}    
+    
+.controls { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; padding-bottom: 6px; }    
+.buttons-row {    
+  margin-top: -20px;
+  display: flex; justify-content: center; align-items: center; gap: 10px;    
+}    
+button { -webkit-user-select: none; user-select: none; }    
+    
+.saque-btn, .aposta-btn {    
+  width: 64px; height: 64px; border-radius: 50%; border: none; font-weight: 700 top:10px;;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;    
+  box-shadow: 0 6px 14px rgba(0,0,0,0.6);    
+  margin-top:20px;
+} 
+.spin-btn {
+    display: flex; align-items: center; justify-content: center; cursor: pointer;    
+    width: 80px; height: 80px; border-radius: 50%; border: none; font-weight: 700 top:10px;;
+   
+    box-shadow: 0 6px 14px rgba(0,0,0,0.6);
+	animation-name: girar;
+	animation-duration: 1.5s;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
+	margin-top: -60px;
+
+}
+@keyframes girar {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+  0% {
+    box-shadow: 0 0 5px #00bcd4, 0 0 15px #00bcd4, 0 0 30px #00bcd4, 0 0 50px #00bcd4;
+    background-color: green;
+  }
+  50% {
+    box-shadow: 0 0 10px #ffffff, 0 0 25px #ffffff, 0 0 40px #ffffff, 0 0 60px #ffffff;
+    background-color: blue;
+  }
+  100% {
+    box-shadow: 0 0 5px #00bcd4, 0 0 15px #00bcd4, 0 0 30px #00bcd4, 0 0 50px #00bcd4;
+    background-color: red;
+  }
+}
+
+
+.spin hover {
+animation: brilhoNeon 2s infinite; /* Nome da animação, duração, contagem de repetição */
+	
+}
+
+.spin-btn { background: radial-gradient(circle at 30% 30%, #ffd24d, #ff9a00); color: #111; }    
+.saque-btn { background: radial-gradient(circle at 30% 30%, #67b3ff, #2b8cff); color: #fff; }    
+.aposta-btn { background: radial-gradient(circle at 30% 30%, #7ee7a9, #10b981); color: #0b3; }    
+    
+.row-panels { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; max-width: 460px; padding: 0 6px; }    
+.panel { flex: 1; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 8px; }    
+.panel h4 { font-size: 0.72rem; color: var(--accent); margin: 0; }    
+.panel .value { display: block; margin-top: 4px; font-size: 1rem; font-weight: 800; color: #fff; }    
+    
+.recharge { background: linear-gradient(90deg,#6ee7b7,#10b981); color:#063; border:none; padding:8px 14px; border-radius:999px; font-weight:700; }    
+    
+footer.bottom { font-size: 0.72rem; text-align: center; color: #ddd; background: rgba(0,0,0,0.25); padding: 6px; width: 100%; position: fixed; bottom: 0; left: 0; z-index: 10; }    
+
+.carrinho { position: fixed; bottom: 50px; right: 30px; background: #00ff88; color: #000; border-radius: 50%; width: 55px; height: 55px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 10px #00ff88; }
+  .lista-carrinho { position: fixed; bottom: 70px; right: 10px; background: #111; border: 2px solid #00ff88; border-radius: 12px; padding: 10px; width: 280px; max-height: 60vh; overflow-y: auto; display: none; }
+
+
+ 
+.menu-btn { background: none; border: none; cursor: pointer; padding: 8px; }    
+.menu-btn div { width: 25px; height: 3px; background: #00ff88; margin: 5px 0; transition: 0.3s; }    
+.menu { position: fixed; top: 0; right: -220px; width: 200px; height: 100%; background: #151515; border-left: 2px solid #00ff88; box-shadow: -2px 0 10px rgba(0,255,136,0.3); display: flex; flex-direction: column; padding-top: 60px; transition: right 0.3s ease; z-index: 1000; }    
+.menu a { color: #00ff88; text-decoration: none; padding: 12px 20px; border-bottom: 1px solid #222; }    
+.menu a:hover { background: #00ff88; color: #000; }    
+.menu.ativo { right: 0; }    
+    
+/* tabela dos bichos (popup) */    
+#tabelaBichosContainer {    
+  position: fixed;    
+  top: 0; left: 0;    
+  width: 100%; height: 100%;    
+  background: rgba(0,0,0,0.92);    
+  display: none;    
+  justify-content: center;    
+  align-items: center;    
+  flex-direction: column;    
+  z-index: 60;    
+  padding: 18px;    
+  border: 1px solid green;
+}    
+#tabelaBichosContainer.active { display: flex; }    
+    
+.tabela-bichos {    
+  display: grid;    
+  grid-template-columns: repeat(5, 1fr);    
+  gap: 8px;    
+  width: 100%;    
+  max-width: 760px;    
+  margin-top: 16px;    
+  border: 1px solid red;
+  
+}    
+.bicho {    
+  background: rgba(255,255,255,0.03);    
+  border: 1px solid rgba(255,255,255,0.05);    
+  border-radius: 8px;    
+  text-align: center;    
+  padding: 8px 6px;    
+  cursor: pointer;    
+  transition: transform 0.12s ease, background 0.12s;    
+  display:flex; flex-direction:column; align-items:center; gap:6px;    
+}    
+.bicho:active { transform: translateY(1px) scale(.995); }    
+.bicho:hover { transform: scale(1.02); background: rgba(255,255,255,0.04); }    
+.bicho img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; margin-bottom: 0; }    
+.numeros { color: var(--accent); font-size: 0.95rem; font-weight: 800; margin-top: 2px; }    
+.nome { font-size: 0.82rem; color: #ddd; }    
+    
+.fechar-btn {    
+  background: #cc3333; color: #fff; border: none; border-radius: 10px; padding: 10px 18px; margin-top: 12px; cursor: pointer; font-weight: 700;    
+}    
+    
+/* saque modal */    
+#saqueContainer {    
+  position: fixed;    
+  top: 0; left: 0; width: 100%; height: 100%;    
+  background: rgba(0,0,0,0.9);    
+  display: none; align-items: center; justify-content: center; z-index: 70; padding: 18px;    
+}    
+#saqueContainer.active { display: flex; }    
+.saque-box {    
+  width: 100%; max-width: 360px; background: rgba(20,20,20,0.9); border-radius: 12px; padding: 14px; border: 1px solid rgba(255,255,255,0.04);    
+}    
+.saque-box h3 { color: var(--accent); font-size: 1rem; margin-bottom: 8px; text-align:left; }    
+.form-row { display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }    
+label { color: #ccc; font-size: 0.82rem; text-align:left; }    
+input[type="text"], input[type="number"] {    
+  width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color:#fff; font-size:0.95rem;    
+}    
+.sacar-btn-confirm { width:100%; padding:10px 12px; border-radius:8px; border:none; background: linear-gradient(90deg,#5fb9ff,#1877f2); color:#fff; font-weight:800; cursor:pointer; }    
+.saque-close { background: transparent; color:#fff; border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px; cursor:pointer; width:100%; }    
+
+
+
+.slot-machine-grid {
+            display: grid;
+            /* Define 5 colunas e 5 linhas, cada uma ocupando uma fração (1fr) do espaço disponível */
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 10px; /* Espaço entre as células */
+            width: auto; /* Largura total do grid */
+            height: auto; /* Altura total do grid (ajuste conforme necessário) */
+            border: 1px solid blue;
+            padding: 10px;
+            background-color: trasnparent;
+            border-radius: 10px;
+            
+            scale:80%;
+        }
+
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: trasnparent;
+            border-radius: 5px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #555;
+            border; 1px solid blue;
+            /* Adicione estilos para os símbolos aqui (ex: imagens, texto) */
+        }
+
+.cell img {
+    width: 100%;      /* ocupa toda a largura da célula */
+    height: 100%;     /* ocupa toda a altura da célula */
+    object-fit: contain; /* mantém proporção sem cortar a imagem */
+    border-radius:5px;
+    border:1px solid red;
+}
+.texto-neon {
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    animation: glow-color 2s infinite alternate linear; /* Aplica a animação */
+}
+
+@keyframes glow-color {
+    0% {
+        color: #fff;
+        text-shadow: 0 0 10px #00f, 0 0 20px #00f, 0 0 30px #00f, 0 0 40px #00f; /* Brilho azul inicial */
+    }
+    50% {
+        color: #ff0;
+        text-shadow: 0 0 10px #ff0, 0 0 30px #ff0, 0 0 50px #ff0, 0 0 70px #ff0; /* Brilho amarelo no meio */
+    }
+    100% {
+        color: #f00;
+        text-shadow: 0 0 10px #f00, 0 0 20px #f00, 0 0 30px #f00, 0 0 40px #f00; /* Brilho vermelho final */
+    }
+}
+.texto-brilho-deslizante {
+    font-size: 1rem;
+    font-weight: bold;
+    background: linear-gradient(90deg, #000, #fff, #000); /* Gradiente */
+    background-size: 80% 100%; /* Define o tamanho do gradiente */
+    color: transparent;
+    -webkit-background-clip: text; /* Recorta o background para o formato do texto */
+    background-clip: text;
+    animation: shimmer 3s infinite linear; /* Aplica a animação */
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -100% 0; /* Começa com o gradiente totalmente à esquerda */
+    }
+    100% {
+        background-position: 100% 0; /* Termina com o gradiente totalmente à direita */
+    }
+}
+
+
+
+
+    
+/* responsive tweaks */    
+@media (max-width:420px) {    
+  :root { --reel-w: 56px; --icon-h: 56px; --max-w: 420px; }    
+  .tabela-bichos { max-width: 340px; gap:6px; }    
+  .bicho img { width:48px; height:48px; }    
+  .panel .value { font-size:0.95rem; }    
+  .spin-btn, .saque-btn, .aposta-btn { width:56px; height:56px; }    
+  .caixa-aposta .grid-cell { height:48px; }    
+}    
+</style>    
+</head>    
+<body>    
+    
+<header class="topbar">    
+  <img id="btnMenu"  src="https://res.cloudinary.com/dptprh0xk/image/upload/v1763000058/Pngtree_attractive_monkey_slot_game_character_21134749_rayvcs.png" alt="Logo">    
+  <div class="carrinho"><a hferf="/compras/app">🛒</a></div>
+<!--  <h1 class="typing-effect">🐾🐾Jogo do Bicho🐾🐾</h1>    -->
+  <p class="texto-neon">🐾🐾Jogo do Bicho🐾🐾</p>
+ <!-- <p class="texto-brilho-deslizante">Ferrari Games Itech.io</p>-->
+   
+   <nav class="menu" id="menuLateral">    
+  <a href="/painel">Painel dos Jogos</a>    
+  <a href="/regras">Regras do Jogo</a>    
+  <a href="/carteira">saques e depositos</a>    
+  <a href="#"></a>    
+  <a href="/logout">Sair</a>    
+</nav>    
+</header> 
+   
+<main class="container">    
+
+
+             <div class="slot-machine-grid">
+                
+                <!-- JavaScript  preenche isso dinamicamente -->
+             
+            </div>
+
+    <div class="controls">    
+      <div class="buttons-row">    
+        <button class="saque-btn" id="saque">Sacar</button>    
+        <button class="spin-btn" id="spinBtn">Começar</button>    
+        <button class="aposta-btn" id="apostar">Apostar</button>    
+      </div>    
+    
+      <div class="row-panels">    
+        <div class="panel" id="painel-saldo"><h4 class="texto-neon">Saldo</h4><span class="value" id="saldo">100</span></div>    
+        <div class="panel" id="painel-ganhos"><h4 class="texto-brilho-deslizante">Ganhos</h4><span class="value" id="ganhos">0</span></div>    
+        <div class="panel" id="painel-percas"><h4 class="texto-neon">Perdas</h4><span class="value" id="percas">0</span></div>    
+      </div>  
+        
+    
+
+    </div>    
+  </section>    
+    
+  <footer class="bottom">© <span id="year"></span class="texto-brilho-deslizante"> — Ferrari Games itech.io</span></footer>    
+</main>    
+    
+<!-- popup da tabela de bichos (abre lista 1..25) -->    
+<div id="tabelaBichosContainer" aria-hidden="true">    
+  <h2 style="color:var(--accent); margin-bottom:8px;">Escolha seu Bicho (1..25)</h2>    
+  <div class="tabela-bichos" id="listaBichos"></div>    
+    
+  <div style="margin-top:14px; display:flex; gap:8px; align-items:center;">    
+    <button class="fechar-btn" id="fecharTabela">Fechar</button>    
+  </div>    
+</div>    
+    
+<!-- caixa-aposta (quando clica num bicho da lista abre aqui) -->    
+<div class="caixa-aposta" id="caixaAposta" aria-hidden="true" role="dialog" aria-modal="true">    
+  <div class="top">    
+    <img src="" alt="bicho selecionado" class="sel" id="imgBichoSelecionado">    
+    <div>    
+      <h3 id="bichoSelecionadoNome">Bicho</h3>    
+      <div style="font-size:0.85rem;color:#ccc">Clique numa célula para posicionar o bicho escolhido.</div>    
+    </div>    
+  </div>    
+    
+  <div class="grid-container" id="gridAposta">    
+    <!-- 25 células serão geradas aqui -->    
+  </div>    
+  <select id="tipoAposta">    
+      <option value="grupo">Grupo</option>    
+      <option value="milhar">Milhar</option>    
+      <option value="centena">Centena</option>    
+      <option value="dezena">Dezena</option>    
+      <option value="duque">Duque</option>    
+      <option value="duque-de-dezena1-5">Duque de Dezena 1/5</option>    
+      <option value="terno-de-dezena1-5">Terno de Dezena 1/5</option>     
+      <option value="dupla-de-grupo">Dupla de Grupo</option>    
+      <option value="terno-de-grupo1-5">Terno de Grupo 1/5</option>      
+      <option value="quadra-de-grupo1-5">Quadra de Grupo 1/5</option>     
+      <option value="quina-de-grupo1-5">Quina de Grupo 1/5</option>     
+      <option value="milhar-centena">Milhar + Centena</option>     
+      <option value="milhar-invertida">Milhar Invertida</option>     
+      <option value="centena-invertida">Centena Invertida</option>     
+    </select>    
+  <label for="valorAposta">Valor da aposta por posição (mín R$0,50)</label>    
+  <input type="number" id="valorAposta" min="0.5" step="0.05" value="0.5">    
+    
+  <div class="actions">    
+    <button class="confirm" id="btnConfirmar">Confirmar (não necessário — clique na célula aplica aposta)</button>    
+    <button class="close" id="btnFecharCaixa">Fechar</button>    
+  </div>    
+</div>    
+    
+<!-- modal saque -->    
+<div id="saqueContainer" aria-hidden="true">    
+  <div class="saque-box" role="dialog" aria-modal="true" aria-labelledby="saqueTitle">    
+    <h3 id="saqueTitle">Sacar Ganhos</h3>    
+    <div class="form-row">    
+      <label for="pixKey">Chave PIX (CPF / Cel / e-mail)</label>    
+      <input type="text" id="pixKey" placeholder="Ex: 5511999999999 ou email@ex.com" />    
+      <label for="saqueValor">Valor do Saque</label>    
+      <input type="number" id="saqueValor" placeholder="0" min="1" step="1" />    
+    </div>    
+    <button class="sacar-btn-confirm" id="confirmSacar">SACAR</button>    
+    <button class="saque-close" id="closeSaque" style="margin-top:8px;">CANCELAR</button>    
+  </div>    
+</div>    
+    
+<script>    
+/* ================= data / assets ================= */    
+const menu = document.getElementById('menuLateral');    
+const btnMenu = document.getElementById('btnMenu');    
+btnMenu.onclick = () => menu.classList.toggle('ativo');    
+    
+const animals = [    
+  "avestruz","aguia","burro","borboleta","cachorro",    
+  "cabra","carneiro","camelo","cobra","coelho",    
+  "cavalo","elefante","galo","gato","jacare",    
+  "leao","macaco","porco","pavao","peru",    
+  "touro","tigre","urso","veado","vaca"    
+];    
+
+const grid = document.querySelector('.slot-machine-grid');  
+  const totalRows = 5;  
+  const totalCols = 5;  
+  const totalImages = 25;  
+  
+  // Cria um array com os caminhos das imagens dos animais do Jogo do Bicho  
+  const imagens = [
+    '../../static/bichos/avestruz.jpg',
+    '../../static/bichos/aguia.jpg',
+    '../../static/bichos/burro.jpg',
+    '../../static/bichos/borboleta.jpg',
+    '../../static/bichos/cachorro.jpg',
+    '../../static/bichos/cabra.jpg',
+    '../../static/bichos/carneiro.jpg',
+    '../../static/bichos/camelo.jpg',
+    '../../static/bichos/cobra.jpg',
+    '../../static/bichos/coelho.jpg',
+    '../../static/bichos/cavalo.jpg',
+    '../../static/bichos/elefante.jpg',
+    '../../static/bichos/galo.jpg',
+    '../../static/bichos/gato.jpg',
+    '../../static/bichos/jacare.jpg',
+    '../../static/bichos/leao.jpg',
+    '../../static/bichos/macaco.jpg',
+    '../../static/bichos/porco.jpg',
+    '../../static/bichos/pavao.jpg',
+    '../../static/bichos/peru.jpg',
+    '../../static/bichos/touro.jpg',
+    '../../static/bichos/tigre.jpg',
+    '../../static/bichos/urso.jpg',
+    '../../static/bichos/veado.jpg',
+    '../../static/bichos/vaca.jpg'
+  ];  
+  
+  // Preenche a grid com as imagens  
+  let imgIndex = 0;  
+  for (let col = 0; col < totalCols; col++) {  
+    for (let row = 0; row < totalRows; row++) {  
+      const cell = document.createElement('div');  
+      cell.classList.add('cell');  
+      cell.id = `reel-${imgIndex + 1}`;  
+  
+      const img = document.createElement('img');  
+      img.src = imagens[imgIndex % totalImages]; // garante que nunca saia do limite  
+      img.alt = `Bicho ${imgIndex + 1}`;  
+      cell.appendChild(img);  
+  
+      grid.appendChild(cell);  
+      imgIndex++;  
+    }  
+  }  
+    
+    
+// estado    
+let saldo = 100, ganhos = 0, percas = 0;    
+document.getElementById('year').textContent = new Date().getFullYear();    
+    
+/* helper para imagens */    
+function mkImgTag(src, alt, cls='') {    
+  const img = document.createElement('img');    
+  img.src = src;    
+  img.alt = alt;    
+  if (cls) img.className = cls;    
+  return img;    
+}    
+    
+/* ========== reels populate (mantive lógica anterior) ========== */    
+function populateReels() {    
+  const reels = [0,1,2,3,4].map(i => document.querySelector(`#reel-${i} .inner`));    
+  reels.forEach(inner => {    
+    inner.style.transition = 'none';    
+    inner.innerHTML = '';    
+    for (let r = 0; r < 8; r++) {    
+      animals.forEach(name => {    
+        const img = mkImgTag(`../../static/bichos/${name}.jpg`, name, 'icon');    
+        inner.appendChild(img);    
+      });    
+    }    
+    const shortIndex = animals.length * 2;    
+    inner.style.transform = `translateY(-${shortIndex * parseInt(getComputedStyle(document.documentElement).getPropertyValue('--icon-h'))}px)`;    
+  });    
+}    
+    
+/* ========== spin logic (mantive) ========== */    
+function spinOnce() {    
+  const reels = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24].map(i => document.querySelector(`#reel-${i} .inner`));    
+  spinBtn.disabled = true; spinBtn.style.opacity = .7;    
+  const targets = reels.map(()=>Math.floor(Math.random()*animals.length));    
+  reels.forEach((inner,i) => {    
+    const baseCycles = 25 + i;    
+    const targetIndex = targets[i];    
+    const totalIndex = baseCycles * animals.length + targetIndex;    
+    const translateY = totalIndex * parseInt(getComputedStyle(document.documentElement).getPropertyValue('--icon-h'));    
+    const duration = 1000 + i * 500;    
+    inner.style.transition = `transform ${duration}ms cubic-bezier(.31,.95,.38,1)`;    
+    requestAnimationFrame(()=>{ inner.style.transform = `translateY(-${translateY}px)`; });    
+  });    
+  setTimeout(()=> {    
+    const results = targets.map(t => animals[t]);    
+    const counts = {};    
+    results.forEach(r => counts[r] = (counts[r] || 0) + 1);    
+    const maxSame = Math.max(...Object.values(counts));    
+    const isWin = maxSame >= 3;    
+    if (isWin) { ganhos += 20; saldo += 20; }    
+    else { percas += 5; saldo = Math.max(0, saldo - 5); }    
+    updatePanels();    
+    resetReelsAfterSpin(targets);    
+    spinBtn.disabled = false; spinBtn.style.opacity = 1;    
+  }, 2200);    
+}    
+    
+function resetReelsAfterSpin(targets) {    
+  const reels = [0,1,2,3,4].map(i => document.querySelector(`#reel-${i} .inner`));    
+  reels.forEach((inner,i) => {    
+    const shortIndex = animals.length * 2 + targets[i];    
+    const translateY = shortIndex * parseInt(getComputedStyle(document.documentElement).getPropertyValue('--icon-h'));    
+    inner.style.transition = 'none';    
+    inner.style.transform = `translateY(-${translateY}px)`;    
+  });    
+}    
+    
+/* ========== update panels ========== */    
+function updatePanels() {    
+  document.getElementById('saldo').textContent = saldo.toFixed(2);    
+  document.getElementById('ganhos').textContent = ganhos.toFixed(2);    
+  document.getElementById('percas').textContent = percas.toFixed(2);    
+}    
+    
+/* ========== aposta tabela 5x5 (lista inicial) ========== */    
+const apostarBtn = document.getElementById('apostar');    
+const tabelaContainer = document.getElementById('tabelaBichosContainer');    
+const listaBichos = document.getElementById('listaBichos');    
+const fecharTabela = document.getElementById('fecharTabela');    
+    
+function abrirListaBichos() {    
+  tabelaContainer.classList.add('active');    
+  tabelaContainer.setAttribute('aria-hidden', 'false');    
+  listaBichos.innerHTML = '';    
+  for (let idx=0; idx<25; idx++) {    
+    const animalName = animals[idx] || `bicho${idx+1}`;    
+    const div = document.createElement('div');    
+    div.className = 'bicho';    
+    const imgPath = `../../static/bichos/${animalName}.jpg`;    
+    div.innerHTML = `<img src="${imgPath}" alt="${animalName}"><span class="numeros">${idx+1}</span><span class="nome">${animalName}</span>`;    
+    // clique no bicho: abre caixa de aposta com o bicho selecionado    
+    div.addEventListener('click', ()=> {    
+      abrirCaixaAposta(animalName, imgPath);    
+    });    
+    listaBichos.appendChild(div);    
+  }    
+}    
+    
+apostarBtn.addEventListener('click', abrirListaBichos);    
+    
+fecharTabela.addEventListener('click', ()=> {    
+  tabelaContainer.classList.remove('active');    
+  tabelaContainer.setAttribute('aria-hidden', 'true');    
+});    
+    
+/* ========== caixa de aposta com grid 5x5 (COM PORTAR O BICHO SELECIONADO) ========== */    
+const caixa = document.getElementById('caixaAposta');    
+const imgBichoSelecionado = document.getElementById('imgBichoSelecionado');    
+const bichoSelecionadoNome = document.getElementById('bichoSelecionadoNome');    
+const gridAposta = document.getElementById('gridAposta');    
+const valorApostaInput = document.getElementById('valorAposta');    
+const btnFecharCaixa = document.getElementById('btnFecharCaixa');    
+const btnConfirmar = document.getElementById('btnConfirmar');    
+    
+let bichoAtivo = null;   // nome do animal selecionado    
+let bichoAtivoImg = '';  // caminho da imagem selecionada    
+let apostas = [];        // array de apostas {pos: 1..25, animal, valor}    
+    
+/* cria as 25 células do grid dentro da caixa */    
+function criarGridDaCaixa() {    
+  gridAposta.innerHTML = '';    
+  for (let i=1; i<=25; i++) {    
+    const cell = document.createElement('div');    
+    cell.className = 'grid-cell';    
+    cell.dataset.posicao = i;    
+    cell.dataset.ocupado = 'false';    
+    // clique na célula: posiciona o bicho ativo (se existir)    
+    cell.addEventListener('click', ()=> {    
+      if (!bichoAtivo) {    
+        alert('Selecione um bicho antes (feche e abra a lista).');    
+        return;    
+      }    
+      if (cell.dataset.ocupado === 'true') {    
+        // permitir sobrescrever? aqui notifico e não sobrescrevo    
+        alert('Posição já ocupada. Remova antes para substituir.');    
+        return;    
+      }    
+      const valor = Number(valorApostaInput.value) || 0;    
+      if (valor < 0.5) {    
+        alert('Aposta mínima R$ 0,50 por posição.');    
+        return;    
+      }    
+      if (saldo < valor) {    
+        alert('Saldo insuficiente para esta aposta.');    
+        return;    
+      }    
+      // aplica aposta: coloca imagem, marca ocupado, desconta saldo, guarda aposta    
+      const img = document.createElement('img');    
+      img.src = bichoAtivoImg;    
+      img.alt = bichoAtivo;    
+      // limpar conteúdo e inserir    
+      cell.innerHTML = '';    
+      cell.appendChild(img);    
+      cell.dataset.ocupado = 'true';    
+      cell.dataset.animal = bichoAtivo;    
+      // deduz saldo    
+      saldo = Math.round((saldo - valor) * 100) / 100;    
+      apostas.push({ pos: Number(cell.dataset.posicao), animal: bichoAtivo, valor: Number(valor.toFixed(2)) });    
+      updatePanels();    
+    });    
+    gridAposta.appendChild(cell);    
+  }    
+}    
+    
+/* abrir caixa com animal selecionado */    
+function abrirCaixaAposta(animalName, imgPath) {    
+  bichoAtivo = animalName;    
+  bichoAtivoImg = imgPath;    
+  imgBichoSelecionado.src = imgPath;    
+  imgBichoSelecionado.alt = animalName;    
+  bichoSelecionadoNome.textContent = `${animalName}`;    
+  // mostrar caixa    
+  caixa.style.display = 'block';    
+  caixa.setAttribute('aria-hidden', 'false');    
+  // garantir grid limpo (mas NÃO remove apostas já feitas em outras aberturas; se quiser manter, comente a próxima linha)    
+  // criar grid sempre (marca ocupadas pela sessão atual) — para manter estado entre aberturas, pré-popular com apostas array    
+  criarGridDaCaixa();    
+  // reaplicar imagens para posições já apostadas (persistência durante a sessão)    
+  apostas.forEach(a => {    
+    const pos = a.pos;    
+    const cell = gridAposta.querySelector(`[data-posicao="${pos}"], .grid-cell:nth-child(${pos})`);    
+    // selecionar corretamente pelo atributo posicao    
+    const target = gridAposta.querySelector(`.grid-cell[data-posicao="${pos}"]`);    
+    if (target) {    
+      target.innerHTML = '';    
+      const im = document.createElement('img');    
+      // se a animação original usou outro caminho para imagens, você pode mapear aqui; usamos ../../static/bichos/<animal>.jpg    
+      im.src = `../../static/bichos/${a.animal}.jpg`;    
+      im.alt = a.animal;    
+      target.appendChild(im);    
+      target.dataset.ocupado = 'true';    
+      target.dataset.animal = a.animal;    
+    }    
+  });    
+}    
+    
+/* fechar caixa */    
+btnFecharCaixa.addEventListener('click', ()=> {    
+  caixa.style.display = 'none';    
+  caixa.setAttribute('aria-hidden', 'true');    
+  bichoAtivo = null;    
+});    
+    
+/* botão confirmar: só mostra resumo (não altera lógica) */    
+btnConfirmar.addEventListener('click', ()=> {    
+  if (apostas.length === 0) { alert('Nenhuma aposta feita ainda. Clique nas células para posicionar o bicho.'); return; }    
+  // resumo simples    
+  let resumo = 'Apostas realizadas:\\n';    
+  apostas.forEach(a => resumo += `Pos ${a.pos} — ${a.animal} — R$ ${a.valor.toFixed(2)}\\n`);    
+  alert(resumo);    
+});    
+    
+/* permitir remover aposta ao clicar com shift (ex: shift+click remove) */    
+gridAposta.addEventListener('click', (e)=> {    
+  // nada aqui — remoção é feita via clique com botão direito? implementaremos shift+click em cada célula    
+});    
+/* implementando remoção via clique longo (Shift) diretamente nas células */    
+function habilitarRemocaoShift() {    
+  const cells = () => Array.from(gridAposta.querySelectorAll('.grid-cell'));    
+  function onCellClickFactory(cell) {    
+    return function() {    
+      // esta função não é usada porque cada cell já tem seu próprio listener    
+    }    
+  }    
+  // adiciona listener adicional para remoção via shift    
+  const observer = new MutationObserver(()=> {    
+    cells().forEach(cell => {    
+      if (!cell.dataset.remListener) {    
+        cell.addEventListener('click', function(ev) {    
+          if (ev.shiftKey) {    
+            if (cell.dataset.ocupado === 'true') {    
+              // devolver valor ao saldo    
+              const pos = Number(cell.dataset.posicao);    
+              const apostaIndex = apostas.findIndex(a => a.pos === pos);    
+              if (apostaIndex !== -1) {    
+                const valor = apostas[apostaIndex].valor;    
+                saldo = Math.round((saldo + valor) * 100) / 100;    
+                apostas.splice(apostaIndex,1);    
+                cell.innerHTML = '';    
+                cell.dataset.ocupado = 'false';    
+                cell.dataset.animal = '';    
+                updatePanels();    
+              }    
+            } else {    
+              alert('Célula vazia.');    
+            }    
+          }    
+        });    
+        cell.dataset.remListener = '1';    
+      }    
+    });    
+  });    
+  observer.observe(gridAposta, { childList: true, subtree: true });    
+}    
+habilitarRemocaoShift();    
+    
+/* ========== saque modal ========== */    
+const saqueBtn = document.getElementById('saque');    
+const saqueContainer = document.getElementById('saqueContainer');    
+const closeSaque = document.getElementById('closeSaque');    
+const confirmSacar = document.getElementById('confirmSacar');    
+    
+saqueBtn.addEventListener('click', ()=> {    
+  saqueContainer.classList.add('active');    
+  saqueContainer.setAttribute('aria-hidden', 'false');    
+  document.getElementById('pixKey').value = '';    
+  document.getElementById('saqueValor').value = '';    
+});    
+    
+closeSaque.addEventListener('click', ()=> {    
+  saqueContainer.classList.remove('active');    
+  saqueContainer.setAttribute('aria-hidden', 'true');    
+});    
+    
+confirmSacar.addEventListener('click', ()=> {    
+  const chave = document.getElementById('pixKey').value.trim();    
+  const valor = Number(document.getElementById('saqueValor').value || 0);    
+  if (!chave) { alert('Informe a chave PIX para sacar.'); return; }    
+  if (!valor || valor <= 0) { alert('Informe um valor de saque válido.'); return; }    
+  if (valor > ganhos) { alert('Saldo de ganhos insuficiente.'); return; }    
+  ganhos = Math.round((ganhos - valor) * 100) / 100;    
+  updatePanels();    
+  saqueContainer.classList.remove('active');    
+  saqueContainer.setAttribute('aria-hidden', 'true');    
+  alert(`Saque de R$ ${valor} solicitado para a chave PIX: ${chave}.`);    
+});    
+    
+/* ========== outros controles ========== */    
+const spinBtn = document.getElementById('spinBtn');    
+spinBtn.addEventListener('click', ()=> { spinOnce(); });    
+    
+document.getElementById('rechargeBtn').addEventListener('click', ()=> { saldo += 50; updatePanels(); });    
+    
+/* ========== init ========== */    
+(function init(){    
+  populateReels();    
+  updatePanels();    
+  criarGridDaCaixa(); // cria inicialmente para quando abrir    
+})();    
+</script>    
+</body>    
+</html>    

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title class="typing-effect-2">Bicho Online</title>
+<style>
+
+  body {
+      height: 100dvh;
+      display: flex;
+      align-items: center;
+      background: #000;
+      color: #fff;
+      padding: 20px;
+      margin: 0;
+    font-family:monospace, Arial, sans-serif;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+
+    }
+
+  /* FUNDO ANIMADO */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100dvh;
+      background: url("https://res.cloudinary.com/dptprh0xk/image/upload/v1762733060/estilo-de-vida-fotorrealista-cassino_hny2za.jpg") repeat left top;
+      background-size: cover;
+      z-index: -2;
+      animation: 40s linear infinite LoadingBarProgress;
+    }
+
+    body::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(to right, #a8a8a8, #3d3d3d, trasnparent, #3d3d3d, #a8a8a8);
+      background-size: 500%;
+      z-index: -1;
+      animation: 40s linear infinite LoadingBarProgress;
+    }
+
+    @keyframes LoadingBarProgress {
+      0% { background-position: 0 0 }
+      100% { background-position: 125% 0 }
+    }
+
+     .typing-effect {
+      font-family: monospace;
+      color: blue;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: .15em solid orange;
+      width: 0;
+      animation: typing 3.5s steps(30, end) forwards, blinking .75s step-end infinite;
+    }
+
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    @keyframes blinking { from, to { border-color: transparent } 50% { border-color: orange } }
+
+
+.typing-effect-1  {
+      font-family: monospace;
+      color:white ;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: .15em solid orange;
+      width: 0;
+      animation: typing 3.5s steps(30, end) forwards, blinking .75s step-end infinite;
+    }
+
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    @keyframes blinking { from, to { border-color: transparent } 50% { border-color: orange } }
+
+.typing-effect-2 {
+      font-family: monospace;
+      color: gold;
+      background-color: black:
+      border: 1px solid blue;
+      border-radius: 8px;
+      font-size: 1rem;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: .15em solid orange;
+      width: 0;
+      animation: typing 3.5s steps(30, end) forwards, blinking .75s step-end infinite;
+    }
+
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    @keyframes blinking { from, to { border-color: transparent } 50% { border-color: orange } }
+
+
+
+  header {
+    width: 100%;
+    background: trasnparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    box-shadow: 0 0 10px #00ff88;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  header img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid blue;
+  }
+
+  header h1 h2 h3 {
+    font-family: monospace;
+    color: #00ff88;
+    font-size: 1.2em;
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+  }
+
+  .menu-btn { background: none; border: none; cursor: pointer; padding: 8px; }
+  .menu-btn div { width: 25px; height: 3px; background: #00ff88; margin: 5px 0; transition: 0.3s; }
+  .menu { position: fixed; top: 0; right: -220px; width: 200px; height: 100%; background: #151515; border-left: 2px solid #00ff88; box-shadow: -2px 0 10px rgba(0,255,136,0.3); display: flex; flex-direction: column; padding-top: 60px; transition: right 0.3s ease; z-index: 1000; }
+  .menu a { color: #00ff88; text-decoration: none; padding: 12px 20px; border-bottom: 1px solid #222; }
+  .menu a:hover { background: #00ff88; color: #000; }
+  .menu.ativo { right: 0; }
+
+  .tabela-bichos { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; width: 95%; max-width: 600px; margin-top: 20px; overflow-y: auto; }
+  .bicho { background: white trasnparent; border: 1px solid #333; border-radius: 12px; text-align: center; padding: 10px; cursor: pointer; transition: transform 0.2s, background 0.2s; }
+  .bicho:hover { background: #222; transform: scale(1.05); }
+  .bicho img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; margin-bottom: 5px; }
+.numeros { color: #ffcc00; font-size: 0.85em; margin-bottom: 3  px; display: block; }  
+.numero {width:1.5rem; height: 1.5rem; font-weight: bold; colo  r: white; display: block; background-color: black; }   
+ .nome { font-size: 0.9em; color: #ccc; }
+
+  .caixa-aposta { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1c1c1c; border: 2px solid #00ffcc; border-radius: 10px; padding: 20px; display: none; z-index: 100; width: 80%; max-width: 300px; }
+  .caixa-aposta input { width: 100%; padding: 10px; border: none; border-radius: 8px; margin-top: 10px; margin-bottom: 15px; background: #2a2a2a; color: #fff; font-size: 16px; }
+  .caixa-aposta select { width: 100%; padding: 10px; border-radius: 8px; margin-bottom: 10px; background: #2a2a2a; color: #fff; border: none; font-size: 16px; }
+  .caixa-aposta button { width: 100%; background: #00ff88; color: #000; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+  .caixa-aposta button:hover { background: #00cc66; }
+
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99; }
+  .carrinho { position: fixed; bottom: 10px; right: 10px; background: #00ff88; color: #000; border-radius: 50%; width: 55px; height: 55px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 10px #00ff88; }
+  .lista-carrinho { position: fixed; bottom: 70px; right: 10px; background: #111; border: 2px solid #00ff88; border-radius: 12px; padding: 10px; width: 280px; max-height: 60vh; overflow-y: auto; display: none; }
+  .aposta-item { display: flex; align-items: center; gap: 8px; background: #1a1a1a; border-radius: 8px; padding: 5px; margin-bottom: 6px; }
+  .aposta-item img { width: 40px; height: 40px; border-radius: 6px; }
+  .btn-pagar-tudo { background: #00ff88; border: none; color: #000; padding: 8px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+  .minhas-apostas { width: 95%; max-width: 600px; margin: 30px 0; }
+  .minhas-apostas h2 { color: #00ff88; margin-bottom: 10px; text-align: center; }
+  .aposta-card { background: #1a1a1a; border: 1px solid #00ff88; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .aposta-card img { width: 60px; height: 60px; border-radius: 8px; }
+  .aposta-info { flex-grow: 1; }
+  .status { font-size: 0.8em; color: #ffcc00; }
+</style>
+</head>
+<body>
+<audio id="somAmbiente" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1762638299/tell-me-what-379638_uwmki4.mp3" loop autoplay></audio>
+<header>
+   <img src="../../static/9226104.jpg" alt="Logo Bicho Online" id="btnMenu">
+<!-- Your content goes here -->
+    <div class="typewriter">
+     <h2 class="typing-effect-1">🐾 Jogo do Bicho🐾</h2>
+     <p class="typing-effect">Ferrari Games itech.io</p>
+    </div>
+
+   
+    <div></div><div></div><div></div>
+ 
+ 
+    
+    
+    
+ 
+ 
+  
+</header>
+
+<nav class="menu" id="menuLateral">
+  <a href="/painel">Painel dos Jogos</a>
+  <a href="/regras">Regras do Jogo</a>
+  <a href="/minhas_apostas">Minhas Apostas</a>
+  <a href="/resultados">Resultados Federal</a>
+  <a href="/resultados/diario">Resultados Diarios</a>
+  <a href="/cotacoes">Cotações</a>
+  <a href="/logout">Sair</a>
+</nav>
+<div class="typewriter">
+  <h3 class="typing-effect-2">Tabela de Apostas</h3>
+ </div>
+  
+
+<div class="tabela-bichos" id="listaBichos"></div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="caixa-aposta" id="caixaAposta">
+  <h3 id="bichoSelecionado"></h3>
+  <label for="tipoAposta">Tipo de aposta:</label>
+  <select id="tipoAposta">
+    <option value="grupo">Grupo</option>
+    <option value="milhar">Milhar</option>
+    <option value="centena">Centena</option>
+    <option value="dezena">Dezena</option>
+    <option value="duque">Duque</option>
+    <option value="passe-vai1-2">Passe-vai 1/2</option>
+    <option value="passe-vai1-5">Passe-vai 1/5</option>
+    <option value="passe-vai-vem1-2">Passe-vai-vem 1/2</option>
+    <option value="passe-vai-vem1-5">Passe-vai-vem 1/5</option>
+    <option value="duque-de-dezena1-5">Duque de Dezena 1/5</option>
+    <option value="terno-de-dezena1-5">Terno de Dezena 1/5</option> 
+    <option value="dupla-de-grupo">Dupla de Grupo</option>
+    <option value="terno-de-grupo1-5">Terno de Grupo 1/5</option>  
+    <option value="quadra-de-grupo1-5">Quadra de Grupo 1/5</option> 
+    <option value="quina-de-grupo1-5">Quina de Grupo 1/5</option> 
+    <option value="milhar-centena">Milhar + Centena</option> 
+    <option value="milhar-invertida">Milhar Invertida</option> 
+    <option value="centena-invertida">Centena Invertida</option> 
+  </select>
+  <label for="modoAposta">Modo de aposta:</label>
+  <select id="modoAposta">
+    <option value="qualquer">Qualquer prêmio</option>
+    <option value="cabeca">Cabeça (1º prêmio)</option>
+  </select>
+  <label for="sorteio"> Escolha tipos sorteios:</label>
+    <select id="sorteios">
+      <option value="loteria-federal" id="federal">Federal</option>      
+      <option value="lotofacil" id="lotofacil" id="lotofacil">LotoFácil</option>
+      <option value="lotomania" id="lotomania">LotoMania</option> 
+      <option value="timemania" id="timemania">TimeMania</option>
+      <option value="loteca" id="loteca">Loteca</option>
+      <option value="diadesorte" id="diadesorte">Dia de Sorte</option>
+      <option value="megasena" id="megasena">Mega Sena</option>
+      <option value="duplasena" id="duplasena">DuplaSena</option>
+      <option value="quina" id="quina">Quina</option>
+      <option value="sorte_usuario" id="sorte_usuario">Sorteado por você</option>
+      
+
+
+    </select>
+  <label for="valorAposta">Valor da aposta (R$):</label>
+  <input type="number" id="valorAposta" placeholder="Digite o valor" min="1" step="0.01">
+  <button onclick="adicionarAoCarrinho()">Adicionar ao carrinho</button>
+</div>
+
+<div class="carrinho" id="carrinhoBtn">🛒</div>
+<div class="lista-carrinho" id="listaCarrinho"></div>
+
+<section class="minhas-apostas" id="minhasApostas">
+  <div id="listaMinhasApostas"></div>
+  <h2>minhas apostas</h2>
+</section>
+
+<script>
+const bichos = [
+  "Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo",
+  "Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco",
+  "Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"
+];
+
+const numeros = [
+  "01-02-03-04","05-06-07-08","09-10-11-12","13-14-15-16","17-18-19-20","21-22-23-24",
+  "25-26-27-28","29-30-31-32","33-34-35-36","37-38-39-40","41-42-43-44","45-46-47-48",
+  "49-50-51-52","53-54-55-56","57-58-59-60","61-62-63-64","65-66-67-68","69-70-71-72",
+  "73-74-75-76","77-78-79-80","81-82-83-84","85-86-87-88","89-90-91-92","93-94-95-96",
+  "97-98-99-00"
+];
+
+const lista = document.getElementById('listaBichos');
+const listaCarrinho = document.getElementById('listaCarrinho');
+const listaMinhasApostas = document.getElementById('listaMinhasApostas');
+const carrinhoBtn = document.getElementById('carrinhoBtn');
+const caixa = document.getElementById('caixaAposta');
+const overlay = document.getElementById('overlay');
+const bichoSelecionado = document.getElementById('bichoSelecionado');
+const menu = document.getElementById('menuLateral');
+const btnMenu = document.getElementById('btnMenu');
+
+let carrinho = [];
+let minhasApostas = [];
+let bichoAtual = "";
+
+btnMenu.onclick = () => menu.classList.toggle('ativo');
+
+bichos.forEach((nome, i) => {
+  const div = document.createElement('div');
+  div.className = 'bicho';
+  const caminhoImagem = `../../static/bichos/${nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")}.jpg`;
+  div.innerHTML = `
+    <img src="${caminhoImagem}" alt="${nome}">
+    <span class="numeros">${numeros[i]}</span>
+    <span class="numero">${i+1}</span>
+    <span class="nome">${nome}</span>
+  `;
+  div.onclick = () => abrirAposta(nome, caminhoImagem, numeros[i]);
+  lista.appendChild(div);
+});
+
+function abrirAposta(nome, img, num) {
+  bichoAtual = { nome, img, num };
+  bichoSelecionado.textContent = `Apostar em: ${nome}`;
+  caixa.style.display = 'block';
+  overlay.style.display = 'block';
+}
+
+overlay.onclick = fecharCaixa;
+function fecharCaixa() {
+  caixa.style.display = 'none';
+  overlay.style.display = 'none';
+  document.getElementById('valorAposta').value = '';
+}
+
+function adicionarAoCarrinho() {
+  const valor = document.getElementById('valorAposta').value;
+  const tipo = document.getElementById('tipoAposta').value;
+  const modo = document.getElementById('modoAposta').value;
+  if (!valor || valor <= 0) { alert("Digite um valor válido!"); return; }
+
+  carrinho.push({ ...bichoAtual, valor, tipo, modo });
+  atualizarCarrinho();
+  fecharCaixa();
+}
+
+function atualizarCarrinho() {
+  listaCarrinho.innerHTML = "";
+  carrinho.forEach((aposta) => {
+    const item = document.createElement('div');
+    item.className = 'aposta-item';
+    item.innerHTML = `
+      <img src="${aposta.img}" alt="${aposta.nome}">
+      <span>${aposta.nome}</span>
+      <span>R$${parseFloat(aposta.valor).toFixed(2)}</span>
+    `;
+    listaCarrinho.appendChild(item);
+  });
+
+  if (carrinho.length > 0) {
+    const btnPagarTudo = document.createElement('button');
+    btnPagarTudo.className = 'btn-pagar-tudo';
+    btnPagarTudo.textContent = `Pagar R$${totalCarrinho().toFixed(2)}`;
+    btnPagarTudo.onclick = enviarApostasFlask;
+    listaCarrinho.appendChild(btnPagarTudo);
+  }
+}
+
+function totalCarrinho() { 
+  return carrinho.reduce((acc, item) => acc + parseFloat(item.valor), 0); 
+}
+
+async function enviarApostasFlask() {
+  for (const aposta of carrinho) {
+    const dados = {
+      nome: aposta.nome,
+      valor: aposta.valor,
+      tipo: aposta.tipo,
+      numeros: aposta.numero || aposta.num || aposta.nome
+    };
+
+    try {
+      const resposta = await fetch("/apostar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados)
+      });
+      const resultado = await resposta.json();
+      if (resposta.ok) minhasApostas.push(resultado);
+    } catch (erro) {
+      console.error("Erro ao enviar aposta:", erro);
+    }
+  }
+
+  carrinho = [];
+  atualizarCarrinho();
+  listaCarrinho.style.display = 'none';
+  atualizarMinhasApostas();
+  alert("Apostas enviadas e processadas!");
+}
+
+function atualizarMinhasApostas() {
+  listaMinhasApostas.innerHTML = "";
+  if (minhasApostas.length === 0) { 
+    listaMinhasApostas.innerHTML = "<p style='text-align:center;color:#777;'>Nenhuma aposta feita ainda.</p>"; 
+    return; 
+  }
+
+
+
+
+  minhasApostas.forEach(aposta => { 
+    
+    const card = document.createElement('div');
+    card.className = 'aposta-card';
+    card.innerHTML = `
+      <img src="../../static/bichos/${aposta.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")}.jpg" alt="${aposta.nome}">
+      <div class="aposta-info">
+        <strong>${aposta.nome}</strong><br>
+        Tipo: ${aposta.tipo}<br>
+        Valor: R$${parseFloat(aposta.valor).toFixed(2)}<br>
+        Resultado: ${aposta.resultados.join(', ')}<br>
+        <span class="status">Status: ${aposta.status}</span>
+      </div>
+    `;
+    listaMinhasApostas.appendChild(card);
+  });
+}
+
+carrinhoBtn.onclick = () => { 
+  listaCarrinho.style.display = listaCarrinho.style.display === 'block' ? 'none' : 'block'; 
+};
+</script>
+</body>
+</html>

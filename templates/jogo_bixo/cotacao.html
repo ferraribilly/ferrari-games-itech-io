@@ -1,0 +1,148 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela de Prêmios - Jogo do Bicho</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* ======== GERAL ======== */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8XD7s5ZQbc4FTkAkFnSFs4HlnDc_bwfIKpkf4zEmvqtLCqNwAMuqo0P1g&s=80') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ======== CONTAINER ======== */
+        .table-container {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 0 25px rgba(0, 255, 150, 0.3);
+        }
+
+        /* ======== CABEÇALHO ======== */
+        h3 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #0ff;
+            text-shadow: 0 0 8px #0ff, 0 0 15px #00f7ff;
+            margin-bottom: 20px;
+        }
+
+        /* ======== LINK SUPERIOR ======== */
+        .top-link {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .top-link a {
+            color: #ff0080;
+            text-decoration: none;
+            font-weight: bold;
+            text-shadow: 0 0 6px #ff0080;
+            transition: 0.3s;
+        }
+
+        .top-link a:hover {
+            color: #0ff;
+            text-shadow: 0 0 10px #00f7ff;
+        }
+
+        /* ======== TABELA ======== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: transparent;
+            color:#fff;
+            border-radius: 10px;
+        }
+
+        th {
+            background-color: rgba(0, 255, 150, 0.2);
+            color: #0ff;
+            text-shadow: 0 0 6px #00f7ff;
+            font-weight: 600;
+        }
+
+        td {
+            background-color: rgba(255, 255, 255, 0.05);
+            text-align: center;
+            padding: 10px;
+        }
+
+        td:nth-child(3) { color: #0f0; text-shadow: 0 0 6px #00ff00; } /* R$0,10 */
+        td:nth-child(4) { color: #f00; text-shadow: 0 0 6px #ff0000; } /* R$1,00 */
+        td:nth-child(5) { color: #0f0; text-shadow: 0 0 6px #00ff00; } /* R$5,00 */
+
+        tr:hover td {
+            background-color: rgba(0, 255, 150, 0.15);
+            transition: 0.3s;
+        }
+
+        /* ======== RESPONSIVIDADE ======== */
+        @media (max-width: 576px) {
+            h3 { font-size: 1.4rem; }
+            table { font-size: 13px; }
+        }
+
+        /* ======== RODAPÉ ======== */
+        .footer {
+            font-size: 0.8rem;
+            text-align: center;
+            color: #ccc;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="table-container">
+        <div class="top-link">
+        <a href="/jogo_bicho">🔗 Ir para outra página</a>
+        </div>
+
+        <h3>🐘 Tabela de Prêmios - Jogo do Bicho</h3>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Tipo de Aposta</th>
+                        <th>Multiplicador</th>
+                        <th>R$0,10</th>
+                        <th>R$1,00</th>
+                        <th>R$5,00</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aposta in apostas %}
+                    <tr>
+                        <td>{{ aposta.tipo }}</td>
+                        <td>x{{ aposta.multiplicador }}</td>
+                        <td>R${{ "%.2f"|format(aposta.valores["0.10"]) }}</td>
+                        <td>R${{ "%.2f"|format(aposta.valores["1.00"]) }}</td>
+                        <td>R${{ "%.2f"|format(aposta.valores["5.00"]) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            *Valores ilustrativos com base na tabela tradicional mais usada no Brasil.<br>
+            *Sem fins de apostas reais.
+        </div>
+    </div>
+</body>
+</html>

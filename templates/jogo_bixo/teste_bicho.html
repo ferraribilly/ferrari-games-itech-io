@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bicho Online</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #0b0b0b;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    box-shadow: 0 0 10px #00ff88;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  header img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #00ff88;
+  }
+
+  header h1 {
+    color: #00ff88;
+    font-size: 1.2em;
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+  }
+
+  .menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+  }
+
+  .menu-btn div {
+    width: 25px;
+    height: 3px;
+    background: #00ff88;
+    margin: 5px 0;
+    transition: 0.3s;
+  }
+
+  .menu {
+    position: fixed;
+    top: 0;
+    right: -220px;
+    width: 200px;
+    height: 100%;
+    background: #151515;
+    border-left: 2px solid #00ff88;
+    box-shadow: -2px 0 10px rgba(0,255,136,0.3);
+    display: flex;
+    flex-direction: column;
+    padding-top: 60px;
+    transition: right 0.3s ease;
+    z-index: 999;
+  }
+
+  .menu a {
+    color: #00ff88;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-bottom: 1px solid #222;
+  }
+
+  .menu a:hover {
+    background: #00ff88;
+    color: #000;
+  }
+
+  .menu.ativo {
+    right: 0;
+  }
+
+  .tabela-bichos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    width: 95%;
+    max-width: 600px;
+    margin-top: 20px;
+  }
+
+  .bicho {
+    background: #151515;
+    border: 1px solid #333;
+    border-radius: 12px;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+  }
+
+  .bicho:hover {
+    background: #222;
+    transform: scale(1.05);
+  }
+
+  .bicho img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 5px;
+  }
+
+  .numeros {
+    color: #ffcc00;
+    font-size: 0.85em;
+    margin-bottom: 3px;
+    display: block;
+  }
+
+  .numero {
+    font-weight: bold;
+    color: #00ffcc;
+    display: block;
+  }
+
+  .nome {
+    font-size: 0.9em;
+    color: #ccc;
+  }
+
+  .caixa-aposta {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1c1c1c;
+    border: 2px solid #00ffcc;
+    border-radius: 10px;
+    padding: 20px;
+    display: none;
+    z-index: 100;
+    width: 80%;
+    max-width: 300px;
+  }
+
+  .caixa-aposta input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    background: #2a2a2a;
+    color: #fff;
+    font-size: 16px;
+  }
+
+  .caixa-aposta button {
+    width: 100%;
+    background: #00ff88;
+    color: #000;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 99;
+  }
+
+  .carrinho {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: #00ff88;
+    color: #000;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00ff88;
+  }
+
+  .lista-carrinho {
+    position: fixed;
+    bottom: 70px;
+    right: 10px;
+    background: #111;
+    border: 2px solid #00ff88;
+    border-radius: 12px;
+    padding: 10px;
+    width: 280px;
+    max-height: 60vh;
+    overflow-y: auto;
+    display: none;
+  }
+
+  .aposta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 5px;
+    margin-bottom: 6px;
+  }
+
+  .aposta-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+  }
+
+  .btn-pagar-tudo {
+    background: #00ff88;
+    border: none;
+    color: #000;
+    padding: 8px;
+    border-radius: 6px;
+    width: 100%;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  /* seção minhas apostas */
+  .minhas-apostas {
+    width: 95%;
+    max-width: 600px;
+    margin: 30px 0;
+  }
+
+  .minhas-apostas h2 {
+    color: #00ff88;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .aposta-card {
+    background: #1a1a1a;
+    border: 1px solid #00ff88;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .aposta-card img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+  }
+
+  .aposta-info {
+    flex-grow: 1;
+  }
+
+  .status {
+    font-size: 0.8em;
+    color: #ffcc00;
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <button class="menu-btn" id="btnMenu">
+    <div></div><div></div><div></div>
+  </button>
+  <h1>🐾 Bicho Online</h1>
+  <img src="../../static/9226104.jpg" alt="Logo Bicho Online">
+</header>
+
+<nav class="menu" id="menuLateral">
+  <a href="#">Início</a>
+  <a href="#minhasApostas">Minhas Apostas</a>
+  <a href="#">Resultados</a>
+  <a href="#">Sair</a>
+</nav>
+
+<div class="tabela-bichos" id="listaBichos"></div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="caixa-aposta" id="caixaAposta">
+  <h3 id="bichoSelecionado"></h3>
+  <label for="valorAposta">Valor da aposta (R$):</label>
+  <input type="number" id="valorAposta" placeholder="Digite o valor" min="1" step="0.01">
+  <button onclick="adicionarAoCarrinho()">Adicionar ao carrinho</button>
+</div>
+
+<div class="carrinho" id="carrinhoBtn">🛒</div>
+<div class="lista-carrinho" id="listaCarrinho"></div>
+
+<section class="minhas-apostas" id="minhasApostas">
+  <h2>🎯 Minhas Apostas</h2>
+  <div id="listaMinhasApostas"></div>
+</section>
+
+<script>
+  const bichos = [
+    "Avestruz","Águia","Burro","Borboleta","Cachorro","Cabra","Carneiro","Camelo",
+    "Cobra","Coelho","Cavalo","Elefante","Galo","Gato","Jacaré","Leão","Macaco",
+    "Porco","Pavão","Peru","Touro","Tigre","Urso","Veado","Vaca"
+  ];
+
+  const numeros = [
+    "01-02-03-04","05-06-07-08","09-10-11-12","13-14-15-16","17-18-19-20","21-22-23-24",
+    "25-26-27-28","29-30-31-32","33-34-35-36","37-38-39-40","41-42-43-44","45-46-47-48",
+    "49-50-51-52","53-54-55-56","57-58-59-60","61-62-63-64","65-66-67-68","69-70-71-72",
+    "73-74-75-76","77-78-79-80","81-82-83-84","85-86-87-88","89-90-91-92","93-94-95-96",
+    "97-98-99-00"
+  ];
+
+  const lista = document.getElementById('listaBichos');
+  const listaCarrinho = document.getElementById('listaCarrinho');
+  const listaMinhasApostas = document.getElementById('listaMinhasApostas');
+  const carrinhoBtn = document.getElementById('carrinhoBtn');
+  const caixa = document.getElementById('caixaAposta');
+  const overlay = document.getElementById('overlay');
+  const bichoSelecionado = document.getElementById('bichoSelecionado');
+  const menu = document.getElementById('menuLateral');
+  const btnMenu = document.getElementById('btnMenu');
+
+  let carrinho = [];
+  let minhasApostas = [];
+  let bichoAtual = "";
+
+  btnMenu.onclick = () => menu.classList.toggle('ativo');
+
+  bichos.forEach((nome, i) => {
+    const div = document.createElement('div');
+    div.className = 'bicho';
+    const caminhoImagem = `../../static/bichos/${nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")}.jpg`;
+    div.innerHTML = `
+      <img src="${caminhoImagem}" alt="${nome}">
+      <span class="numeros">${numeros[i]}</span>
+      <span class="numero">${i+1}</span>
+      <span class="nome">${nome}</span>
+    `;
+    div.onclick = () => abrirAposta(nome, caminhoImagem, numeros[i]);
+    lista.appendChild(div);
+  });
+
+  function abrirAposta(nome, img, num) {
+    bichoAtual = { nome, img, num };
+    bichoSelecionado.textContent = `Apostar em: ${nome}`;
+    caixa.style.display = 'block';
+    overlay.style.display = 'block';
+  }
+
+  overlay.onclick = fecharCaixa;
+  function fecharCaixa() {
+    caixa.style.display = 'none';
+    overlay.style.display = 'none';
+    document.getElementById('valorAposta').value = '';
+  }
+
+  function adicionarAoCarrinho() {
+    const valor = document.getElementById('valorAposta').value;
+    if (!valor || valor <= 0) {
+      alert("Digite um valor válido!");
+      return;
+    }
+
+    carrinho.push({ ...bichoAtual, valor });
+    atualizarCarrinho();
+    fecharCaixa();
+  }
+
+  function atualizarCarrinho() {
+    listaCarrinho.innerHTML = "";
+    carrinho.forEach((aposta) => {
+      const item = document.createElement('div');
+      item.className = 'aposta-item';
+      item.innerHTML = `
+        <img src="${aposta.img}" alt="${aposta.nome}">
+        <span>${aposta.nome}</span>
+        <span>R$${parseFloat(aposta.valor).toFixed(2)}</span>
+      `;
+      listaCarrinho.appendChild(item);
+    });
+
+    if (carrinho.length > 0) {
+      const btnPagarTudo = document.createElement('button');
+      btnPagarTudo.className = 'btn-pagar-tudo';
+      btnPagarTudo.textContent = `Pagar R$${totalCarrinho().toFixed(2)}`;
+      btnPagarTudo.onclick = pagarTudo;
+      listaCarrinho.appendChild(btnPagarTudo);
+    }
+  }
+
+  function totalCarrinho() {
+    return carrinho.reduce((acc, item) => acc + parseFloat(item.valor), 0);
+  }
+
+  function pagarTudo() {
+    const data = new Date().toLocaleString();
+    carrinho.forEach(aposta => {
+      minhasApostas.push({
+        ...aposta,
+        data,
+        status: "Aberta"
+      });
+    });
+    carrinho = [];
+    atualizarCarrinho();
+    listaCarrinho.style.display = 'none';
+    atualizarMinhasApostas();
+    alert("Pagamento realizado com sucesso!");
+  }
+
+  function atualizarMinhasApostas() {
+    listaMinhasApostas.innerHTML = "";
+    if (minhasApostas.length === 0) {
+      listaMinhasApostas.innerHTML = "<p style='text-align:center;color:#777;'>Nenhuma aposta feita ainda.</p>";
+      return;
+    }
+    minhasApostas.forEach(aposta => {
+      const card = document.createElement('div');
+      card.className = 'aposta-card';
+      card.innerHTML = `
+        <img src="${aposta.img}" alt="${aposta.nome}">
+        <div class="aposta-info">
+          <strong>${aposta.nome}</strong><br>
+          Valor: R$${parseFloat(aposta.valor).toFixed(2)}<br>
+          <small>${aposta.data}</small><br>
+          <span class="status">Status: ${aposta.status}</span>
+        </div>
+      `;
+      listaMinhasApostas.appendChild(card);
+    });
+  }
+
+  carrinhoBtn.onclick = () => {
+    listaCarrinho.style.display = listaCarrinho.style.display === 'block' ? 'none' : 'block';
+  };
+</script>
+
+</body>
+</html>

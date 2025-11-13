@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Acesso Administradores Login (CPF) + Registro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Segoe UI, Roboto, "Helvetica Neue", Arial; }
+    html, body { height: 100%; }
+    body {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #0f0f11; color: #fff; padding: 20px;
+    }
+    .wrap {
+      width: 100%; max-width: 500px; position: relative;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 28px; border-radius: 14px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    }
+    .logo { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+    .logo img { width: 100px; height: 100px; border-radius: 100%; object-fit: contain; margin-bottom: 10px; }
+    .logo h1 { font-size: 1.4rem; color: #fff; text-align: center; font-weight: 600; }
+    .typing-effect {
+      font-family: monospace; white-space: nowrap; overflow: hidden;
+      border-right: .15em solid orange; width: 0;
+      animation: typing 3.5s steps(30, end) forwards, blinking .75s step-end infinite;
+    }
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    @keyframes blinking { from, to { border-color: transparent } 50% { border-color: orange } }
+    .card { width: 100%; }
+    h2 { font-size: 1.1rem; margin-bottom: 12px; text-align: center; letter-spacing: 0.2px; }
+    .field { margin-bottom: 12px; }
+    label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: rgba(255,255,255,0.85); }
+    input[type="text"], input[type="email"], input[type="password"], input[type="date"] {
+      width: 100%; padding: 11px 14px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03);
+      color: #fff; font-size: 0.98rem; outline: none;
+    }
+    input::placeholder { color: rgba(255,255,255,0.45); }
+    input:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.22); }
+    .btn {
+      display: inline-block; padding: 10px 16px; border-radius: 10px;
+      border: none; cursor: pointer; font-weight: 600; font-size: 0.98rem;
+      letter-spacing: 0.2px;
+    }
+    .primary { background: linear-gradient(45deg, #ff357a, #fff172); color: #111; }
+    .links { display: flex; justify-content: center; margin-top: 10px; }
+    .links a { color: #cfcfcf; text-decoration: none; font-size: 0.9rem; }
+    .message { margin-top: 8px; padding: 8px; border-radius: 8px; display: none; }
+    .msg-success { background: rgba(0,255,120,0.15); color: #80ffb0; }
+    .msg-error { background: rgba(255,0,0,0.15); color: #ff8080; }
+    @media (max-width: 480px) { .wrap { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">
+      <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1762726173/logo_dna0xx.jpg" alt="Logo do sistema">
+      <p class="typing-effect">Ferrari Games itech.io</p>
+      <p class="typing-effect">Administração do Sistema</p>
+    </div>
+
+    <section class="card" id="loginSection">
+      <p class="typing-effect">Login Administradores — apenas CPF</p>
+      <form id="loginAdminCPF" autocomplete="on">
+        <div class="field">
+          <label for="cpf_login">CPF</label>
+          <input id="cpf_login" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required oninput="formatCPF(this)">
+        </div>
+        <div class="field">
+          <button type="submit" class="btn primary" style="width:100%">Entrar</button>
+        </div>
+        <div id="loginCpfMsg" class="message"></div>
+        <div class="links">
+          <a href="#registerSection" onclick="toggleSection('register')">Não tem conta? Registre-se</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" id="registerSection" style="display:none">
+      <h2>Registro Administrador</h2>
+      <form id="registerAdminForm" autocomplete="on">
+        <div class="field"><label for="nome">Nome</label><input id="nome" name="nome" type="text" placeholder="Nome" required></div>
+        <div class="field"><label for="sobrenome">Sobrenome</label><input id="sobrenome" name="sobrenome" type="text" placeholder="Sobrenome" required></div>
+        <div class="field"><label for="cpf_admin">CPF</label><input id="cpf_admin" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required oninput="formatCPF(this)"></div>
+        <div class="field"><label for="data_nascimento_admin">Data de nascimento</label><input id="data_nascimento_admin" name="data_nascimento" type="date" required></div>
+        <div class="field"><label for="email_admin">Email</label><input id="email_admin" name="email" type="email" placeholder="seu@exemplo.com" required></div>
+        <div class="field"><label for="public_key">Public Key</label><input id="public_key" name="public_key" type="text" placeholder="Chave Pública" required></div>
+        <div class="field"><label for="senha_admin">Senha</label><input id="senha_admin" name="senha" type="password" placeholder="Senha" required></div>
+        <div class="field">
+          <button type="submit" class="btn primary" style="width:100%">Registrar Admin</button>
+        </div>
+        <div id="registerAdminMsg" class="message"></div>
+        <div class="links">
+          <a href="#loginSection" onclick="toggleSection('login')">Já tem conta? Faça login</a>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    function onlyDigits(s){ return s.replace(/\D/g,''); }
+    function formatCPF(el){
+      const v = onlyDigits(el.value).slice(0,11);
+      let out='';
+      if(v.length<=3) out=v;
+      else if(v.length<=6) out=v.slice(0,3)+'.'+v.slice(3);
+      else if(v.length<=9) out=v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6);
+      else out=v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6,9)+'-'+v.slice(9);
+      el.value=out;
+    }
+    function cleanCPF(v){ return onlyDigits(v); }
+    function showMessage(elId,msg,isError){
+      const el=document.getElementById(elId);
+      el.style.display='block';
+      el.className='message '+(isError?'msg-error':'msg-success');
+      el.textContent=msg;
+      setTimeout(()=>{el.style.display='none';},6000);
+    }
+    function toggleSection(section){
+      document.getElementById('loginSection').style.display = section==='login'?'block':'none';
+      document.getElementById('registerSection').style.display = section==='register'?'block':'none';
+    }
+
+    // LOGIN ADMIN - APENAS CPF
+    document.getElementById('loginAdminCPF').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const cpfRaw = cleanCPF(document.getElementById('cpf_login').value);
+      if(cpfRaw.length!==11){ showMessage('loginCpfMsg','CPF inválido.',true); return; }
+
+      try{
+        const res = await fetch('/login_admin', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({cpf:cpfRaw})
+        });
+
+        const text = await res.text(); // lê a resposta como texto
+        let data;
+        try { data = JSON.parse(text); } catch(e){ data = null; }
+
+        if(res.ok && data && data.success){
+          showMessage('loginCpfMsg','Login bem-sucedido.',false);
+          setTimeout(()=> window.location.href = data.redirect || '/painel_admin', 1000);
+        } else if(res.ok && !data){
+          console.warn('Resposta não JSON:', text);
+          showMessage('loginCpfMsg','Erro inesperado: resposta inválida do servidor.',true);
+        } else {
+          const msg = data?.message || 'Erro no login.';
+          showMessage('loginCpfMsg',msg,true);
+        }
+
+      }catch(err){
+        showMessage('loginCpfMsg','Erro de rede: '+err.message,true);
+      }
+    });
+
+    // REGISTRO ADMIN
+    document.getElementById('registerAdminForm').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const p = {
+        nome: document.getElementById('nome').value.trim(),
+        sobrenome: document.getElementById('sobrenome').value.trim(),
+        cpf: cleanCPF(document.getElementById('cpf_admin').value),
+        data_nascimento: document.getElementById('data_nascimento_admin').value,
+        email: document.getElementById('email_admin').value.trim(),
+        public_key: document.getElementById('public_key').value.trim(),
+        senha: document.getElementById('senha_admin').value.trim()
+      };
+      if(p.cpf.length!==11){ showMessage('registerAdminMsg','CPF inválido.',true); return; }
+
+      try{
+        const res = await fetch('/registro_admin', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(p)
+        });
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch(e){ data = null; }
+
+        if(res.status===201 || (data && data.success)){
+          showMessage('registerAdminMsg','Administrador registrado com sucesso.',false);
+        } else {
+          const msg = data?.message || 'Erro ao registrar administrador.';
+          showMessage('registerAdminMsg',msg,true);
+        }
+
+      }catch(err){
+        showMessage('registerAdminMsg','Erro de rede: '+err.message,true);
+      }
+    });
+  </script>
+</body>
+</html>

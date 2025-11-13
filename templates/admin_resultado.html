@@ -1,0 +1,20 @@
+<!-- templates/admin_resultado.html -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Resultado - {{ jogo.time_casa }} x {{ jogo.time_visitante }}</title>
+</head>
+<body>
+  <h1>Inserir Resultado</h1>
+  <p><a href="{{ url_for('index_bolao') }}">Voltar</a></p>
+
+  <h3>{{ jogo.time_casa }} x {{ jogo.time_visitante }}</h3>
+
+  <form method="post">
+    <label>Gols casa: <input type="number" name="resultado_casa" value="{{ jogo.resultado_casa or '' }}" required></label><br><br>
+    <label>Gols visitante: <input type="number" name="resultado_visitante" value="{{ jogo.resultado_visitante or '' }}" required></label><br><br>
+    <button type="submit">Salvar resultado e recalcular pontos</button>
+  </form>
+</body>
+</html>

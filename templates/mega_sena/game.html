@@ -1,0 +1,495 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorteio da Sorte</title>
+<style>
+body {  
+  margin: 0;  
+  min-height: 100vh;  
+  display: flex;  
+  justify-content: center;  
+  align-items: flex-start;  
+  background-image: 
+    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), /* camada escura */
+    url('https://us.123rf.com/450wm/serafima82/serafima821707/serafima82170700070/82585828-lottery-jackpot-with-tickets-wheel-coins-and-balls.jpg?ver=6');  
+  background-size: cover;  
+  background-position: center;  
+  background-repeat: no-repeat;  
+  padding: 24px 12px;  
+  font-family: Arial, sans-serif;  
+  scale: 80%;  
+  
+  position: relative;  
+}  
+
+
+/* animated shapes (neon multicolor) */
+.wrap i {
+  position: absolute;
+  inset: 0;
+  border: 5px solid transparent;
+  pointer-events: none;
+  transition: 0.5s;
+  filter: drop-shadow(0 0 10px var(--clr))
+          drop-shadow(0 0 20px var(--clr))
+          drop-shadow(0 0 40px var(--clr));
+}
+
+/* cores neon diferentes e formas orgânicas */
+.wrap i:nth-child(1) {
+  border-radius: 25% 75% 41% 59% / 51% 36% 64% 49%;
+  animation: rotA 8s linear infinite;
+  --clr: #00fff2; /* ciano neon */
+  border-color: var(--clr);
+}
+.wrap i:nth-child(2) {
+  border-radius: 42% 58% 84% 16% / 51% 60% 40% 49%;
+  animation: rotB 6s linear infinite;
+  --clr: #ff00ff; /* magenta neon */
+  border-color: var(--clr);
+}
+.wrap i:nth-child(3) {
+  border-radius: 58% 42% 64% 36% / 26% 60% 40% 74%;
+  animation: rotC 10s linear infinite;
+  --clr: #00ff0a; /* verde neon */
+  border-color: var(--clr);
+}
+
+/* animações */
+@keyframes rotA { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
+@keyframes rotB { 
+  0% { transform: rotate(360deg); } 
+  100% { transform: rotate(0deg); } 
+}
+@keyframes rotC { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(-360deg); } 
+}
+
+/* brilho ao passar o mouse */
+.wrap:hover i {
+  border-width: 6px;
+  filter: drop-shadow(0 0 25px var(--clr))
+          drop-shadow(0 0 45px var(--clr))
+          drop-shadow(0 0 70px var(--clr));
+}
+
+.menu {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+}
+.menu button {
+  background: #fff;
+  color: black;
+  width: 60px;
+  height: 60px;
+  border: 1px solid white;
+  padding: 10px 12px;
+  border-radius: 100%;
+  font-size: 18px;
+  margin-top: 30px;
+  cursor: pointer;
+}
+.menu-lista {
+  display: none;
+  background: rgba(0,0,0,0.85);
+  border-radius: 8px;
+  margin-top: 6px;
+  padding: 10px;
+  width: 160px;
+}
+.menu-lista a {
+  display: block;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 15px;
+}
+.menu-lista a:hover {
+  background: #2b6adf;
+}
+.page {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.container {
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background-color: transparent;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+}
+.bola {
+  width: 50px;
+  height: 50px;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: black;
+  user-select: none;
+  box-sizing: border-box;
+  transition: all 0.3s;
+}
+.bola.sorteada {
+  background-color: #55f !important;
+  color: #fff !important;
+}
+.girando-rapido {
+  animation: girarRapido 0.25s linear infinite;
+}
+@keyframes girarRapido {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.bola.ticket {
+  background-color: #2b6adf;
+  color: white;
+}
+.bola::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  width: 60px;
+  height: 8px;
+  background-color: rgba(0,0,0,0.18);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#girar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(145deg, #2b6adf, #1a4bb8);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-right: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  animation: girarBotao 3s linear infinite;
+}
+
+/* Animação girando de leve */
+@keyframes girarBotao {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.tabela {
+  background: rgba(255, 255, 255, 0.5); /* Fundo branco com 50% de transparência */
+  backdrop-filter: blur(1px); /* Aplica o blur no fundo atrás do elemento */
+  -webkit-backdrop-filter: blur(5px); /* Compatibilidade com Safari */
+   padding: 8px;
+   border-radius: 6px;
+   width: auto;
+   max-width: 1000px;
+   overflow: auto;
+	               }
+.tabela table {
+   width: 100%;
+   border-collapse: collapse;
+   table-layout: fixed;
+}
+}
+}
+.td {
+  padding:6px;
+  text-align:center;
+}
+.bolinha {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  line-height: 40px;
+  text-align: center;
+  background: #ccc;
+  color: transparent;
+  font-weight: bold;
+  transition: 0.3s;
+}
+.bolinha.sorteada {
+  background: #55f;
+  color: #fff;
+}
+#ultimos_numeros {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+#ultimos_numeros .bola_ultima {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #2b6adf;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+.placar {
+  display:;
+  position:fixed;
+  border-radius: 10px;
+  top:0; left:0;
+  margin-top: -120px;
+  width:100%; height:auto;
+  background:rgba(0,0,0,0.6);
+  justify-content:center;
+  align-items:center;
+  z-index:100;
+  text-align: center;
+}
+.placar strong {
+	color: #fff;
+	font-size: 1.5em:
+}
+
+.ticketBola {
+  display:inline-block;
+  width:40px; height:40px;
+  border-radius:50%;
+  background:#ccc;
+  margin:5px;
+  line-height:40px;
+  cursor:pointer;
+}
+.ticketBola.filled {
+  background:#2b6adf;
+  color:#fff;
+}
+#resultadoPerda {
+  display:none;
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.7);
+  justify-content:center;
+  align-items:center;
+  z-index:200;
+}
+#resultadoPerda div {
+  background: #fff;
+  padding:20px;
+  border-radius:10px;
+  text-align:center;
+  font-size:18px;
+}
+</style>
+</head>
+<body>
+<div class="wrap" aria-live="polite">
+        <i style="--clr:#ff0057;"></i>
+        <i style="--clr:#fffd44;"></i>
+        <i style="--clr:#00ff0a;"></i>
+</div>
+        
+<div class="menu">
+  <button id="menuBtn">☰</button>
+  <div class="menu-lista" id="menuLista">
+    <a href="/meus_dados">Meus Dados</a>
+    <a href="/home">Comprar Tickets</a>
+    <a href="/meus_tickets/comprados">Meus Tickets</a>
+    <a href="/logout">Sair da Conta</a>
+  </div>
+</div>
+
+<audio id="somAmbiente" src="static/sounds/adventure-beat-effect-413144.mp3" loop autoplay></audio>
+<div class="placar">
+  <div>
+  <h4>Mega da Sorte 🍀</h4>
+  <strong id="premiacao">🪙Premio:R$ 1.0000,00</strong>
+  </div>
+  <div>
+  <strong id="acumulado">🪙Acumulado:R$ 0,00</strong>
+  </div>
+  <div>
+  <strong id="data_sorteio">🚀Data sorteio:31/12/2025</strong>
+  </div>
+  <div>
+  <strong id="horario">🌐Horario: 00:00:00</strong>
+  </div>
+  </div>
+<div class="page">
+
+  
+  <div class="container" id="globo"></div>
+  <div id="ultimos_numeros"></div>
+  <div>
+  
+
+  <div class="tabela">
+  
+    <table border="0">
+      <tbody>
+        <script>
+          for(let i=1;i<=90;i++){
+            if(i%10==1)document.write("<tr>");
+            document.write("<td class='td'><span class='bolinha' value='"+i+"'>"+i+"</span></td>");
+            if(i%10==0)document.write("</tr>");
+          }
+        </script>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div>
+         <button id="girar">Sortear</button>
+  <!--         <button id="comprarTicket">Comprar Ticket</button>-->
+     </div>
+
+</div>
+
+<div id="resultadoPerda">
+  <div>
+    😔 Não fique triste! Pode tentar de novo.
+<!--    <button id="comprarTicket">Comprar Ticket</button>-->
+  </div>
+</div>
+
+<script>
+//menu
+const menuBtn = document.getElementById('menuBtn');
+const menuLista = document.getElementById('menuLista');
+menuBtn.addEventListener('click', ()=>{
+  menuLista.style.display = menuLista.style.display === 'block' ? 'none' : 'block';
+});
+//bolas dentro do globo
+const totalBolas = 60;
+const container = document.getElementById('globo');
+let sorteados = [];
+const bolinhas = [];                                                                                     
+function criarBolinhas(){
+  container.innerHTML = '';
+  bolinhas.length = 0;
+  const cw = container.clientWidth;
+  const ch = container.clientHeight;
+  const centerX = cw/2;
+  const centerY = ch/2;
+  const radius = Math.min(cw,ch)/2 - 25;
+
+  for(let i=1;i<=totalBolas;i++){
+    const bola = document.createElement('div');
+    bola.className = 'bola';
+    bola.textContent = i;
+    container.appendChild(bola);
+
+    const angle = Math.random() * 2 * Math.PI;
+    const r = Math.sqrt(Math.random()) * radius;
+    const x = centerX + r*Math.cos(angle) - 25;
+    const y = centerY + r*Math.sin(angle) - 25;
+    const vx = (Math.random()-0.5)*4;
+    const vy = (Math.random()-0.5)*4;
+    bolinhas.push({el:bola, x:x, y:y, vx:vx, vy:vy});
+    bola.style.left = x+'px';
+    bola.style.top = y+'px';
+  }
+}
+
+let animando = false;
+function animar(){
+  const cw = container.clientWidth;
+  const ch = container.clientHeight;
+  const centerX = cw/2;
+  const centerY = ch/2;
+  const radius = Math.min(cw,ch)/2 - 25;
+
+  bolinhas.forEach(b=>{
+    b.x += b.vx;
+    b.y += b.vy;
+    const dx = (b.x+25)-centerX;
+    const dy = (b.y+25)-centerY;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    if(dist>radius){
+      const angle = Math.atan2(dy,dx);
+      const pushX = centerX+radius*Math.cos(angle)-25;
+      const pushY = centerY+radius*Math.sin(angle)-25;
+      b.x = pushX; b.y = pushY;
+      b.vx*=-0.8; b.vy*=-0.8;
+    }
+    b.vx = Math.max(Math.min(b.vx,6),-6);
+    b.vy = Math.max(Math.min(b.vy,6),-6);
+    b.el.style.left = b.x+'px';
+    b.el.style.top = b.y+'px';
+  });
+  if(animando) requestAnimationFrame(animar);
+}
+
+function atualizarUltimos(){
+  const ultimos = sorteados.slice(-6);
+  const div = document.getElementById('ultimos_numeros');
+  div.innerHTML = '';
+  ultimos.forEach(n=>{
+    const bola = document.createElement('div');
+    bola.className = 'bola_ultima';
+    bola.textContent = n;
+    div.appendChild(bola);
+  });
+}
+
+function sortearNumero(){
+  let numero;
+  do{
+    numero = Math.floor(Math.random()*totalBolas)+1;
+  }while(sorteados.includes(numero));
+  sorteados.push(numero);
+  bolinhas[numero-1].el.classList.add('sorteada');
+  const td = document.querySelectorAll('.bolinha')[numero-1];
+  td.classList.add('sorteada');
+  atualizarUltimos();
+  const msg = new SpeechSynthesisUtterance();
+  msg.text = "Número sorteado: "+numero;
+  msg.lang = "pt-BR"; msg.rate=1.3; msg.pitch=0.5;
+  window.speechSynthesis.speak(msg);
+}
+//clicar e girar
+document.getElementById('girar').addEventListener('click', ()=>{
+  animando = true;
+  animar();
+  sortearNumero();
+});
+
+window.addEventListener('resize', ()=>{ criarBolinhas(); });
+criarBolinhas();
+// Globo girando
+function girarGlobo() {
+  const globo = document.querySelector('#globo'); // precisa existir no HTML
+  if (!globo) return;
+  // aplica uma classe que faz uma animação de giro rápido (defina no CSS)
+  globo.classList.add('girando-rapido');
+  // remove a classe após 6s (quando o globo "para")
+  setTimeout(() => {
+    globo.classList.remove('girando-rapido');
+  }, 6000);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,202 @@
+<html>    
+    
+<head>    
+  <meta charset="UTF-8">    
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css">    
+  <link rel="stylesheet" href="../static/css/style.css">    
+  <link rel="shortcut icon" href="../static/img/favicon.png">    
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">    
+  <title>Gerador Mega-Sorte</title>    
+  <style>    
+    /*estilo css*/    
+    body {    
+      margin: 0;    
+      min-height: 100vh;    
+      display: flex;    
+      justify-content: center;    
+      align-items: flex-start;    
+      background-image: url('https://us.123rf.com/450wm/serafima82/serafima821707/serafima82170700070/82585828-lottery-jackpot-with-tickets-wheel-coins-and-balls.jpg?ver=6');    
+      background-size: cover;    
+      background-position: center;    
+      background-repeat: no-repeat;    
+      padding: 24px 12px;    
+      font-family: Arial, sans-serif;    
+    }  
+
+    
+
+    
+    h1 {    
+      color: #209869;    
+    }    
+    
+    .container {    
+      text-align: center;    
+      padding-top: 30px;    
+      padding-bottom: 30px;    
+    }    
+    
+    .form {    
+        max-width: 570px;    
+        display: flex;    
+        align-items: center;    
+        margin: auto;    
+        margin-top: 20px;    
+    }    
+    
+    #jogos {    
+      background-color: #fafafa;    
+      max-width: 400px;    
+      margin: 20px auto;    
+    }    
+    
+    #jogos div {    
+      border: 1px solid gainsboro;    
+    }    
+    
+    #jogos i {    
+      display: inline-block;    
+      margin-right: 10px;    
+      color: #209869;    
+      font-weight: 600;    
+      font-style: normal;    
+    }    
+    
+    #jogos span {    
+      background-color: #209869;    
+      font-size: 20px;    
+      color: white;    
+      border-radius: 100%;    
+      display: inline-block;    
+      padding: 5px 10px;    
+      margin: 10px 5px;    
+    }    
+    
+    .copy {    
+      font-size: 14px;    
+      color: gray;    
+      font-style: italic;    
+    }    
+    
+    .copy a {    
+      color: gray;    
+      border-bottom: 1px dotted gray;    
+    }    
+    
+    .copy a:hover {    
+      text-decoration: none;    
+      border-color: #209869;    
+      color: #209869;    
+    }    
+    
+  </style>    
+</head>    
+    
+<body>    
+  <div class="container">    
+    <h1>Gerador Mega-Sorte</h1>   
+    <h5>Quantos jogos você quer gerar?</h5>    
+    
+    <div class="form">    
+      <input onkeyup="enter(event)" min="1" id="qtd" type="number" value="1" class="form-control" placeholder="Qtd. de jogos">    
+      <input readonly id="amount_quantity" type="text" value="R$ 0.01" class="form-control" style="font-weight:bold; color:#209869;">    
+      <button onclick="gerarJogos()" class="btn btn-success ml-3">Gerar</button>    
+      <button onclick="limpar()" class="btn btn-light ml-2">Limpar</button>    
+      <button href={{ link_pagamento }}  class="btn btn-success ml-3">Comprar</button>    
+      
+    </div>    
+    
+    <p class="mt-3">    
+      <a href="/demo" class="btn btn-link" style="color:#209869; font-weight:bold;">Como funciona</a>    
+    </p>    
+    
+    <div id="jogos"></div>    
+    
+    <div class="copy">    
+      Desenvolvido por <a href="https://ferrari-games-online.onrender.com" target="_blank">Ferrari</a>    
+    </div>    
+  </div>    
+    
+  <script>
+    // Elementos
+    let divJogos = document.getElementById('jogos');
+    let inpQtd = document.getElementById('qtd');
+    let inpValor = document.getElementById('amount_quantity');
+  
+    // Atualiza o valor sempre que a quantidade muda
+    inpQtd.addEventListener('input', atualizarValor);
+  
+    function atualizarValor() {
+      let qtd = parseInt(inpQtd.value) || 0;
+      let total = 0;
+  
+      // Promoção: 3 jogos = R$0,01 / demais = R$0,1 cada
+      if (qtd >= 3) {
+        let grupos = Math.floor(qtd / 3);
+        let resto = qtd % 3;
+        total = (grupos * 10) + (resto * 0.1);
+      } else {
+        total = qtd * 0.1;
+      }
+  
+      inpValor.value = "R$ " + total.toFixed(2).replace('.', ',');
+    }
+  
+    function limpar() {
+      divJogos.innerHTML = '';
+    }
+  
+    function gerarJogos() {
+      let jogos = [];
+      let qtd = inpQtd.value;
+  
+      for (let i = 0; i < qtd; i++) {
+        let jogo;
+        do {
+          jogo = gerarJogo();
+        } while (jogos.some(j => JSON.stringify(j) === JSON.stringify(jogo)));
+  
+        jogos.push(jogo);
+      }
+  
+      limpar();
+  
+      jogos.forEach((jogo, key) => {
+        let element = document.createElement('div');
+        let count = document.createElement('i');
+        count.innerHTML = key + 1;
+        element.appendChild(count);
+  
+        jogo.forEach(num => {
+          let span = document.createElement('span');
+          span.innerHTML = num;
+          element.appendChild(span);
+        });
+  
+        divJogos.appendChild(element);
+      });
+    }
+  
+    function gerarJogo() {
+      let jogo = [];
+      for (let num = 0; num < 6; num++) {
+        let resultado;
+        do {
+          resultado = Math.floor(Math.random() * 60) + 1;
+          resultado = resultado.toString().padStart(2, '0');
+        } while (jogo.includes(resultado));
+        jogo.push(resultado);
+      }
+      return jogo.sort();
+    }
+  
+    function enter(event) {
+      if (event.keyCode === 13) {
+        gerarJogos();
+      }
+    }
+  
+  </script>
+</body>    
+    
+</html>    

@@ -1,0 +1,57 @@
+<!-- templates/jogos.html -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;padding:20px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border:1px solid #ddd;text-align:left}
+    .actions a{margin-right:8px}
+  </style>
+</head>
+<body>
+  <h1>Bolão - Jogos</h1>
+  <p>
+    <a href="{{ url_for('sync_jogos') }}">Sincronizar jogos (Série A)</a> |
+    <a href="{{ url_for('ranking') }}">Ranking</a>
+  </p>
+
+  {% if jogos %}
+    <table>
+      <thead>
+        <tr>
+          <th>Data/Hora (UTC)</th>
+          <th>Casa</th>
+          <th>Fora</th>
+          <th>Status / Placar</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for j in jogos %}
+        <tr>
+          <td>{{ j.data_hora.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>{{ j.time_casa }}</td>
+          <td>{{ j.time_visitante }}</td>
+          <td>
+            {% if j.resultado_casa is not none and j.resultado_visitante is not none %}
+              {{ j.resultado_casa }} - {{ j.resultado_visitante }}
+            {% else %}
+              Sem resultado
+            {% endif %}
+          </td>
+          <td class="actions">
+            <a href="{{ url_for('fazer_palpite', jogo_id=j.id) }}">Palpitar</a>
+            <a href="{{ url_for('admin_resultado', jogo_id=j.id) }}">(admin) Resultado</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Nenhum jogo cadastrado. Clique em "Sincronizar jogos" para baixar da API.</p>
+  {% endif %}
+</body>
+</html>

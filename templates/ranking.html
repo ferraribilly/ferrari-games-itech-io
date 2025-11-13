@@ -1,0 +1,27 @@
+<!-- templates/ranking.html -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ranking do Bolão</title>
+</head>
+<body>
+  <h1>Ranking</h1>
+  <p><a href="{{ url_for('index_bolao') }}">Voltar</a></p>
+
+  <table border="1" cellpadding="6">
+    <thead>
+      <tr><th>Posição</th><th>Usuário</th><th>Pontos</th></tr>
+    </thead>
+    <tbody>
+      {% for i, row in enumerate(ranking, start=1) %}
+        <tr>
+          <td>{{ i }}</td>
+          <td>{{ row.usuario.nome }} {{ row.usuario.sobrenome }}</td>
+          <td>{{ row.pontos }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

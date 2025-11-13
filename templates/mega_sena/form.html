@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Login (CPF) + Registro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* Reset / base */
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI, Roboto, "Helvetica Neue", Arial;}
+    html,body{height:100%}
+    body{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#0f0f11;
+      color:#fff;
+      padding:20px;
+    }
+
+    /* Container geral */
+    .wrap{
+      width:100%;
+      max-width:980px;
+      position:relative;
+      display:flex;
+      gap:28px;
+      align-items:stretch;
+      justify-content:center;
+      padding:28px;
+    }
+
+    /* animated shapes (neon multicolor) */
+    .wrap i {
+      position: absolute;
+      inset: 0;
+      border: 5px solid transparent;
+      pointer-events: none;
+      transition: 0.5s;
+      filter: drop-shadow(0 0 10px var(--clr))
+              drop-shadow(0 0 20px var(--clr))
+              drop-shadow(0 0 40px var(--clr));
+    }
+    
+    /* cores neon diferentes e formas orgânicas */
+    .wrap i:nth-child(1) {
+      border-radius: 25% 75% 41% 59% / 51% 36% 64% 49%;
+      animation: rotA 8s linear infinite;
+      --clr: #00fff2; /* ciano neon */
+      border-color: var(--clr);
+    }
+    .wrap i:nth-child(2) {
+      border-radius: 42% 58% 84% 16% / 51% 60% 40% 49%;
+      animation: rotB 6s linear infinite;
+      --clr: #ff00ff; /* magenta neon */
+      border-color: var(--clr);
+    }
+    .wrap i:nth-child(3) {
+      border-radius: 58% 42% 64% 36% / 26% 60% 40% 74%;
+      animation: rotC 10s linear infinite;
+      --clr: #00ff0a; /* verde neon */
+      border-color: var(--clr);
+    }
+    
+    /* animações */
+    @keyframes rotA { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+    @keyframes rotB { 
+      0% { transform: rotate(360deg); } 
+      100% { transform: rotate(0deg); } 
+    }
+    @keyframes rotC { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(-360deg); } 
+    }
+    
+    /* brilho ao passar o mouse */
+    .wrap:hover i {
+      border-width: 6px;
+      filter: drop-shadow(0 0 25px var(--clr))
+              drop-shadow(0 0 45px var(--clr))
+              drop-shadow(0 0 70px var(--clr));
+    }
+
+    /* Cards layout */
+    .card{
+      position:relative;
+      z-index:2;
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.06);
+      padding:22px;
+      border-radius:14px;
+      box-shadow:0 8px 30px rgba(0,0,0,0.6);
+      width:100%;
+      min-width:260px;
+    }
+
+    /* Two-column on wide screens */
+    .cards{
+      display:flex;
+      gap:20px;
+      width:100%;
+    }
+
+    /* Header */
+    .card h2{
+      font-size:1.2rem;
+      margin-bottom:12px;
+      letter-spacing:0.2px;
+    }
+
+    /* Form controls */
+    .field{
+      margin-bottom:12px;
+    }
+    label{display:block;font-size:0.8rem;margin-bottom:6px;color:rgba(255,255,255,0.85)}
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"]{
+      width:100%;
+      padding:11px 14px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.02);
+      color:#fff;
+      font-size:0.98rem;
+      outline:none;
+    }
+    input::placeholder{color:rgba(255,255,255,0.45)}
+    input:focus{box-shadow:0 6px 18px rgba(0,0,0,0.6);border-color:rgba(255,255,255,0.22)}
+
+    /* Buttons */
+    .btn{
+      display:inline-block;
+      padding:10px 16px;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+      font-size:0.98rem;
+      letter-spacing:0.2px;
+    }
+    .primary{
+      background:linear-gradient(45deg,#ff357a,#fff172);
+      color:#111;
+    }
+    .secondary{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.12);
+      color:#fff;
+    }
+
+    /* Links area */
+    .links{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:0.9rem}
+    .links a{color:#cfcfcf;text-decoration:none}
+
+    /* Small helper text */
+    .muted{font-size:0.82rem;color:rgba(255,255,255,0.6)}
+
+    /* CPF input narrower */
+    .cpf-row{display:flex;gap:10px;align-items:center}
+    .cpf-row .small{flex:0 0 180px}
+
+    /* Responsividade */
+    @media (max-width:880px){
+      .wrap{padding:18px}
+      .cards{flex-direction:column}
+    }
+    @media (max-width:420px){
+      .card{padding:16px;border-radius:12px}
+      .cpf-row .small{flex:0 0 145px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" aria-live="polite">
+    <i></i><i></i><i></i>
+
+    <div class="cards" role="main">
+      <!-- Login (apenas CPF) -->
+      <section class="card" aria-labelledby="login-cpf-title">
+        <h2 id="login-cpf-title">Login — apenas CPF</h2>
+
+        <!-- Form de login: apenas cpf -->
+        <form id="loginCpfForm" method="POST" action="{{ url_for('main.login') }}" autocomplete="on" onsubmit="stripCPF(this)">
+          <div class="field cpf-row">
+            <div class="small">
+              <label for="cpf_login">CPF</label>
+              <input id="cpf_login" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required
+                     aria-describedby="cpfHelp" oninput="formatCPF(this)">
+            </div>
+            <div style="flex:1">
+              <label for="dummy">Ação</label>
+              <div style="display:flex;gap:8px;">
+                <button type="submit" class="btn primary">Entrar</button>
+                <button type="button" class="btn secondary" onclick="document.getElementById('registerSection').scrollIntoView({behavior:'smooth'})">Registrar</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="cpfHelp" class="muted" style="margin-top:8px">
+            Informe somente seu CPF (somente números; pontos e traço são opcionais — serão tratados).
+          </div>
+        </form>
+      </section>
+
+      <!-- Registro -->
+      <section class="card" id="registerSection" aria-labelledby="registro-title">
+        <h2 id="registro-title">Registro</h2>
+
+        <form id="registroForm" method="POST" action="{{ url_for('main.adicionar_usuario') }}" autocomplete="on" onsubmit="stripCPF(this)">
+          <div class="field">
+            <label for="nome">Nome</label>
+            <input id="nome" name="nome" type="text" placeholder="Nome" required>
+          </div>
+
+          <div class="field">
+            <label for="sobrenome">Sobrenome</label>
+            <input id="sobrenome" name="sobrenome" type="text" placeholder="Sobrenome" required>
+          </div>
+
+          <div class="field">
+            <label for="cpf">CPF</label>
+            <input id="cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required oninput="formatCPF(this)">
+          </div>
+
+          <div class="field">
+            <label for="data_nascimento">Data de nascimento</label>
+            <input id="data_nascimento" name="data_nascimento" type="date" required>
+          </div>
+
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" placeholder="seu@exemplo.com" required>
+          </div>
+
+          <div class="field">
+            <label for="senha">Senha</label>
+            <input id="senha" name="senha" type="password" placeholder="Senha" required>
+          </div>
+
+          <div style="display:flex;gap:12px;align-items:center;margin-top:6px">
+            <button type="submit" class="btn primary">Registrar</button>
+            <button type="reset" class="btn secondary">Limpar</button>
+          </div>
+
+          <div class="links" style="margin-top:14px">
+            <span class="muted">Já tem conta?</span>
+            <a href="#cpf_login" onclick="document.getElementById('cpf_login').focus()">Entrar com CPF</a>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    /* Form helper: remove formatação do CPF antes de enviar (mantém somente dígitos) */
+    function stripCPF(form){
+      // encontra todos os inputs name="cpf" no form e limpa a formatação
+      const cpfInputs = form.querySelectorAll('input[name="cpf"]');
+      cpfInputs.forEach(inp => {
+        if(inp && inp.value){
+          inp.value = inp.value.replace(/\D/g,'');
+        }
+      });
+      return true; // permite submit
+    }
+
+    /* Formata CPF enquanto digita: 000.000.000-00 */
+    function formatCPF(el){
+      let v = el.value.replace(/\D/g,'').slice(0,11);
+      if(v.length > 9){
+        v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, '$1.$2.$3-$4');
+      } else if(v.length > 6){
+        v = v.replace(/^(\d{3})(\d{3})(\d{0,3}).*/, '$1.$2.$3');
+      } else if(v.length > 3){
+        v = v.replace(/^(\d{3})(\d{0,3}).*/, '$1.$2');
+      }
+      el.value = v;
+    }
+
+    /* Previne enviar com cpf vazio (apenas extra proteção) */
+    document.getElementById('loginCpfForm').addEventListener('submit', function(e){
+      const cpf = document.getElementById('cpf_login').value.replace(/\D/g,'');
+      if(!cpf || cpf.length !== 11){
+        e.preventDefault();
+        alert('Informe um CPF válido com 11 dígitos.');
+        document.getElementById('cpf_login').focus();
+      }
+    });
+
+    // Pequeno ajuste: em dispositivos com teclado alto, foco não esconde o layout
+    (function(){
+      // nothing heavy — apenas garantia de responsividade visual
+    })();
+  </script>
+</body>
+</html>

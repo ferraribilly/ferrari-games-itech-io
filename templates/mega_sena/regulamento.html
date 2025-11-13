@@ -1,0 +1,54 @@
+<!-- Container dos termos -->
+<div class="termos-container">
+  <input type="checkbox" id="checkbox-termos" name="termos" required>
+  <label for="checkbox-termos">
+    Eu li e concordo com os 
+    <a href="/link-para-seus-termos" target="_blank">Termos de Uso</a>.
+  </label>
+</div>
+
+<!-- Botão de envio (dentro de um formulário) -->
+<button type="submit">Cadastrar</button>
+
+<style>
+  .termos-container {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+  }
+
+  #checkbox-termos {
+    margin-right: 10px;
+    transform: scale(1.2);
+  }
+
+  .termos-container label {
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .termos-container a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .termos-container a:hover {
+    text-decoration: underline;
+  }
+
+  button[type="submit"] {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+
+  button[type="submit"]:hover {
+    background-color: #218838;
+  }
+</style>

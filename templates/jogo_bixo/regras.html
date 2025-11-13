@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regras Jogo do Bicho</title>
+  <style>
+    /* Reset básico */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #0f0f0f;
+      color: #00ffea;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    a {
+      color: #00ffe0;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    a:hover {
+      color: #00ff80;
+      text-decoration: underline;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    header img {
+      height: 300px;
+      width: 300px;
+      justify-content: center;
+      
+    }
+
+    header nav a {
+      margin-left: 20px;
+      font-weight: bold;
+    }
+
+    h1, h2, h3 {
+      color: #00ffea;
+      text-shadow: 0 0 10px #00ffe0, 0 0 20px #00ffe0;
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-top: 30px;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      margin-top: 20px;
+    }
+
+    p {
+      margin-bottom: 15px;
+    }
+
+    ul {
+      margin-bottom: 15px;
+      padding-left: 20px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      font-weight: bold;
+      color: #ff00ff;
+      text-shadow: 0 0 5px #ff00ff;
+    }
+
+    .rules-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      font-size: 0.95rem;
+    }
+
+    .rules-table th, .rules-table td {
+      border: 1px solid #00ffea;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .rules-table th {
+      background-color: #111111;
+      color: #00ffea;
+      text-shadow: 0 0 5px #00ffea;
+    }
+
+    .rules-table td {
+      background-color: #1a1a1a;
+    }
+
+    .payment-icons {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .payment-icons img {
+      height: 40px;
+    }
+
+    .section-link {
+      color: #ffcc00;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      header nav {
+        margin-top: 10px;
+      }
+
+      .rules-table th, .rules-table td {
+        font-size: 0.8rem;
+        padding: 5px;
+      }
+
+      .payment-icons img {
+        height: 30px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+<h1>Regras do Jogo Bicho</h1>
+  <header>
+    <nav>
+      <a href="/suporte/socket/gambistas/responsavel/estabelecimentos">Suporte</a>
+      <a href="/reclamacao/sugestoes">Reclamação ou Sugestão</a>
+    </nav>
+  </header>
+
+  <a href="/jogo_bicho" class="back-link">← Voltar</a>
+
+  <h1>FERRARI GAMES ITECH.IO</h1>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8XD7s5ZQbc4FTkAkFnSFs4HlnDc_bwfIKpkf4zEmvqtLCqNwAMuqo0P1g&s=10" alt="Logo Tabela Bichos">
+  <!-- Índice -->
+  <h2>Índice</h2>
+  <ul>
+    <li><a href="#introducao" class="section-link">Introdução</a></li>
+    <li><a href="#como-jogar" class="section-link">Como Jogar</a></li>
+    <li><a href="#apostas-animais" class="section-link">Apostas e Prêmios - Animais</a></li>
+    <li><a href="#apostas-numeros" class="section-link">Apostas e Prêmios - Números</a></li>
+    <li><a href="#controles" class="section-link">Controles</a></li>
+    <li><a href="#ranking" class="section-link">Ranking por Pontos</a></li>
+    <li><a href="#pagamentos" class="section-link">Pagamentos</a></li>
+  </ul>
+
+  <h2 id="introducao">Introdução</h2>
+  <p><strong>Jogo do Bicho</strong> é um jogo de azar brasileiro em que os animais são protagonistas. Os jogadores fazem apostas em diferentes animais, e os prêmios são decididos no sorteio. Se sua aposta for vencedora, você poderá receber grandes prêmios!</p>
+
+  <h2 id="como-jogar">Como Jogar</h2>
+  <p>Os jogadores têm um limite de tempo para realizar suas apostas antes do sorteio. Existem 2 tipos de apostas:</p>
+  <ul>
+    <li><strong>Apostas em animais:</strong> “Grupo”, “Duque”, “Terno”, etc.</li>
+    <li><strong>Apostas em números:</strong> Dezena, Centena ou Milhar.</li>
+  </ul>
+  <p>Observação: cada animal representa 4 números ao mesmo tempo. Por exemplo, avestruz (01-04), águia (05-08), vaca (97-00), etc.</p>
+
+  <h2 id="apostas-animais">Apostas e Prêmios - Animais</h2>
+  <table class="rules-table">
+    <thead>
+      <tr>
+        <th>Tipo de aposta</th>
+        <th>Sorteio</th>
+        <th>Pagamento</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Grupo (1 animal)</td><td>1ª posição</td><td>×12</td></tr>
+      <tr><td>Grupo</td><td>Outra posição</td><td>×3</td></tr>
+      <tr><td>Duque (2 animais)</td><td>1ª e 2ª posição</td><td>×95</td></tr>
+      <tr><td>Duque</td><td>2 animais em outras posições</td><td>×12</td></tr>
+      <tr><td>Duque</td><td>1 animal premiado</td><td>×1</td></tr>
+      <tr><td>Terno (3 animais)</td><td>1ª, 2ª e 3ª posição</td><td>×700</td></tr>
+      <tr><td>Terno</td><td>3 animais em outras posições</td><td>×42</td></tr>
+      <tr><td>Terno</td><td>2 animais premiados</td><td>×3</td></tr>
+      <tr><td>Terno</td><td>1 animal premiado</td><td>×0,75</td></tr>
+      <tr><td>Quadra (4 animais)</td><td>1ª a 4ª posição</td><td>×4000</td></tr>
+      <tr><td>Quadra</td><td>4 animais em outras posições</td><td>×500</td></tr>
+      <tr><td>Quadra</td><td>3 animais premiados</td><td>×22</td></tr>
+      <tr><td>Quadra</td><td>2 animais premiados</td><td>×1,5</td></tr>
+      <tr><td>Quadra</td><td>1 animal premiado</td><td>×0,2</td></tr>
+      <tr><td>Quina (5 animais)</td><td>5 animais premiados</td><td>×17000</td></tr>
+      <tr><td>Quina</td><td>4 animais premiados</td><td>×150</td></tr>
+      <tr><td>Quina</td><td>3 animais premiados</td><td>×8</td></tr>
+      <tr><td>Quina</td><td>2 animais premiados</td><td>×1</td></tr>
+      <tr><td>Quina</td><td>1 animal premiado</td><td>×0,2</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="apostas-numeros">Apostas e Prêmios - Números</h2>
+  <table class="rules-table">
+    <thead>
+      <tr>
+        <th>Tipo de aposta</th>
+        <th>Sorteio</th>
+        <th>Pagamento</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Dezena</td><td>1ª posição</td><td>×50</td></tr>
+      <tr><td>Dezena</td><td>Outra posição</td><td>×7</td></tr>
+      <tr><td>Dezena</td><td>1 animal premiado</td><td>×1</td></tr>
+      <tr><td>Centena</td><td>1ª posição</td><td>×500</td></tr>
+      <tr><td>Centena</td><td>Outra posição</td><td>×60</td></tr>
+      <tr><td>Centena</td><td>1 animal premiado</td><td>×1</td></tr>
+      <tr><td>Milhar</td><td>1ª posição</td><td>×5000</td></tr>
+      <tr><td>Milhar</td><td>Outra posição</td><td>×600</td></tr>
+      <tr><td>Milhar</td><td>1 animal premiado</td><td>×1</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="controles">Controles</h2>
+  <p>Escolha os animais desejados, selecione a modalidade de aposta e defina o valor. Coloque suas apostas no carrinho e siga para o pagamento.</p>
+
+  <h2 id="pagamentos">Pagamentos</h2>
+  <p>Todos os pagamentos são realizados via checkout transparente do Mercado Pago, garantindo segurança de dados e transações.</p>
+  
+  <div class="payment-icons">
+    <img src="https://img.icons8.com/color/48/000000/credit-card.png" alt="Cartão de Crédito">
+    <img src="https://img.icons8.com/color/48/000000/pix.png" alt="PIX">
+    <img src="https://img.icons8.com/color/48/000000/bank-cards.png" alt="Saldo em conta">
+  </div>
+
+  <p>Os saques são seguros, aprovados após o sorteio, com auditoria de todos os ganhadores, e o contato é imediato através da central de movimentação financeira.</p>
+
+  <h2 id="ranking">Ranking por Pontos</h2>
+  <p>Para participar do <a href="https://www.ludijogos.com/multiplayer/jogo-do-bicho/ranking/month/">ranking</a>, é necessário estar <a href="https://www.ludijogos.com/register/">cadastrado como gambista</a> e sujeito a avaliação.</p>
+
+</body>
+</html>
