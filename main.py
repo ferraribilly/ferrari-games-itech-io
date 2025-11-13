@@ -3,6 +3,7 @@ from flask import Flask
 from model import mongo
 from view import main_bp
 import os
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 load_dotenv()  # carrega .env em os.environ — NÃO usar em produção que já tem variáveis
 def create_app():
