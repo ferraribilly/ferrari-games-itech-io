@@ -1,18 +1,15 @@
-# view.py
-from flask import (
-    render_template, request, redirect, url_for, Blueprint, jsonify, session, current_app
-)
+from flask import Blueprint, render_template, request, redirect, url_for
 from datetime import datetime, timezone, timedelta
-from flask import Flask, render_template_string, url_for
 from model import Usuario
 import re
 import random
 from loteria_caixa import Federal
 from collections import defaultdict
-import os                                                      
+import os
 from requests import get, ConnectionError
-from functools import lru_cache                               
+from functools import lru_cache
 from urllib3 import disable_warnings, exceptions
+
 main_bp = Blueprint('main', __name__)
 
 
@@ -93,25 +90,6 @@ def login():
     return jsonify({"status": "success", "message": f"Bem-vindo {usuario['nome']}!", "redirect": url_for('main.painel')})
 
 
-# -----------------------
-# Helpers
-# -----------------------
-#def calcular_idade(data_nascimento):
-#    hoje = date.today()
-#    return hoje.year - data_nascimento.year - (
-#        (hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day)
-#    )
-
-#def validar_cpf(cpf_raw):
-    # validação simples: só dígitos e 11 caracteres
-#    if not cpf_raw:
-#        return False
-#    cpf = re.sub(r'\D', '', cpf_raw)
-#    return len(cpf) == 11
-
-# -----------------------
-# Rotas do aplicativo
-# -----------------------
 @main_bp.route('/loading')
 def loading():
     return render_template('jogo_bixo/loading.html')
