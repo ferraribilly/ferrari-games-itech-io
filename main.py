@@ -97,7 +97,7 @@ def criar_user():
 
 @app.route('/loading/users/<string:user_id>')
 def loading(user_id):
-    return render_template('jogo_bixo/loading.html')
+    return render_template('jogo_bixo/carregando.html')
 
 @app.route('/painel/users/<string:user_id>')
 def painel(user_id):
