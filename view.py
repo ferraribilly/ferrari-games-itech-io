@@ -103,8 +103,8 @@ def regras():
 
 @main_bp.route('/')
 def index():
-    usuarios = Usuario.find_all()  # substitui Usuario.query.all()
-    return render_template('jogo_bixo/registro.html', usuarios=usuarios)
+   #  usuarios = Usuario.find_all()  # substitui Usuario.query.all()
+    return render_template('jogo_bixo/registro.html')
 
 @main_bp.route('/proibido')
 def proibido():
