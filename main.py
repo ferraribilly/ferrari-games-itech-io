@@ -5,6 +5,7 @@ import os
 
 def create_app():
     app = Flask(__name__)
+    
 
     # Chave secreta para sessão
     app.secret_key = os.environ.get("SECRET_KEY", "chave_super_secreta_troque_isto")
@@ -25,9 +26,13 @@ def create_app():
 
 
 if __name__ == '__main__':
+    import os
     app = create_app()
+
     # Cria as tabelas no banco de dados, se não existirem
     with app.app_context():
         db.create_all()
-    # Executa a aplicação
-    app.run(debug=True)
+
+    # Porta e host para o Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
