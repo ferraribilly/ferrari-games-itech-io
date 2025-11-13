@@ -14,7 +14,7 @@ def create_app():
     mongo_uri = os.environ.get(
         "MONGO_URI",
         
-        "mongodb+srv:// Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
+        "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
     )
     mongo = MongoClient(mongo_uri)
     app.mongo = mongo  # salva conexão no app
