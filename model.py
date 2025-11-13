@@ -1,10 +1,24 @@
-# model.py
 from flask_login import UserMixin
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
 from datetime import datetime, date
 import os
+
+# === ADICIONADO PARA NÃO DAR ERRO NO IMPORT ===
+# Objeto mongo compatível com o que o Flask espera
+class SimpleMongo:
+    def __init__(self):
+        self.client = None
+        self.db = None
+
+    def init_app(self, app):
+        uri = app.config.get("MONGO_URI")
+        self.client = MongoClient(uri)
+        self.db = self.client["FerrariGamesItechIo"]
+
+mongo = SimpleMongo()
+# === FIM DO AJUSTE ===
 
 # Configurações do MongoDB (testado, retorna 200)
 MONGO_URI = "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
