@@ -60,6 +60,8 @@ def delete_user_route(user_id):
     except InvalidId:
         return jsonify({"error": "ID de usuário inválido."}), 400
 
-if __name__ == '__main__':
-    # Execute a aplicação Flask na porta 5000 (ou outra de sua escolha)
-    app.run(debug=True)
+
+
+port = int(os.environ.get("PORT", 8000))
+uvicorn.run(app, host="0.0.0.0", port=port, log_level="debug")
+
