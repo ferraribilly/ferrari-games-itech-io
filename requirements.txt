@@ -1,3 +1,9 @@
 flask
 flask_sqlalchemy
 loteria_caixa
+requests
+urllib3
+Jinja2
+Werkzeug
+click
+itsdangerous
