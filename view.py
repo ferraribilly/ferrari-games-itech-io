@@ -35,7 +35,7 @@ def status_conexao():
         ), 500
 
 
-@app.route('/teste')
+@main_bp.route('/teste')
 def home():
     return "Aplicação Flask em execução. Use a rota /status_conexao para testar o MongoDB."
         
