@@ -231,7 +231,7 @@ def loading(user_id):
 #==============================================≈=======
 @app.route('/painel/users/<string:user_id>')
 def painel(user_id):
-    return render_template('jogo_bixo/painel.html')
+    return render_template('jogo_bixo/painel_game.html')
 #==============================================≈===
 # -Compras no app
 #==============================================≈===
