@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, abort, render_template, redirect, url
 from model import UsuarioModel
 from bson.errors import InvalidId
 import os
+import re
 
 app = Flask(__name__)
 user_model = UsuarioModel()
@@ -67,8 +68,11 @@ def delete_user_route(user_id):
         return jsonify({"error": "ID de usuário inválido."}), 400
 
 # ============================
-# ROTA LOGIN VIA CPF
+# ROTA LOGIN VIA CPF (NORMALIZA CPFs PARA COMPARAÇÃO)
 # ============================
+def only_digits(s):
+    return re.sub(r'\D', '', s or "")
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -76,10 +80,13 @@ def login():
     if not data or 'cpf' not in data:
         return jsonify({"error": "CPF obrigatório."}), 400
 
-    # Procurar usuário pelo CPF
+    input_cpf = only_digits(data["cpf"])
+
+    # procurar usuário por CPF normalizado
     users = user_model.get_all_users()
     for user in users:
-        if user.get("cpf") == data["cpf"]:
+        user_cpf = only_digits(user.get("cpf", ""))
+        if user_cpf == input_cpf and user.get("_id"):
             user_id = str(user["_id"])
             return jsonify({
                 "redirect": f"/loading/users/{user_id}"
@@ -106,7 +113,6 @@ def painel(user_id):
 @app.route('/compras/app/users/<string:user_id>')
 def compras(user_id):
     return render_template('jogo_bixo/pagamento.html')
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
