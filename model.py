@@ -1,12 +1,39 @@
 # model.py
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+import datetime
 
 # Configurações de conexão (ajuste conforme necessário)
 MONGO_URI = "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
 DB_NAME = "FerrariGamesItechIo"
-COLLECTION_NAME = "users"
 
+
+
+
+# Conexão e collections
+client = MongoClient(MONGO_URI)
+db = client[DB_NAME]
+users_collection = db["users"]
+pagamentos_collection = db["pagamentos"]
+
+def criar_documento_pagamento(payment_id, status, valor, data_criacao, user_id, email_user):
+    """
+    Cria um dicionário que representa um documento de pagamento para o MongoDB.
+    """
+    return {
+        "_id": payment_id,  # ID do Mercado Pago
+        "status": status,
+        "valor": valor,
+        "data_criacao": data_criacao,
+        "user_id": user_id,
+        "email_user": email_user,
+        "data_atualizacao": None,
+        "detalhes_webhook": None
+    }
+
+#============≈=========≈============
+# -Collection "Users"
+#===================================    
 class UsuarioModel:
     def __init__(self):
         self.client = MongoClient(MONGO_URI)
@@ -53,3 +80,5 @@ class UsuarioModel:
         """Exclui um documento (usuário) existente."""
         result = self.collection.delete_one({"_id": ObjectId(user_id)})
         return result.deleted_count
+        
+
