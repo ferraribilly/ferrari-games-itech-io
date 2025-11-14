@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 import datetime
 
-# Configurações de conexão (ajuste conforme necessário)
+# Configurações de conexão.
 MONGO_URI = "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
 DB_NAME = "FerrariGamesItechIo"
 
