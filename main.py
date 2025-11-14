@@ -2,7 +2,8 @@
 from flask import Flask, request, jsonify, abort, render_template, redirect, url_for
 import mercadopago
 from datetime import datetime
-from model import UsuarioModel , pagamentos_collection, criar_documento_pagamento
+#from model import UsuarioModel
+from model import UsuarioModel, pagamentos_collection, criar_documento_pagamento
 from bson.errors import InvalidId
 import os
 import re
