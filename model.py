@@ -5,7 +5,7 @@ from bson.objectid import ObjectId
 # Configurações de conexão (ajuste conforme necessário)
 MONGO_URI = "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
 DB_NAME = "FerrariGamesItechIo"
-COLLECTION_NAME = "usuarios"
+COLLECTION_NAME = "users"/
 
 class UsuarioModel:
     def __init__(self):
