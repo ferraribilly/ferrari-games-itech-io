@@ -120,10 +120,12 @@ def login():
 
 # ====================================
 # -Criar Pagamentos 
+# ================================
 # ====================================
-
-app.route("/criar-pagamento/users/<string:user_id>", methods=["POST"])
-def criar_pagamento():
+# -Criar Pagamentos
+# ====================================
+@app.route("/criar-pagamento/users/<string:user_id>", methods=["POST"])
+def criar_pagamento(user_id):
     # Lógica para criar uma preferência de pagamento no Mercado Pago
     data = request.get_json()
     item_titulo = data.get("titulo")
@@ -141,9 +143,7 @@ def criar_pagamento():
                 "unit_price": float(item_valor),
             }
         ],
-        "payer": {
-            "email": email_user
-        },
+        "payer": {"email": email_user},
         "back_urls": {
             "success": "https://ferrari-games-itech-io.onrender.com/feedback/success",
             "failure": "https://ferrari-games-itech-io.onrender.com/feedback/failure",
@@ -155,17 +155,17 @@ def criar_pagamento():
 
     preference_response = sdk.preference().create(preference_data)
     preference = preference_response["response"]
-    
-    # Opcional: Salvar a preferência inicial no MongoDB
+
+    # Salvar a preferência inicial no MongoDB
     pagamento_doc = criar_documento_pagamento(
-        payment_id=preference["id"], # Usando o ID da preferência como _id inicial
+        payment_id=preference["id"],
         status="pending",
         valor=float(item_valor),
-        data_criacao=datetime.utcnow(),
+        user_id=user_id,
         email_user=email_user
     )
     pagamentos_collection.insert_one(pagamento_doc)
-    
+
     return jsonify({"id_preferencia": preference["id"], "link_pagamento": preference["init_point"]})
 
 

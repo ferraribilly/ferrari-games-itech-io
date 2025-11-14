@@ -3,30 +3,24 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 import datetime
 
-# Configurações de conexão.
-MONGO_URI = "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
-DB_NAME = "FerrariGamesItechIo"
+# Configurações de conexão (ajuste conforme necessário)    
+MONGO_URI = "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"    
+DB_NAME = "FerrariGamesItechIo"    
+COLLECTION_NAME = "users"    
+COLLECTION_NAME = "pagamentos"    
+    
 
-
-
-
-# Conexão e collections
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
-users_collection = db["users"]
-pagamentos_collection = db["pagamentos"]
-
-def criar_documento_pagamento(payment_id, status, valor, data_criacao, user_id, email_user):
+def criar_documento_pagamento(payment_id, status, valor, user_id, email_user, data_criacao=None):
     """
     Cria um dicionário que representa um documento de pagamento para o MongoDB.
     """
     return {
-        "_id": payment_id,  # ID do Mercado Pago
+        "_id": payment_id,  # Usaremos o ID do Mercado Pago como o ID do documento
         "status": status,
         "valor": valor,
-        "data_criacao": data_criacao,
         "user_id": user_id,
         "email_user": email_user,
+        "data_criacao": data_criacao or datetime.datetime.utcnow(),
         "data_atualizacao": None,
         "detalhes_webhook": None
     }
