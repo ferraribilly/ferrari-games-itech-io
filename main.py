@@ -250,6 +250,24 @@ def pending(user_id):
 @app.route('/failure')
 def failure(user_id):
     return render_template('jogo_bixo/pagamentos/failure.html')
+
+#======================================================
+# -Painel dos Jogos do app
+@app.route('/painel/jogo_bicho/users')
+def jogo_bicho(user_id):
+    return render_template('jogo_bixo/jogo_bicho.html')
+
+@app.route('/painel/slot_jogo_bicho/users/<string:user_id>')    
+def slot_jogo_bicho(user_id):
+    return render_template('jogo_bixo/slotmachine.html')
+    
+@app.route('/painel/bingo_premiado/users/<string:user_id>')
+def bingo(user_id):
+    return render_template('bingo/bingo.html')
+
+@app.route('/painel/rifa_da_sorte/users/<string:user_id>')    
+def rifa(user_id):
+    return render_template('rifa/rifa.html')
     
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
