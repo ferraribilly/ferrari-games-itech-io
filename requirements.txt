@@ -11,3 +11,4 @@ itsdangerous
 pymongo[srv]
 Flask-PyMongo
 python-dotenv
+mercadopago
