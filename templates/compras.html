@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cards de Depósito com Perfil</title>
+    <style>
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background-color: #000;
+    margin: 0;
+}
+
+.container-logo {
+    position: relative;
+    text-align: center;
+}
+
+.logo-img {
+    display: block;
+    margin: 0 auto;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    box-shadow:
+        0 0 10px #fff, /* Sombra branca básica */
+        0 0 20px #0ff, /* Sombra de brilho ciano */
+        0 0 30px #0ff, /* Sombra de brilho ciano mais espalhada */
+        0 0 40px #0ff, /* Sombra de brilho ciano ainda mais espalhada */
+        0 0 50px #0ff;  /* Sombra de brilho ciano com maior alcance */
+    
+}
+
+/* Logo pequeno sobreposto (foto de perfil) */
+.profile-img {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    top: -25px;
+    right: -15px;
+}
+
+.card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0.8;  
+    box-shadow:
+                                        0 0 10px #fff, /* Sombra branca básica */
+                                        0 0 20px #0ff, /* Sombra de brilho ciano */
+                                        0 0 30px #0ff, /* Sombra de brilho ciano mais espalhada */
+                                        0 0 40px #0ff, /* Sombra de brilho ciano ainda mais espalhada */
+                                        0 0 50px #0ff;  /* Sombra de brilho ciano com maior alcance */
+                                                                    
+
+}
+
+.card-title {
+    margin-top: 0;
+    color: #333;
+}
+
+.card-text {
+    color: #666;
+    margin-bottom: 10px;
+  
+}
+
+.card strong {
+	color:gold;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+
+input {
+    width: 95%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.button-container a {
+	    flex-grow: 1;
+    padding: 10px 5px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+                                	    
+}
+
+.btn {
+    flex-grow: 1;
+    padding: 10px 5px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+    </style>
+</head>
+<body>
+            <li><a href="http://192.168.18.66:8080">Voltar</a></li>
+
+
+<!-- Card Influencer Bob -->
+<div class="card">
+    <div class="container-logo">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTReq3D3gkh4a5_HnCf5alx8R74hkjqj6whKA&s" alt="Bob" class="logo-img">
+        <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="Foto Perfil" class="profile-img">
+    </div>
+    <h2 class="card-title">Depositos Influencer Bob</h2>
+    <strong class="card-text">Depositos com até 10% bônus.</strong>
+    <label for="deposit-bob">Deposito minimo R$5 a R$1000</label>
+    <input type="text" id="deposit-bob" placeholder="R$5 a R$1000">
+    <button class="btn">Gerar Pagamento</button>
+    <div class="button-container">
+        <a href={{ link_pagamento }}>R$ 5</a>
+        <a href={{ link_pagamento }}>R$ 10</a>
+        <a href={{ link_pagamento }}>R$ 30</a>
+        <a href={{ link_pagamento }}>R$ 50</a>
+        <a href={{ link_pagamento }}>R$ 100</a>
+    </div>
+</div>
+
+<!-- Card MC Lacin -->
+<div class="card">
+    <div class="container-logo">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTReq3D3gkh4a5_HnCf5alx8R74hkjqj6whKA&s" alt="Bob" class="logo-img">
+        <img src="https://randomuser.me/api/portraits/men/2.jpg" alt="Foto Perfil" class="profile-img">
+    </div>
+    <h2 class="card-title">Depositos Influencer MC Lacin</h2>
+    <strong class="card-text">Depositos com até 15% bônus.</strong>
+    <label for="deposit-lacin">Deposito minimo R$5 a R$1000</label>
+    <input type="text" id="deposit-lacin" placeholder="R$5 a R$1000">
+    <button class="btn">Gerar Pagamento</button>
+    <div class="button-container">
+        <a href={{ link_pagamento }}>R$ 5</a>
+        <a href={{ link_pagamento }}>R$ 10</a>
+        <a href={{ link_pagamento }}>R$ 30</a>
+        <a href={{ link_pagamento }}>R$ 50</a>
+        <a href={{ link_pagamento }}>R$ 100</a>
+                
+    </div>
+</div>
+
+<!-- Card Anna Esther -->
+<div class="card">
+    <div class="container-logo">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTReq3D3gkh4a5_HnCf5alx8R74hkjqj6whKA&s" alt="Bob" class="logo-img">
+
+        <img src="https://randomuser.me/api/portraits/women/3.jpg" alt="Foto Perfil" class="profile-img">
+    </div>
+    <h2 class="card-title">Depositos Influencer Anna Esther</h2>
+    <strong class="card-text">Depositos com até 20% bônus.</strong>
+    <label for="deposit-anna">Deposito minimo R$5 a R$1000</label>
+    <input type="text" id="deposit-anna" placeholder="R$5 a R$1000">
+    <button class="btn">Gerar Pagamento</button>
+    <div class="button-container">
+        <a href={{ link_pagamento }}>R$ 5</a>
+        <a href={{ link_pagamento }}>R$ 10</a>
+        <a href={{ link_pagamento }}>R$ 30</a>
+        <a href={{ link_pagamento }}>R$ 50</a>
+        <a href={{ link_pagamento }}>R$ 100</a>
+        
+    </div>
+</div>
+<script>
+async function gerarPagamento(userId, titulo, valor, email) {
+    const response = await fetch(`/criar-pagamento/users/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titulo, valor, email_user: email })
+    });
+    const data = await response.json();
+    if (data.link_pagamento) {
+        window.open(data.link_pagamento, "_blank");
+    } else {
+        alert("Erro ao gerar pagamento");
+    }
+}
+
+document.querySelectorAll('.btn').forEach(button => {
+    button.addEventListener('click', () => {
+        const card = button.closest('.card');
+        const valor = card.querySelector('input').value;
+        const titulo = card.querySelector('.card-title').innerText;
+        const email = "usuario@example.com"; // substituir pelo email real do usuário
+        const userId = "ID_DO_USUARIO"; // substituir pelo ID real do usuário
+        gerarPagamento(userId, titulo, valor, email);
+    });
+});
+</script>
+
+</body>
+</html>

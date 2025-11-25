@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Acesso Usuários — Login e Registro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Segoe UI, Roboto, "Helvetica Neue", Arial; }
+    html, body { height: 100%; }
+    body {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      color: #fff; padding: 20px; position: relative;
+    }
+    body::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100dvh;
+      background: url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763000058/Pngtree_attractive_monkey_slot_game_character_21134749_rayvcs.png") repeat left top;
+      background-size: cover; z-index: -2; animation: 40s linear infinite LoadingBarProgress;
+    }
+    body::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(to right, #a8a8a8, #3d3d3d, transparent, #3d3d3d, #a8a8a8); background-size: 500%;
+      z-index: -1; animation: 40s linear infinite LoadingBarProgress;
+    }
+    @keyframes LoadingBarProgress { 0% { background-position: 0 0 } 100% { background-position: 125% 0 } }
+    .wrap { width: 100%; max-width: 500px; position: relative; background: rgba(0,0,0,0.6); border-radius: 14px;
+      padding: 28px; box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    }
+    .logo { display:flex; flex-direction:column; align-items:center; margin-bottom:20px; }
+    .logo img { width:100px; height:100px; border-radius:100%; object-fit:contain; margin-bottom:10px; border:1px solid green; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
+    .typing-effect { font-family: monospace; text-align:center; white-space:nowrap; overflow:hidden; border-right:.15em solid orange; width:0; animation: typing 3.5s steps(30,end) forwards, blinking .75s step-end infinite; }
+    @keyframes typing { from { width: 0 } to { width: 100% } } @keyframes blinking { from, to { border-color: transparent } 50% { border-color: orange } }
+    .card { width:100%; } h1 { text-align:center; margin-bottom:10px; }
+    .field { margin-bottom:12px; } label { display:block; font-size:0.85rem; margin-bottom:6px; color: rgba(255,255,255,0.85); }
+    input[type="text"], input[type="email"], input[type="password"], input[type="date"] {
+      width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); color:#fff; font-size:0.98rem; outline:none;
+    }
+    input::placeholder { color: rgba(255,255,255,0.45); } input:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.22); }
+    .btn { display:inline-block; padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:600; font-size:0.98rem; }
+    .primary { background: linear-gradient(45deg, #ff357a, #fff172); color: #111; width:100%; }
+    .links { display:flex; justify-content:center; margin-top:10px; } .links a { color:#cfcfcf; text-decoration:none; font-size:0.9rem; }
+    .message { margin-top:8px; padding:8px; border-radius:8px; display:none; }
+    .msg-error { background: rgba(255,0,0,0.12); color:#ffb0b0; }
+    .msg-success { background: rgba(0,255,120,0.12); color:#8fffc3; }
+    @media (max-width:480px) { .wrap { padding:20px; } }
+  </style>
+</head>
+<body>
+  <audio id="somAmbiente" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1762638299/tell-me-what-379638_uwmki4.mp3" loop autoplay></audio>
+
+  <div class="wrap">
+    <div class="logo">
+      <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1762726173/logo_dna0xx.jpg" alt="Logo do sistema">
+      <p class="typing-effect">Ferrari Games itech.io</p>
+      <p class="typing-effect">Jogadores e Apostadores sejam bem vindos!</p>
+    </div>
+
+    <!-- LOGIN -->
+    <section class="card" id="loginSection">
+      <h1>Login</h1>
+      <form id="loginForm" autocomplete="on">
+        <div class="field">
+          <label for="cpf_login">CPF</label>
+          <input id="cpf_login" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required oninput="formatCPF(this)">
+        </div>
+        <div class="field"><button type="submit" class="btn primary">Entrar</button></div>
+        <div id="loginMsg" class="message msg-error"></div>
+        <div class="links"><a href="#" onclick="toggleSection('register'); return false;">Não tem conta? Registre-se</a></div>
+      </form>
+    </section>
+
+    <!-- REGISTRO -->
+    <section class="card" id="registerSection" style="display:none">
+      <h1>Registro de Usuário</h1>
+      <form id="registerForm" autocomplete="on">
+        <div class="field"><label for="nome">Nome</label><input id="nome" name="nome" type="text" required></div>
+        <div class="field"><label for="sobrenome">Sobrenome</label><input id="sobrenome" name="sobrenome" type="text" required></div>
+        <div class="field"><label for="cpf">CPF</label><input id="cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" required oninput="formatCPF(this)"></div>
+        <div class="field"><label for="data_nascimento">Data de nascimento</label><input id="data_nascimento" name="data_nascimento" type="date" required></div>
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+        <div class="field"><label for="convite_ganbista">Convite</label><input id="convite_ganbista" name="public_key_admin" type="text" required></div>
+        <div class="field"><label for="chave_pix">Chave Pix</label><input id="chave_pix" name="chave_pix" type="text" required></div>
+        <div class="field"><label for="senha">Senha</label><input id="senha" name="senha" type="password" required></div>
+        <div class="field"><button type="submit" class="btn primary">Registrar</button></div>
+      </form>
+      <div id="registerMsg" class="message msg-error"></div>
+      <div class="links"><a href="#" onclick="toggleSection('login'); return false;">Já tem conta? Fazer login</a></div>
+    </section>
+  </div>
+
+  <script>
+    function toggleSection(type){
+      document.getElementById("loginSection").style.display = type === "login" ? "block" : "none";
+      document.getElementById("registerSection").style.display = type === "login" ? "none" : "block";
+      // limpar mensagens
+      document.getElementById("loginMsg").style.display = "none";
+      document.getElementById("registerMsg").style.display = "none";
+    }
+
+    function formatCPF(input){
+      let v = input.value.replace(/\D/g,'');
+      v = v.replace(/(\d{3})(\d)/,'$1.$2');
+      v = v.replace(/(\d{3})(\d)/,'$1.$2');
+      v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+      input.value = v;
+    }
+
+    function onlyDigits(s){ return (s || "").toString().replace(/\D/g, ""); }
+
+    // ----- LOGIN (envia JSON) -----
+    document.getElementById("loginForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      const cpfRaw = document.getElementById("cpf_login").value;
+      const cpf = onlyDigits(cpfRaw);
+      const msg = document.getElementById("loginMsg");
+      msg.style.display = "none";
+
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cpf })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.redirect) {
+          window.location.href = data.redirect;
+        } else {
+          msg.innerText = data.error || "Erro no login.";
+          msg.style.display = "block";
+        }
+      } catch (err) {
+        msg.innerText = "Erro de conexão.";
+        msg.style.display = "block";
+      }
+    });
+
+    // ----- REGISTRO (envia JSON para /users) -----
+    document.getElementById("registerForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      const msg = document.getElementById("registerMsg");
+      msg.style.display = "none";
+
+      const payload = {
+        nome: document.getElementById("nome").value || "",
+        sobrenome: document.getElementById("sobrenome").value || "",
+        cpf: document.getElementById("cpf").value || "",
+        data_nascimento: document.getElementById("data_nascimento").value || "",
+        email: document.getElementById("email").value || "",
+        // IMPORTANTE: backend espera "convite_ganbista", mas seu campo é public_key_admin
+        convite_ganbista: document.getElementById("convite_ganbista").value || "",
+        chave_pix: document.getElementById("chave_pix").value || "",
+        senha: document.getElementById("senha").value || ""
+      };
+
+      // opcional: garantir que CPF seja enviado formatado ou sem formatação conforme seu padrão
+      // aqui envio no mesmo formato do input (com pontos/traço). A rota /login faz normalização.
+      try {
+        const res = await fetch("/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.status === 201 && data.id) {
+          // redireciona para loading
+          window.location.href = `/loading/users/${data.id}`;
+        } else {
+          msg.innerText = data.error || "Erro ao registrar.";
+          msg.style.display = "block";
+        }
+      } catch (err) {
+        msg.innerText = "Erro de conexão ao registrar.";
+        msg.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>

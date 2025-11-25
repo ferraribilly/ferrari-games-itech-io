@@ -1,0 +1,74 @@
+<!DOCTYPE html>  
+<html lang="pt-BR">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<title>Carregando... Jogo</title>  
+<style>  
+  body {  
+    margin: 0;  
+    padding: 0;  
+    height: 100vh;  
+    display: flex;  
+    flex-direction: column;  
+    align-items: center;  
+    justify-content: center;  
+    background-image: url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763000054/Pngtree_jackpot_winner_background_vector_falling_5205377_pv7xpe.png");
+    font-family: 'Orbitron', sans-serif;  
+    color: #0ff;  
+  }  
+  
+  img.logo {  
+    width: 100%; /* ajuste o tamanho conforme quiser */  
+    height: 100%;  
+    margin-bottom: 25px;  
+    filter: drop-shadow(0 0 15px #0ff);  
+    animation: glow 2s infinite alternate;  
+  }  
+  
+  @keyframes glow {  
+    from { filter: drop-shadow(0 0 5px #0ff); }  
+    to { filter: drop-shadow(0 0 20px #ff00ff); }  
+  }  
+  
+  .typewriter {  
+    font-size: 32px;  
+    letter-spacing: 2px;  
+    text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #ff00ff, 0 0 40px #00ff0a;  
+    border-right: 3px solid #0ff;  
+    white-space: nowrap;  
+    overflow: hidden;  
+    width: 0;  
+    animation: typing 6s steps(22, end) forwards, blink 0.8s infinite;  
+  }  
+  
+  @keyframes typing { from { width: 0; } to { width: 22ch; } }  
+  @keyframes blink {  
+    0%, 50% { border-color: #0ff; }  
+    50.1%, 100% { border-color: transparent; }  
+  }  
+</style>  
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">  
+</head>  
+<body>  
+
+<audio id="somAmbiente" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1762549179/cartoon-music-81920_kdrb9x.mp3" autoplay></audio>  
+
+<!-- Aqui você coloca sua imagem -->
+<img class="logo" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1763000057/Pngtree_halloween_slot_game_character_23069808_s1cxen.png" alt="Logo Ferrari Games">
+
+<div class="typewriter">FERRARI GAMES ITECH.IO</div>  
+
+<script>  
+  const audio = document.getElementById("somAmbiente");  
+  audio.currentTime = 0;  
+  audio.play();  
+  
+  setTimeout(() => {  
+    //window.location.href = "acesso/usuario/privado";  
+    window.location.href = "/painel/users/<string:user_id>";   
+  }, 6000);  
+</script>  
+  
+</body>  
+</html>

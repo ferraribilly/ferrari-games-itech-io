@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Jogos</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    color: #fff;
+    padding: 10px;
+  }
+
+  .user-panel {
+    width: 100%;
+    max-width: 660px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .user-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1763000057/Pngtree_casino_poker_chips_falling_with_21201916_hkt3kp.png');
+    background-size: cover;
+    background-position: center;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    border: 2px solid #fff;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .user-info span {
+    margin-bottom: 5px;
+    font-size: 16px;
+  }
+
+  .user-info span strong {
+    color: #ffd700;
+  }
+
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .game {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    background-size: 120%;
+    background-position: center;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: backgroundMove 10s infinite alternate linear;
+  }
+
+  .game:hover {
+    animation: pulse 1s infinite, backgroundMove 10s infinite alternate linear;
+    box-shadow: 0 0 20px rgba(255,255,255,0.5);
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes backgroundMove {
+    0% { background-position: center top; }
+    50% { background-position: center center; }
+    100% { background-position: center bottom; }
+  }
+
+  .game-label {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-weight: bold;
+    background: rgba(0,0,0,0.5);
+    padding: 5px 10px;
+    border-radius: 8px;
+    pointer-events: none;
+    font-size: 14px;
+  }
+
+  @media (max-width: 500px) {
+    .user-photo {
+      margin-right: 0;
+    }
+    .user-info {
+      font-size: 14px;
+    }
+    .game-label {
+      font-size: 12px;
+      padding: 3px 6px;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="user-panel">
+  <div class="user-info">
+    <span>nome: <strong id="nome">{{ nome }}</strong></span>
+    <span>cpf: <strong id="cpf">{{ cpf }}</strong></span>
+    <span>Saldo: <strong id="balance">{{ balance if balance else 0 }}</strong></span>
+  </div>
+</div>
+
+<div class="grid-container">
+  <a href="http://192.168.18.66:8080" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1762734991/tabela_bichos_scqlku');">
+    <div class="game-label">Jogo do Bicho</div>
+  </a>
+
+  <a href="/bingo" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1762734826/Fundobingo_uzncr9.jpg');">
+    <div class="game-label">Bingo</div>
+  </a>
+
+  <a href="/painel/mega_federal/users/{{ user_id }}" class="game" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTd7lbc0V9T8udtVnJEhQzHBStsd_BOmE5b--CwtB3c5Q&s=10');">
+    <div class="game-label">Mega Sena Federal</div>
+  </a>
+
+  <a href="/painel/lotofacil/users/{{ user_id }}" class="game" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSm2qB4oiO94rli91qLluKkL4BB_CCBIkP7is0kSqdzng&s=10');">
+    <div class="game-label">LotoFacil</div>
+  </a>
+
+  <a href="jogo5.html" class="game" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTAq9K-zFrBWTBoR5ipTpyS_HI4UjXtXPeQK2EcwX3pg&s=10');">
+    <div class="game-label">LotoMania 5</div>
+  </a>
+
+  <a href="jogo6.html" class="game" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdCnRRITC5ruGKhRLl3Aex16edqdawyRfaqioy10OA9Q&s=10');">
+    <div class="game-label">TimeMania</div>
+  </a>
+</div>
+
+</body>
+</html>
