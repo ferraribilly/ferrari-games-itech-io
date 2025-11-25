@@ -7,6 +7,8 @@ import os
 import re
 import json
 from bson.objectid import ObjectId
+from flask_cors import CORS
+import random
 
 
 app = Flask(__name__)
@@ -17,6 +19,227 @@ sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
 user_model = UsuarioModel()
 pagamento_model = PagamentoModel()
 balance_model = BalanceModel()
+
+
+
+os.makedirs('static/images', exist_ok=True)
+
+app = Flask(__name__, static_folder="static", template_folder="templates")
+CORS(app)
+
+LEVEL = 1
+
+SYMBOL_NAMES = [
+    "avestruz","aguia","burro","borboleta","cachorro",
+    "cabra","carneiro","camelo","cobra","coelho",
+    "galo","cavalo","elefante","gato","jacare",
+    "leao","macaco","porco","pavao","peru",
+    "tigre","touro","urso","veado","vaca"
+]
+
+class Player:
+    def __init__(self, balance=50.0):
+        self.balance = float(balance)
+
+class Machine:
+    def __init__(self, balance=1000.0):
+        self.balance = float(balance)
+
+machine = Machine()
+player = Player()
+
+def random_symbol():
+    return random.choice(SYMBOL_NAMES)
+
+
+# -----------------------------
+# GERADOR COM VOLATILIDADE LEVEL
+# -----------------------------
+def generate_grid():
+    grid = [[random_symbol() for r in range(5)] for c in range(5)]
+
+    # Facilitação de padrões conforme LEVEL
+    if LEVEL == 1:
+        # Facilita vertical, horizontal, diagonal, cruzado, janela, janelao, cheio
+        # vertical: repetir símbolo em todas colunas
+        for c in range(5):
+            sym = random_symbol()
+            for r in range(5):
+                grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
+        # horizontal
+        for r in range(5):
+            sym = random_symbol()
+            for c in range(5):
+                grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
+        # diagonal principal
+        sym = random_symbol()
+        for i in range(5):
+            grid[i][i] = sym if random.randint(0, 1) else grid[i][i]
+        # diagonal invertida
+        sym = random_symbol()
+        for i in range(5):
+            grid[i][4-i] = sym if random.randint(0, 1) else grid[i][4-i]
+        # cruzado X
+        sym = random_symbol()
+        for pos in [(0,0),(4,4),(0,4),(4,0),(2,2)]:
+            c,r = pos
+            grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
+        # janela
+        sym = random_symbol()
+        for pos in [(0,0),(4,4),(4,0),(0,4)]:
+            c,r = pos
+            grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+        # janelao (borda)
+        sym = random_symbol()
+        borda_positions = [
+            (0,0),(1,0),(2,0),(3,0),(4,0),
+            (0,4),(1,4),(2,4),(3,4),(4,4),
+            (0,1),(0,2),(0,3),
+            (4,1),(4,2),(4,3)
+        ]
+        for c,r in borda_positions:
+            grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+        # cheio
+        sym = random_symbol()
+        for c in range(5):
+            for r in range(5):
+                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+
+    elif LEVEL == 2:
+        # Facilita vertical e horizontal
+        for c in range(5):
+            sym = random_symbol()
+            for r in range(5):
+                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+        for r in range(5):
+            sym = random_symbol()
+            for c in range(5):
+                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+    elif LEVEL == 3:
+        # Facilita apenas vertical
+        for c in range(5):
+            sym = random_symbol()
+            for r in range(5):
+                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+
+    return grid
+
+
+# -----------------------------
+# checkWins CORRIGIDO COM POSIÇÕES
+# -----------------------------
+def check_wins(grid):
+    wins = []
+
+    def addWin(type_, positions):
+        multiplier = 0
+        if type_ == "horizontal": multiplier = 5
+        elif type_ == "vertical": multiplier = 8
+        elif type_ in ("diagonal_principal", "diagonal_invertida"): multiplier = 12
+        elif type_ == "cruzado_x": multiplier = 20
+        elif type_ == "janela": multiplier = 15
+        elif type_ == "janelao": multiplier = 30
+        elif type_ == "cheio": multiplier = 50
+
+        wins.append({
+            "type": type_,
+            "positions": positions,
+            "payout": multiplier
+        })
+
+    # horizontais
+    for r in range(5):
+        if all(grid[c][r] == grid[0][r] for c in range(5)):
+            addWin("horizontal", [(c, r) for c in range(5)])
+
+    # verticais
+    for c in range(5):
+        if all(grid[c][r] == grid[c][0] for r in range(5)):
+            addWin("vertical", [(c, r) for r in range(5)])
+
+    # diagonal principal
+    if all(grid[i][i] == grid[0][0] for i in range(5)):
+        addWin("diagonal_principal", [(i, i) for i in range(5)])
+
+    # diagonal invertida
+    if all(grid[i][4 - i] == grid[0][4] for i in range(5)):
+        addWin("diagonal_invertida", [(i, 4 - i) for i in range(5)])
+
+    # cruzado X
+    if (
+        grid[0][0] == grid[4][4] and
+        grid[0][4] == grid[4][0] and
+        grid[0][0] == grid[2][2] and
+        grid[0][0] == grid[0][4]
+    ):
+        addWin("cruzado_x", [(0,0),(4,4),(0,4),(4,0),(2,2)])
+
+    # janela
+    if (
+        grid[0][0] == grid[4][4] and
+        grid[4][0] == grid[0][4] and
+        grid[0][0] == grid[4][0]
+    ):
+        addWin("janela", [
+            (0,0),(4,4),(4,0),(0,4)
+        ])
+
+    # borda / janelao
+    borda_positions = [
+        (0,0),(1,0),(2,0),(3,0),(4,0),
+        (0,4),(1,4),(2,4),(3,4),(4,4),
+        (0,1),(0,2),(0,3),
+        (4,1),(4,2),(4,3)
+    ]
+    borda = [grid[c][r] for (c,r) in borda_positions]
+    if all(s == borda[0] for s in borda):
+        addWin("janelao", borda_positions)
+
+    # cheio
+    full_positions = [(c,r) for c in range(5) for r in range(5)]
+    flat = [grid[c][r] for (c,r) in full_positions]
+    if all(s == flat[0] for s in flat):
+        addWin("cheio", full_positions)
+
+    return wins
+
+
+@app.route("/rodar", methods=["POST"])
+def rodar():
+    bet_raw = request.form.get("bet") if request.form else None
+    if bet_raw is None:
+        data = request.get_json(silent=True) or {}
+        bet_raw = data.get("bet", 0.5)
+
+    try:
+        bet = float(bet_raw)
+    except:
+        bet = 0.5
+
+    bet = max(0.01, bet)
+
+    grid = generate_grid()
+    wins = check_wins(grid)
+
+    total_win = 0.0
+    if len(wins) > 0:
+        total_win = bet * len(wins) * 10.0
+
+    if total_win > 0:
+        player.balance += total_win
+        machine.balance -= total_win
+    else:
+        player.balance -= bet
+        machine.balance += bet
+
+    return jsonify({
+        "grid": grid,
+        "win": round(total_win, 2),
+        "balance_player": round(player.balance, 2),
+        "balance_machine": round(machine.balance, 2),
+        "wins": wins,
+        "level": LEVEL
+    })
 
 
 
@@ -287,7 +510,7 @@ def user_profile(user_id):
     return render_template('painel_game.html')
 
 
-@app.route('/compras/users/<string:user_id>')
+@app.route('/compras/users/')
 def compras():
     return render_template('compras.html')
 
