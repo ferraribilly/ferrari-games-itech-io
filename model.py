@@ -1,9 +1,14 @@
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import datetime
+from dotenv import load_dotenv
+import os
 
-MONGO_URI = "mongodb+srv://Ferrari-games-itech-io:0UgcAgov7VgUCJO3@ferrarigamesitechio.cqes1cf.mongodb.net/?appName=FerrariGamesItechIo"
-DB_NAME = "FerrariGamesItechIo"
+# Carrega variáveis de ambiente
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")
+DB_NAME = os.getenv("DB_NAME")
 USERS_COLLECTION_NAME = "users"
 PAGAMENTOS_COLLECTION_NAME = "pagamentos"
 BALANCE_COLLECTION_NAME = "balance"
@@ -13,6 +18,7 @@ db = client[DB_NAME]
 
 pagamentos_collection = db[PAGAMENTOS_COLLECTION_NAME]
 balance_collection = db[BALANCE_COLLECTION_NAME]
+
 
 
 def criar_documento_pagamento(payment_id, status, valor, user_id, email_user, data_criacao=None):
@@ -31,17 +37,18 @@ def criar_documento_pagamento(payment_id, status, valor, user_id, email_user, da
     }
 
 
-def criar_balance(user_id, valor):
+def criar_balance(user_id, balance):
+    user_id = str(user_id)
     existente = balance_collection.find_one({"user_id": user_id})
     if existente:
         balance_collection.update_one(
             {"user_id": user_id},
-            {"$inc": {"valor": float(valor)}}
+            {"$inc": {"balance": float(balance)}}
         )
     else:
         balance_collection.insert_one({
             "user_id": user_id,
-            "valor": float(valor),
+            "balance": float(balance),
             "data_criacao": datetime.datetime.utcnow()
         })
 
@@ -51,19 +58,32 @@ class BalanceModel:
         self.collection = balance_collection
 
     def get_balance_by_user(self, user_id):
-        return self.collection.find_one({"user_id": user_id})
+        user_id = str(user_id)
+        bal = self.collection.find_one({"user_id": user_id})
+        if bal:
+            bal["_id"] = str(bal["_id"])
+        return bal
 
     def get_all_balances(self):
-        return list(self.collection.find())
+        list_bal = list(self.collection.find())
+        for b in list_bal:
+            b["_id"] = str(b["_id"])
+        return list_bal
 
     def update_balance(self, user_id, new_data):
+        user_id = str(user_id)
         result = self.collection.update_one(
             {"user_id": user_id},
-            {"$set": new_data}
+            {"$set": new_data},
+            upsert=True
         )
+        # Se inserir novo documento, upserted_id será != None. Retornamos 1 para indicar sucesso.
+        if getattr(result, "upserted_id", None):
+            return 1
         return result.modified_count
 
     def delete_balance(self, user_id):
+        user_id = str(user_id)
         result = self.collection.delete_one({"user_id": user_id})
         return result.deleted_count
 

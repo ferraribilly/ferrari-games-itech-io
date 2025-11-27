@@ -129,14 +129,14 @@
 
 <div class="user-panel">
   <div class="user-info">
+    <span>id: <strong id="user_id">{{ user_id}}</strong></span>
     <span>nome: <strong id="nome">{{ nome }}</strong></span>
     <span>cpf: <strong id="cpf">{{ cpf }}</strong></span>
-    <span>Saldo: <strong id="balance">{{ balance if balance else 0 }}</strong></span>
+    <span>Saldo: <strong id="balance">{{ balance}}</strong></span>
   </div>
 </div>
-
 <div class="grid-container">
-  <a href="https://ferrari-games-itech-io.onrender.com" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1762734991/tabela_bichos_scqlku');">
+  <a href="/acesso/users/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1762734991/tabela_bichos_scqlku');">
     <div class="game-label">Jogo do Bicho</div>
   </a>
 
@@ -160,6 +160,9 @@
     <div class="game-label">TimeMania</div>
   </a>
 </div>
+<script>
+window.USER_ID = "{{ user_id }}";
+</script>
 
 </body>
 </html>

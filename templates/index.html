@@ -164,7 +164,7 @@
 
         if (res.status === 201 && data.id) {
           // redireciona para loading
-          window.location.href = `/loading/users/${data.id}`;
+          window.location.href = `/acesso/users/${data.id}`;
         } else {
           msg.innerText = data.error || "Erro ao registrar.";
           msg.style.display = "block";

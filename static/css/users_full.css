@@ -1,0 +1,80 @@
+body {
+    background: #f3f3f3;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    width: 90%;
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+.card h2 {
+    margin: 0 0 15px 0;
+}
+
+.card h3 {
+    margin-top: 25px;
+}
+
+.linha {
+    display: flex;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.linha label {
+    width: 130px;
+    font-weight: bold;
+}
+
+.linha input {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 12px;
+    background: #0275d8;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button:hover {
+    background: #025aa5;
+}
+
+.pagamentos-box {
+    background: #eee;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.pag-item {
+    padding: 5px;
+    margin-bottom: 5px;
+    background: #fff;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}

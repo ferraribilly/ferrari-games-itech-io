@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Geral</title>
+    <link rel="stylesheet" href="/static/css/users_full.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Painel Geral de Usuários</h1>
+
+    <div id="lista"></div>
+</div>
+
+<script>
+async function carregar() {
+    const res = await fetch("/users/full");
+    const data = await res.json();
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    data.forEach(item => {
+        const u = item.user;
+        const pagamentos = item.pagamentos || [];
+        const balance = item.balance;
+
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+            <h2>${u.nome}</h2>
+
+            <div class="linha">
+                <label>Email:</label>
+                <input id="email-${u._id}" value="${u.email}">
+            </div>
+
+            <div class="linha">
+                <label>CPF:</label>
+                <input id="cpf-${u._id}" value="${u.cpf}">
+            </div>
+
+            <div class="linha">
+                <label>Chave Pix:</label>
+                <input id="pix-${u._id}" value="${u.chave_pix}">
+            </div>
+
+            <div class="linha">
+                <label>Convite:</label>
+                <input id="convite-${u._id}" value="${u.convite_ganbista}">
+            </div>
+
+            <h3>Balance</h3>
+            <div class="linha">
+                <label>Balance:</label>
+                <input id="balance-${u._id}" value="${balance ? balance.valor : 0}">
+            </div>
+
+            <button onclick="atualizar('${u._id}')">Salvar Alterações</button>
+
+            <h3>Pagamentos</h3>
+            <div class="pagamentos-box">
+                ${pagamentos.map(p => `
+                    <div class="pag-item">
+                        <span>ID: ${p._id}</span>
+                        <span>Status: ${p.status}</span>
+                        <span>Valor: ${p.valor}</span>
+                    </div>
+                `).join("")}
+            </div>
+        `;
+
+        lista.appendChild(div);
+    });
+}
+
+async function atualizar(uid) {
+    const email = document.getElementById(`email-${uid}`).value;
+    const cpf = document.getElementById(`cpf-${uid}`).value;
+    const pix = document.getElementById(`pix-${uid}`).value;
+    const convite = document.getElementById(`convite-${uid}`).value;
+    const balance = document.getElementById(`balance-${uid}`).value;
+
+    await fetch(`/users/${uid}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            email: email,
+            cpf: cpf,
+            chave_pix: pix,
+            convite_ganbista: convite
+        })
+    });
+
+    await fetch(`/balance/${uid}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ valor: parseFloat(balance) })
+    });
+
+    alert("Atualizado");
+}
+
+carregar();
+</script>
+
+</body>
+</html>

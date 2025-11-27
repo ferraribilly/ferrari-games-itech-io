@@ -10,7 +10,6 @@ from bson.objectid import ObjectId
 from flask_cors import CORS
 import random
 
-
 app = Flask(__name__)
 
 MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN", "SEU_ACCESS_TOKEN")
@@ -19,8 +18,6 @@ sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
 user_model = UsuarioModel()
 pagamento_model = PagamentoModel()
 balance_model = BalanceModel()
-
-
 
 os.makedirs('static/images', exist_ok=True)
 
@@ -37,20 +34,15 @@ SYMBOL_NAMES = [
     "tigre","touro","urso","veado","vaca"
 ]
 
-class Player:
-    def __init__(self, balance=50.0):
-        self.balance = float(balance)
 
 class Machine:
     def __init__(self, balance=1000.0):
         self.balance = float(balance)
 
 machine = Machine()
-player = Player()
 
 def random_symbol():
     return random.choice(SYMBOL_NAMES)
-
 
 # -----------------------------
 # GERADOR COM VOLATILIDADE LEVEL
@@ -61,35 +53,28 @@ def generate_grid():
     # Facilitação de padrões conforme LEVEL
     if LEVEL == 1:
         # Facilita vertical, horizontal, diagonal, cruzado, janela, janelao, cheio
-        # vertical: repetir símbolo em todas colunas
         for c in range(5):
             sym = random_symbol()
             for r in range(5):
                 grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
-        # horizontal
         for r in range(5):
             sym = random_symbol()
             for c in range(5):
                 grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
-        # diagonal principal
         sym = random_symbol()
         for i in range(5):
             grid[i][i] = sym if random.randint(0, 1) else grid[i][i]
-        # diagonal invertida
         sym = random_symbol()
         for i in range(5):
             grid[i][4-i] = sym if random.randint(0, 1) else grid[i][4-i]
-        # cruzado X
         sym = random_symbol()
         for pos in [(0,0),(4,4),(0,4),(4,0),(2,2)]:
             c,r = pos
             grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
-        # janela
         sym = random_symbol()
         for pos in [(0,0),(4,4),(4,0),(0,4)]:
             c,r = pos
             grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-        # janelao (borda)
         sym = random_symbol()
         borda_positions = [
             (0,0),(1,0),(2,0),(3,0),(4,0),
@@ -99,14 +84,12 @@ def generate_grid():
         ]
         for c,r in borda_positions:
             grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-        # cheio
         sym = random_symbol()
         for c in range(5):
             for r in range(5):
                 grid[c][r] = sym if random.randint(0,1) else grid[c][r]
 
     elif LEVEL == 2:
-        # Facilita vertical e horizontal
         for c in range(5):
             sym = random_symbol()
             for r in range(5):
@@ -116,14 +99,12 @@ def generate_grid():
             for c in range(5):
                 grid[c][r] = sym if random.randint(0,1) else grid[c][r]
     elif LEVEL == 3:
-        # Facilita apenas vertical
         for c in range(5):
             sym = random_symbol()
             for r in range(5):
                 grid[c][r] = sym if random.randint(0,1) else grid[c][r]
 
     return grid
-
 
 # -----------------------------
 # checkWins CORRIGIDO COM POSIÇÕES
@@ -203,66 +184,154 @@ def check_wins(grid):
 
     return wins
 
+# Helper: normalize digits
+def only_digits(s):
+    return re.sub(r'\D', '', s or "")
 
-@app.route("/rodar", methods=["POST"])
-def rodar():
-    bet_raw = request.form.get("bet") if request.form else None
-    if bet_raw is None:
-        data = request.get_json(silent=True) or {}
-        bet_raw = data.get("bet", 0.5)
+@app.route("/rodar/<string:user_id>", methods=["POST"])
+def rodar(user_id):
+    user = user_model.get_user_by_id(user_id)
+    
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
 
+    user_balance = float(user.get("balance", 0.0))
+
+    bet_raw = request.json.get("bet") if request.json else 0.5
     try:
-        bet = float(bet_raw)
+        bet = max(0.01, float(bet_raw))
     except:
         bet = 0.5
 
-    bet = max(0.01, bet)
+    if user_balance < bet:
+        return jsonify({"error": "Saldo insuficiente"}), 400
 
     grid = generate_grid()
     wins = check_wins(grid)
-
-    total_win = 0.0
-    if len(wins) > 0:
-        total_win = bet * len(wins) * 10.0
+    total_win = bet * len(wins) * 10.0 if wins else 0.0
 
     if total_win > 0:
-        player.balance += total_win
+        new_balance = user_balance + total_win
         machine.balance -= total_win
     else:
-        player.balance -= bet
+        new_balance = user_balance - bet
         machine.balance += bet
+
+    user_model.update_user(user_id, {"balance": float(new_balance)})
 
     return jsonify({
         "grid": grid,
         "win": round(total_win, 2),
-        "balance_player": round(player.balance, 2),
+        "balance_user": round(new_balance, 2),
         "balance_machine": round(machine.balance, 2),
         "wins": wins,
         "level": LEVEL
     })
 
-
-
-
-
-
 #===========================
-# CRIAR USUÁRIO
+# CRIAR
 #===========================
-@app.route('/users', methods=['POST'])
-def create_user():
+@app.route("/users", methods=["POST"])
+def register_user():
     data = request.get_json()
-    if not data or \
-       'nome' not in data or \
-       'email' not in data or \
-       'cpf' not in data or \
-       'data_nascimento' not in data or \
-       'chave_pix' not in data or \
-       'convite_ganbista' not in data:
-        return jsonify({"error": "Dados inválidos fornecidos."}), 400
-    
-    user_id = user_model.create_user(data)
-    return jsonify({"message": "Usuário criado com sucesso", "id": user_id}), 201
+    required = ["nome","sobrenome","cpf","data_nascimento","email","senha"]
+    for field in required:
+        if not data.get(field):
+            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
+    cpf_digits = re.sub(r"\D", "", data["cpf"])
+    exists = user_model.get_user_by_cpf(cpf_digits)
+    if exists:
+        return jsonify({"error": "CPF já registrado"}), 409
+
+    new_user = {
+        "nome": data["nome"],
+        "sobrenome": data["sobrenome"],
+        "cpf": cpf_digits,
+        "data_nascimento": data["data_nascimento"],
+        "email": data["email"],
+        "convite_ganbista": data.get("convite_ganbista",""),
+        "chave_pix": data.get("chave_pix",""),
+        "senha": data["senha"],
+        "balance": 50.0,  # inicial para o user pelo registro
+        "created_at": datetime.now()
+    }
+    user_id = user_model.create_user(new_user)
+    return jsonify({"id": user_id}), 201
+
+#========================================
+# LOGIN CPF
+#========================================
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    cpf = data.get("cpf", "")
+
+    cpf_digits = re.sub(r"\D", "", cpf)
+    user = user_model.get_user_by_cpf(cpf_digits)
+
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+
+    # Login sem senha, igual seu frontend quer
+    return jsonify({
+        "redirect": f"/acesso/users/{user['_id']}"
+    })
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/acesso/users/rifas/<string:user_id>")
+def acesso_users_rifas(user_id):
+    # Busca o usuário pelo ID
+    user = user_model.get_user_by_id(user_id)
+
+    if user:
+        nome_value = user.get('nome')
+        # Renderiza o template HTML passando user_id e nome
+        return render_template("rifas_influencers.html", user_id=user_id, nome=nome_value)
+    else:
+        return "Nenhum usuário encontrado no banco de dados."
+
+
+@app.route("/acesso/users/painel/<string:user_id>")
+def acesso_users_painel(user_id):
+    # Busca o usuário pelo ID
+    user = user_model.get_user_by_id(user_id)
+
+    if user:
+        nome_value = user.get('nome')
+        cpf_value = user.get('cpf')
+        balance_value = user.get('balance', 0)
+
+        return render_template(
+            "painel_game.html",
+            user_id=user_id,
+            nome=nome_value,
+            cpf=cpf_value,
+            balance=balance_value
+        )
+    else:
+        return "Nenhum usuário encontrado no banco de dados."
+
+@app.route("/acesso/users/<string:user_id>")
+def acesso_users_machine(user_id):
+    user = user_model.get_user_by_id(user_id)
+
+    if user:
+        # Pega o balance do banco
+        balance_value = user.get('balance')
+
+        # Se for None ou inválido, não mostra 0, pode mostrar vazio ou "-"
+        if balance_value is None:
+            balance_value = ""  # ou "-" se quiser
+        else:
+            # Formata com duas casas decimais
+            balance_value = f"{balance_value:.2f}"
+
+        return render_template("slotmachine.html", user_id=user_id, balance=balance_value)
+    else:
+        return "Usuário não encontrado"
 
 
 @app.route('/users', methods=['GET'])
@@ -271,262 +340,7 @@ def get_users():
     return jsonify(users), 200
 
 
-@app.route('/users/<string:user_id>', methods=['GET'])
-def get_user(user_id):
-    try:
-        user = user_model.get_user_by_id(user_id)
-        if user:
-            return jsonify(user), 200
-        return jsonify({"error": "Usuário não encontrado."}), 404
-    except InvalidId:
-        return jsonify({"error": "ID inválido."}), 400
-
-
-@app.route('/users/<string:user_id>', methods=['PUT'])
-def update_user_route(user_id):
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Nenhum dado fornecido."}), 400
-
-    try:
-        modified = user_model.update_user(user_id, data)
-        if modified:
-            return jsonify({"message": "Usuário atualizado."}), 200
-        return jsonify({"error": "Usuário não encontrado."}), 404
-    except InvalidId:
-        return jsonify({"error": "ID inválido."}), 400
-
-
-@app.route('/users/<string:user_id>', methods=['DELETE'])
-def delete_user_route(user_id):
-    try:
-        deleted = user_model.delete_user(user_id)
-        if deleted:
-            return jsonify({"message": "Usuário excluído."}), 200
-        return jsonify({"error": "Usuário não encontrado."}), 404
-    except InvalidId:
-        return jsonify({"error": "ID inválido."}), 400
-
-
-
-#========================================
-# LOGIN CPF
-#========================================
-def only_digits(s):
-    return re.sub(r'\D', '', s or "")
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-
-    if not data or 'cpf' not in data:
-        return jsonify({"error": "CPF obrigatório."}), 400
-
-    input_cpf = only_digits(data["cpf"])
-
-    users = user_model.get_all_users()
-    for user in users:
-        user_cpf = only_digits(user.get("cpf", ""))
-        if user_cpf == input_cpf and user.get("_id"):
-            return jsonify({"redirect": f"/loading/users/{user['_id']}"}), 200
-
-    return jsonify({"error": "CPF não encontrado."}), 404
-
-
-
-#========================================
-# CRIAR PAGAMENTO
-#========================================
-@app.route("/criar-pagamento/users/<string:user_id>", methods=["POST"])
-def criar_pagamento(user_id):
-    data = request.get_json()
-    titulo = data.get("titulo")
-    valor = data.get("valor")
-    email_user = data.get("email")
-
-    if not titulo or not valor or not email_user:
-        return jsonify({"erro": "Dados insuficientes"}), 400
-
-    preference_data = {
-        "items": [
-            {"title": titulo, "quantity": 1, "unit_price": float(valor)}
-        ],
-        "payer": {"email": email_user},
-        "back_urls": {
-            "success": "https://ferrari-games-itech-io.onrender.com/feedback/success",
-            "failure": "https://ferrari-games-itech-io.onrender.com/feedback/failure",
-            "pending": "https://ferrari-games-itech-io.onrender.com/feedback/pending",
-        },
-        "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes",
-        "auto_return": "approved",
-    }
-
-    preference_response = sdk.preference().create(preference_data)
-    preference = preference_response["response"]
-
-    pagamento_doc = criar_documento_pagamento(
-        payment_id=preference["id"],
-        status="pending",
-        valor=float(valor),
-        user_id=user_id,
-        email_user=email_user
-    )
-
-    pagamentos_collection.insert_one(pagamento_doc)
-
-    return jsonify({
-        "id_preferencia": preference["id"],
-        "link_pagamento": preference["init_point"]
-    })
-
-
-
-#========================================
-# CRUD COMPLETO DE PAGAMENTOS
-#========================================
-@app.route("/pagamentos", methods=["GET"])
-def listar_pagamentos():
-    pagamentos = pagamento_model.get_all_pagamentos()
-    return jsonify(pagamentos), 200
-
-
-@app.route("/pagamentos/<string:pag_id>", methods=["GET"])
-def obter_pagamento(pag_id):
-    pagamento = pagamento_model.get_pagamento(pag_id)
-    if pagamento:
-        return jsonify(pagamento), 200
-    return jsonify({"error": "Pagamento não encontrado."}), 404
-
-
-@app.route("/pagamentos/<string:pag_id>", methods=["PUT"])
-def atualizar_pagamento(pag_id):
-    data = request.get_json()
-    modified = pagamento_model.update_pagamento(pag_id, data)
-    if modified:
-        return jsonify({"message": "Pagamento atualizado."}), 200
-    return jsonify({"error": "Não encontrado."}), 404
-
-
-@app.route("/pagamentos/<string:pag_id>", methods=["DELETE"])
-def deletar_pagamento(pag_id):
-    deleted = pagamento_model.delete_pagamento(pag_id)
-    if deleted:
-        return jsonify({"message": "Pagamento removido."}), 200
-    return jsonify({"error": "Não encontrado."}), 404
-
-
-
-#========================================
-# CRUD BALANCE
-#========================================
-@app.route("/balance", methods=["GET"])
-def listar_balance():
-    balances = balance_model.get_all_balances()
-    return jsonify(balances), 200
-
-
-@app.route("/balance/<string:user_id>", methods=["GET"])
-def obter_balance(user_id):
-    bal = balance_model.get_balance_by_user(user_id)
-    if bal:
-        return jsonify(bal), 200
-    return jsonify({"error": "Balance não encontrado."}), 404
-
-
-@app.route("/balance/<string:user_id>", methods=["PUT"])
-def atualizar_balance(user_id):
-    data = request.get_json()
-    modified = balance_model.update_balance(user_id, data)
-    if modified:
-        return jsonify({"message": "Balance atualizado."}), 200
-    return jsonify({"error": "Não encontrado."}), 404
-
-
-@app.route("/balance/<string:user_id>", methods=["DELETE"])
-def deletar_balance(user_id):
-    deleted = balance_model.delete_balance(user_id)
-    if deleted:
-        return jsonify({"message": "Balance removido."}), 200
-    return jsonify({"error": "Não encontrado."}), 404
-
-
-
-#========================================
-# WEBHOOK MERCADO PAGO
-#========================================
-@app.route("/notificacoes", methods=["POST"])
-def webhook_mp():
-    data = request.get_json()
-
-    topic = data.get("topic", data.get("type"))
-
-    if topic == "payment":
-        payment_id = data.get("data", {}).get("id")
-
-        if payment_id:
-            info = sdk.payment().get(payment_id)
-
-            if info["status"] == 200:
-                pag_data = info["response"]
-                status = pag_data.get("status")
-
-                pagamentos_collection.update_one(
-                    {"_id": payment_id},
-                    {"$set": {
-                        "status": status,
-                        "data_atualizacao": datetime.utcnow(),
-                        "detalhes_webhook": pag_data
-                    }},
-                    upsert=True
-                )
-
-                if status == "approved":
-                    valor = pag_data.get("transaction_amount", 0)
-                    user_id = pagamentos_collection.find_one({"_id": payment_id}).get("user_id")
-
-                    criar_balance(
-                        user_id=user_id,
-                        valor=valor
-                    )
-
-    return jsonify({"status": "ok"}), 200
-
-
-
-#========================================
-# TEMPLATES
-#========================================
-@app.route('/')
-def criar_user():
-    return render_template('index.html')
-
-@app.route('/loading/users/<string:user_id>')
-def loading(user_id):
-    return render_template('carregando.html')
-
-
-@app.route('/painel/users/<string:user_id>')
-def user_profile(user_id):
-    return render_template('painel_game.html')
-
-
-@app.route('/compras/users/')
-def compras():
-    return render_template('compras.html')
-
-@app.route('/pending')
-def pending():
-    return render_template('pending.html')
-
-@app.route('/failure')
-def failure():
-    return render_template('failure.html')
-
-@app.route('/jogo_bicho')
-def jogo_bicho():
-    return render_template('jogo_bicho.html')
-
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
