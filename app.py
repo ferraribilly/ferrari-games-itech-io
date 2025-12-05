@@ -608,9 +608,9 @@ def index():
 #======================================================
 # -ROTAS COMPRAS NO APP
 #======================================================
-@app.route("/compras/<string:user_id>")
-def compras(user_id):
-    return render_template("payments.html")
+# @app.route("/compras/<string:user_id>")
+# def compras(user_id):
+#     return render_template("payments.html")
 
 @app.route("/carrinho/<string:user_id>")
 def carrinho(user_id):
@@ -721,14 +721,14 @@ def webhook_mp():
     return jsonify({"status": "ok"}), 200
 
 
-@app.route("/compra/sucesso")
-def compra_sucesso():
-    return render_template("compras/sucesso.html")
+# @app.route("/compra/sucesso")
+# def compra_sucesso():
+#     return render_template("compras/sucesso.html")
 
 
-@app.route("/compra/recusada")
-def compra_recusada():
-    return render_template("compras/recusada.html") 
+# @app.route("/compra/recusada")
+# def compra_recusada():
+#     return render_template("compras/recusada.html") 
 #=======================================================
 # -PAINEL DE CONTROLE ACESSO
 #=======================================================
@@ -958,15 +958,15 @@ def pagamento_pix(user_id):
     email = request.args.get("email") or ""
     cpf = request.args.get("cpf") or ""
     telefone = request.args.get("telefone") or ""
-    qtd = request.args.get("qtd") or "0"
+    qtd = int(request.args.get("qtd") or 0)
 
-    quantity = int(qtd)
-    valor_total = quantity * 0.5
+    valor_total = qtd * 0.5
 
     payment_data = {
         "transaction_amount": valor_total,
         "description": "Block Animation",
         "payment_method_id": "pix",
+
         "payer": {
             "email": email,
             "first_name": nome,
@@ -975,30 +975,18 @@ def pagamento_pix(user_id):
                 "number": cpf
             }
         },
-        "additional_info": {
-            "items": [
-                {
-                    "title": "Block Animation",
-                    "quantity": quantity,
-                    "unit_price": 0.05
-                }
-            ],
-            "payer": {
-                "first_name": nome,
-                "last_name": "",
-                "phone": {
-                    "number": telefone
-                }
-            }
-        },
-        "external_reference": email
+
+        "external_reference": user_id,
+        
+
+          "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"
     }
 
     response = sdk.payment().create(payment_data)
     mp = response.get("response", {})
 
     if "id" not in mp:
-        return f"ERRO NO RETORNO DO MERCADO PAGO:<br><br>{mp}", 500
+        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
 
     payment_id = str(mp["id"])
     status = mp.get("status", "pending")
@@ -1013,18 +1001,14 @@ def pagamento_pix(user_id):
 
     PagamentoModel().create_pagamento(documento)
 
-    transaction = mp["point_of_interaction"]["transaction_data"]
-    qrcode_base64 = transaction["qr_code_base64"]
-    qrcode_text = transaction["qr_code"]
+    tx = mp["point_of_interaction"]["transaction_data"]
 
     return render_template(
         "rifa/transaction_pix.html",
-        user_id=user_id,
-        qrcode=f"data:image/png;base64,{qrcode_base64}",
+        qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
         valor=f"R$ {valor_total:.2f}",
-        qr_code_cola=qrcode_text
+        qr_code_cola=tx["qr_code"]
     )
-
 
 #========================================
 # -WEBHOOK
@@ -1032,125 +1016,98 @@ def pagamento_pix(user_id):
 @app.route("/notificacoes", methods=["POST"])
 def webhook_mps():
     data = request.get_json()
-    topic = data.get("topic", data.get("type"))
 
-    if topic == "payment":
-        payment_id = data.get("data", {}).get("id")
+    topic = data.get("type") or data.get("topic")
+    if topic != "payment":
+        return jsonify({"status": "ignored"}), 200
 
-        if payment_id:
-            info = sdk.payment().get(payment_id)
+    payment_id = data.get("data", {}).get("id")
+    if not payment_id:
+        return jsonify({"status": "no payment"}), 200
 
-            if info["status"] == 200:
-                pag_data = info["response"]
-                status = pag_data.get("status")
+    info = sdk.payment().get(payment_id)
 
-                pagamentos_collection.update_one(
-                    {"_id": str(payment_id)},
-                    {"$set": {
-                        "status": status,
-                        "data_atualizacao": datetime.utcnow(),
-                        "detalhes_webhook": pag_data
-                    }},
-                    upsert=True
-                )
+    if info["status"] != 200:
+        return jsonify({"status": "mp error"}), 200
 
-                if status == "approved":
-                    return redirect("/compra/sucesso/{{user_id}}")
+    pag = info["response"]
+    status = pag.get("status")
+    user_id = pag.get("external_reference")  # ← AQUI VEM O USER_ID
 
-                if status in ["rejected", "cancelled"]:
-                    return redirect("/compra/recusada/{{user_id}}")
+    pagamentos_collection.update_one(
+        {"_id": str(payment_id)},
+        {"$set": {
+            "status": status,
+            "user_id": user_id,
+            "data_atualizacao": datetime.utcnow(),
+            "detalhes_webhook": pag
+        }},
+        upsert=True
+    )
 
     return jsonify({"status": "ok"}), 200
-
-
 
 
 #------------------------------------------------
 # -COMPRA SUCCESS
 #------------------------------------------------
-@app.route("/compra/sucesso/<string:user_id>")
-def compra_sucesso_raffle(user_id):
-    # pega o último sorteio
-    sorteio = sorteio_model.collection.find_one({}, sort=[("_id", -1)])
+# @app.route("/sorteio/<string:user_id>")
+# def compra_sucesso_raffle(user_id):
+#     # pega o último sorteio
+#     sorteio = sorteio_model.collection.find_one({}, sort=[("_id", -1)])
+# 
+#     # valores do sorteio
+#     concurso_value = sorteio.get('concurso') if sorteio else ""
+#     data_value = sorteio.get('data') if sorteio else ""
+#     dezenas_value = sorteio.get('dezenas') if sorteio else []
+# 
+#     # pega a compra do usuário
+#     compra_rf = compras_rf_model.collection.find_one(
+#         {"user_id": user_id},
+#         sort=[("_id", -1)]
+#     )
+# 
+#     user = user_model.get_user_by_id(user_id)
+#     nome_value = user.get('nome') if user else ""
+#     cpf_value = user.get('cpf') if user else ""
+#     email_value = user.get('email') if user else ""
+# 
+#     if not compra_rf:
+#         return render_template(
+#             "rifa/sorteio.html",
+#             user_id=user_id,
+#             nome=nome_value,
+#             quantity=0,
+#             tickets=[],
+#             concurso=concurso_value,
+#             data=data_value,
+#             dezenas=dezenas_value
+#         )
+# 
+#     return render_template(
+#         "rifa/sorteio.html",
+#         user_id=user_id,
+#         nome=nome_value,
+#         quantity=compra_rf.get("quantity"),
+#         tickets=compra_rf.get("tickets", []),
+#         concurso=concurso_value,
+#         data=data_value,
+#         dezenas=dezenas_value
+#     )
 
-    # valores do sorteio
-    concurso_value = sorteio.get('concurso') if sorteio else ""
-    data_value = sorteio.get('data') if sorteio else ""
-    dezenas_value = sorteio.get('dezenas') if sorteio else []
-
-    # pega a compra do usuário
-    compra_rf = compras_rf_model.collection.find_one(
-        {"user_id": user_id},
-        sort=[("_id", -1)]
-    )
-
-    user = user_model.get_user_by_id(user_id)
-    nome_value = user.get('nome') if user else ""
-    cpf_value = user.get('cpf') if user else ""
-    email_value = user.get('email') if user else ""
-
-    if not compra_rf:
-        return render_template(
-            "rifa/sorteio.html",
-            user_id=user_id,
-            nome=nome_value,
-            quantity=0,
-            tickets=[],
-            concurso=concurso_value,
-            data=data_value,
-            dezenas=dezenas_value
-        )
-
-    return render_template(
-        "rifa/sorteio.html",
-        user_id=user_id,
-        nome=nome_value,
-        quantity=compra_rf.get("quantity"),
-        tickets=compra_rf.get("tickets", []),
-        concurso=concurso_value,
-        data=data_value,
-        dezenas=dezenas_value
-    )
+@app.route('/compra/sucesso')
+def success():
+    return render_template("rifa/sorteio.html")
 #=================================================================================================
     
 #----------------------------------------------------------
 # -PAGAMENTO RECUSADO
 #----------------------------------------------------------
-from bson import ObjectId, errors
-
-@app.route("/compra/recusada/<string:user_id>")
-def compra_recusada_raffle(user_id):
-    # verifica se user_id é um ObjectId válido
-    try:
-        obj_id = ObjectId(user_id)
-    except errors.InvalidId:
-        return "ID de usuário inválido", 400
-
-    pagamento = pagamento_model.collection.find_one(
-        {"user_id": obj_id},
-        sort=[("_id", -1)]
-    )
-
-    status_value = pagamento.get('status') if pagamento else ""
-    valor_value = pagamento.get('valor') if pagamento else ""
-    payment_id = str(pagamento.get('_id')) if pagamento else ""
-
-    user = user_model.get_user_by_id(user_id)
-    nome_value = user.get('nome') if user else ""
-
-    return render_template(
-        "rifa/recusada.html",
-        user_id=user_id,
-        nome=nome_value,
-        payment_id=payment_id,
-        status_value=status_value,
-        valor_value=valor_value
-    )
 
 
-
-
-
+@app.route("/compra/recusada")
+def compra_recusada_raffle():
+    return render_template("rifa/recusada.html")
 
 
     
@@ -1310,9 +1267,14 @@ def painel_create_raffles(admin_id):
 def painel_get_users_compras_rf(admin_id):
     return render_template("rifa/admin_dashboard/participants.html", admin_id=admin_id)
 
+
+
+
 @app.route('/admin_dashboard/list-raffles/<string:admin_id>')
 def painel_list_raffles(admin_id):
     return render_template("rifa/admin.html", admin_id=admin_id)    
+
+    
 #===========================  
 # PAGAMENTOS ADMIN  
 #===========================  
@@ -1349,11 +1311,6 @@ def dash(payment_id):
         pagamento=pagamento_escolhido,
         full=full
     )
-
-
-
-
-
 
 
 #===========================================
