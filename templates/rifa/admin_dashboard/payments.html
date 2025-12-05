@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pagamentos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard/payments.css') }}">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Pagamentos Recebidos</h1>
+
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="Buscar por nome ou email">
+      <select id="statusFilter">
+        <option value="">Todos os Status</option>
+        <option value="approved">Aprovado</option>
+        <option value="pending">Pendente</option>
+        <option value="cancelled">Cancelado</option>
+      </select>
+      <select id="paymentMethodFilter">
+        <option value="">Todos os Métodos</option>
+        <option value="Pix">Pix</option>
+        <option value="Card">Cartão</option>
+        <option value="Boleto">Boleto</option>
+      </select>
+      <select id="raffleFilter">
+        <option value="">Todas as Rifas</option>
+        <option value="Playstation 5">Playstation 5</option>
+        <option value="iPhone 15">iPhone 15</option>
+        <option value="Nintendo Switch">Nintendo Switch</option>
+      </select>
+      <button class="export-btn" id="exportBtn">Exportar CSV</button>
+    </div>
+
+    <table id="paymentsTable">
+      <thead>
+        <tr>
+          <th>Participante</th>
+          <th>Email</th>
+          <th>Rifa</th>
+          <th>Valor</th>
+          <th>Método</th>
+          <th>Status</th>
+          <th>Data</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+
+      <tbody id="paymentsTableBody">
+        <!-- Carregado pelo JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal" id="detailsModal">
+    <div class="modal__content">
+      <span class="modal__close" id="closeModalBtn">&times;</span>
+      <h2>Detalhes do Pagamento</h2>
+      <p><strong>Nome:</strong> <span id="modalName"></span></p>
+      <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+      <p><strong>Valor:</strong> <span id="modalAmount"></span></p>
+      <p><strong>Método:</strong> <span id="modalPaymentMethod"></span></p>
+      <p><strong>Data:</strong> <span id="modalDate"></span></p>
+    </div>
+  </div>
+
+ <script>
+   // Recebe do Flask: full = [{ user: {...}, pagamentos: [{...}, ...] }, ...]
+   const full = {{ full|tojson }};
+ 
+   // Converte full em lista de pagamentos planos (cada pagamento com dados do usuário)
+   function buildPaymentsFromFull(fullList) {
+     const out = [];
+     fullList.forEach(item => {
+       const user = item.user || {};
+       const pagamentos = item.pagamentos || [];
+       pagamentos.forEach(p => {
+         out.push({
+           id: p.payment_id || p.id || '',
+           participant: (user.nome || user.name || user.username || user.email) || '',
+           email: user.email || p.email_user || p.email || '',
+           raffle: p.raffle || p.titulo || p.raffa || '',
+           amount: p.valor || p.amount || 0,
+           paymentMethod: p.method || p.payment_method || p.paymentMethod || 'Pix',
+           status: p.status || p.status_pagamento || 'pending',
+           date: p.data_criacao || p.created_at || p.date || ''
+         });
+       });
+     });
+     return out;
+   }
+ 
+   // Lista final usada na tabela
+   let allPayments = buildPaymentsFromFull(full);
+   let filteredPayments = [...allPayments];
+ 
+   const elements = {
+     searchInput: document.getElementById('searchInput'),
+     statusFilter: document.getElementById('statusFilter'),
+     paymentMethodFilter: document.getElementById('paymentMethodFilter'),
+     raffleFilter: document.getElementById('raffleFilter'),
+     exportBtn: document.getElementById('exportBtn'),
+     paymentsTableBody: document.getElementById('paymentsTableBody'),
+     detailsModal: document.getElementById('detailsModal'),
+     closeModalBtn: document.getElementById('closeModalBtn'),
+     modalName: document.getElementById('modalName'),
+     modalEmail: document.getElementById('modalEmail'),
+     modalAmount: document.getElementById('modalAmount'),
+     modalPaymentMethod: document.getElementById('modalPaymentMethod'),
+     modalDate: document.getElementById('modalDate')
+   };
+ 
+   document.addEventListener('DOMContentLoaded', () => {
+     renderPayments();
+     setupEventListeners();
+   });
+ 
+   function renderPayments() {
+     elements.paymentsTableBody.innerHTML = '';
+ 
+     if (filteredPayments.length === 0) {
+       const tr = document.createElement('tr');
+       tr.innerHTML = `<td colspan="8" style="text-align:center; padding:16px">Nenhum pagamento encontrado</td>`;
+       elements.paymentsTableBody.appendChild(tr);
+       return;
+     }
+ 
+     filteredPayments.forEach(payment => {
+       const row = document.createElement('tr');
+ 
+       row.innerHTML = `
+         <td>${escapeHTML(String(payment.participant || ''))}</td>
+         <td>${escapeHTML(String(payment.email || ''))}</td>
+         <td>${escapeHTML(String(payment.raffle || ''))}</td>
+         <td>${escapeHTML(String(payment.amount || ''))}</td>
+         <td>${escapeHTML(String(payment.paymentMethod || ''))}</td>
+         <td><span class="status status--${escapeHTML(String(payment.status || ''))}">${getStatusText(payment.status)}</span></td>
+         <td>${escapeHTML(String(payment.date || ''))}</td>
+         <td><button class="details-btn" data-id="${escapeAttr(payment.id)}">Detalhes</button></td>
+       `;
+ 
+       elements.paymentsTableBody.appendChild(row);
+     });
+ 
+     document.querySelectorAll('.details-btn').forEach(btn => {
+       btn.onclick = () => showPaymentDetails(btn.dataset.id);
+     });
+   }
+ 
+   function filterPayments() {
+     const search = (elements.searchInput.value || '').toLowerCase();
+     const status = elements.statusFilter.value;
+     const method = elements.paymentMethodFilter.value;
+     const raffle = elements.raffleFilter.value;
+ 
+     filteredPayments = allPayments.filter(p => {
+       const inSearch = !search || (String(p.participant || '').toLowerCase().includes(search) || String(p.email || '').toLowerCase().includes(search));
+       const byStatus = !status || p.status === status;
+       const byMethod = !method || p.paymentMethod === method;
+       const byRaffle = !raffle || p.raffle === raffle;
+       return inSearch && byStatus && byMethod && byRaffle;
+     });
+ 
+     renderPayments();
+   }
+ 
+   function showPaymentDetails(id) {
+     const p = allPayments.find(x => String(x.id) === String(id));
+     if (!p) return;
+ 
+     elements.modalName.textContent = p.participant;
+     elements.modalEmail.textContent = p.email;
+     elements.modalAmount.textContent = p.amount;
+     elements.modalPaymentMethod.textContent = p.paymentMethod;
+     elements.modalDate.textContent = p.date;
+ 
+     elements.detailsModal.style.display = 'flex';
+   }
+ 
+   function closeModal() {
+     elements.detailsModal.style.display = 'none';
+   }
+ 
+   function exportToCSV() {
+     const headers = ['Participante', 'Email', 'Rifa', 'Valor', 'Método', 'Status', 'Data'];
+     const rows = filteredPayments.map(p =>
+       [p.participant, p.email, p.raffle, p.amount, p.paymentMethod, getStatusText(p.status), p.date]
+     );
+ 
+     let csv = headers.join(',') + '\n';
+     csv += rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+ 
+     const blob = new Blob([csv], { type: 'text/csv' });
+     const link = document.createElement('a');
+     link.href = URL.createObjectURL(blob);
+     link.download = "pagamentos.csv";
+     link.click();
+   }
+ 
+   function getStatusText(s) {
+     return { approved: "Aprovado", pending: "Pendente", cancelled: "Cancelado" }[s] || s || '';
+   }
+ 
+   function setupEventListeners() {
+     elements.searchInput.oninput = filterPayments;
+     elements.statusFilter.onchange = filterPayments;
+     elements.paymentMethodFilter.onchange = filterPayments;
+     elements.raffleFilter.onchange = filterPayments;
+     elements.exportBtn.onclick = exportToCSV;
+     elements.closeModalBtn.onclick = closeModal;
+   }
+ 
+   // pequenas funções de segurança ao inserir no DOM
+   function escapeHTML(str) {
+     return String(str)
+       .replace(/&/g, "&amp;")
+       .replace(/</g, "&lt;")
+       .replace(/>/g, "&gt;")
+       .replace(/"/g, "&quot;")
+       .replace(/'/g, "&#39;");
+   }
+   function escapeAttr(str) {
+     return String(str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+   }
+ </script>
+</body>
+
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV AWARDS | Rifa digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home-dark.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <a href="#">
+                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">
+            </a>
+        </div>
+    </header>
+    <!-- Header -->
+
+    <!-- Content -->
+    <main>
+        <div class="main-container">
+            <div class="main-raffle">
+                <div class="main-image">
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">
+                </div>
+                <div class="info">
+                    <a href="/users/produto/{{ user_id }}">
+                        <div class="main-description">
+                            <h4> Ganhe ate R$ 2.000,00 no PIX (2 mil reais no PIX)</h4>
+                            <p>Sorteio Loteria Federal</p>
+                            <div class="available">Adquira já!</div>
+                        </div>
+                        <div class="go-to">
+                            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290953/right-arrow-icon_jrcfnh.png" alt="Acessar" draggable="false">
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="other-raffles">
+                <div class="info sc">
+                    <a href="/users/produto/{{ user_id }}">
+                        <div class="group-info">
+                            <div class="raffle-image">
+                            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">
+
+                            </div>
+                            <div class="main-description">
+                                <h4>R$ 3.000,00 no PIX (3 mil reais no PIX)</h4>
+                                <p>Sorteio Loteria Federal</p>
+                                <div class="available">Adquira já!</div>
+                            </div>
+                        </div>
+                        <div class="go-to">
+                            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290953/right-arrow-icon_jrcfnh.png" alt="Acessar" draggable="false">
+                        </div>
+                    </a>
+                </div>
+                <div class="info sc">
+                    <a href="/users/produto/{{ user_id }}">
+                        <div class="group-info">
+                            <div class="raffle-image">
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">
+                            </div>
+                            <div class="main-description">
+                                <h4>R$ 100.000,00 no PIX (100.000,00 mil reais no PIX)</h4>
+                                <p>Sorteio Loteria Federal</p>
+                                <div class="unavailable">Esgotou!</div>
+                            </div>
+                        </div>
+                        <div class="go-to">
+                            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290953/right-arrow-icon_jrcfnh.png" alt="Acessar" draggable="false">
+
+                        </div>
+                    </a>
+                </div>
+                <div class="info sc">
+                    <a href="/users/produto/{{ user_id }}">
+                        <div class="group-info">
+                            <div class="raffle-image">
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">
+                            </div>
+                            <div class="main-description">
+                                <h4>R$ 3.000,00 no PIX (3 mil reais no PIX)</h4>
+                                <p>Sorteio Loteria Federal</p>
+                                <div class="unavailable">Esgotou!</div>
+                            </div>
+                        </div>
+                        <div class="go-to">
+                            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290953/right-arrow-icon_jrcfnh.png" alt="Acessar" draggable="false">
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Content -->
+    <script>
+    window.USER_ID = "{{ user_id }}";
+    </script>
+</body>
+</html>

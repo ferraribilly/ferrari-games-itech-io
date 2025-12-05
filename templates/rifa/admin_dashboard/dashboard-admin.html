@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Savawards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../static/css/admin_dashboard/dashboard-admin.css">
+  <style>
+.sidebar strong {
+    display: flex;            /* flex para centralizar */
+    justify-content: center;  /* centraliza horizontal */
+    align-items: center;      /* centraliza vertical */
+    margin: 5px 0;            /* margem entre os blocos */
+    background: #333;
+    height: 50px;
+    border-radius: 10px;
+    color: #fff;              /* texto visível no fundo escuro */
+    text-align: center;
+}
+  </style>
+</head>
+
+<body>
+  <div class="sidebar">
+    <h2>Sav awards</h2>
+    <strong>{{admin_id}}</strong>
+    <strong>{{convite}}</strong>
+    <strong>{{nome}}</strong>
+    <strong>{{cpf}}</strong>
+    
+    
+        
+       
+    
+    <ul>
+      <li><a href="#">Dashboard</a></li>
+      <li><a href="/admin_dashboard/create-raffle/{{ admin_id }}">Criar Nova Rifa</a></li>
+      <li><a href="/admin_dashboard/list-raffles/{{ admin_id }}">Listar Rifas</a></li>
+      <li><a href="/admin_dashboard/participants/{{ admin_id }}">Participantes</a></li>
+      <li><a href="/dashboard/admin/pagamentos/{{ payment_id }}">Pagamentos</a></li>
+      <li><a href="/admin_dashboard/prize-draw/{{ admin_id }}">Sorteios</a></li>
+      <li><a href="/admin_dashboard/configuration/{{ admin_id }}">Configurações</a></li>
+    </ul>
+  </div>
+
+  <div class="main">
+    <h1>Admin - Painel de Controle</h1>
+    <div class="cards">
+      <div class="card">
+        <h3>Rifas Criadas</h3>
+        <p id="total_rifas_criadas">1</p>
+      </div>
+      <div class="card">
+        <h3>Total Arrecadado</h3>
+        <p id="total_arrecadado">{{total_arrecadado}}</p>
+      </div>
+      <div class="card">
+        <h3>Participantes</h3>
+        <p id="total_participants">{{total_users}}</p>
+      </div>
+      <div class="card">
+        <h3>Prêmios Enviados</h3>
+        <p id="total_premios_pagos">R$ 100.000,00</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Rifas Recentes</h3>
+      <div class="table-wrapper" id="rifas_recentes">
+        <table>
+          <thead>
+            <tr>
+              <th>Id Rifa</th>            
+              <th>Título</th>
+              <th>Preço</th>
+              <th>Ingressos</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{raffle_id}}</td>
+              <td>{{nome_rifa}}</td>
+              <td>{{valor}}</td>
+              <td>{{tickets}}</td>
+              <td>{{status}}</td>
+              <td><button class="btn">Editar</button></td>
+            </tr>
+            <tr>
+              <td>{{raffle_id}}</td>            
+              <td>{{nome_rifa}}</td>
+              <td>{{valor}}</td>
+              <td>{{ingressos}}</td>
+              <td>{{status}}</td>
+              <td><button class="btn">Ver</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Pagamentos Recentes</h3>
+      <div class="table-wrapper" id="pagamento_participants">
+        <table>
+          <thead>
+            <tr>
+              <th>Id Participante</th>
+              <th>Participante</th>
+              <th>Rifa</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{user_id}}</td>            
+              <td>{{user_nome}}</td>
+              <td>{{rifa}}</td>
+              <td>{{valor}}</td>
+              <td>{{status}}</td>
+              <td>{{data_criacao}}</td>
+              <td>{{payment_id}}</td>
+              
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.ADMIN_ID = "{{ admin_id }}";
+    window.PAYMENT_ID = "{{ payment_id }}";
+        
+</script>
+</body>
+
+</html>

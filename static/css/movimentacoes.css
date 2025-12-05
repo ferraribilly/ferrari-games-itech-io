@@ -1,0 +1,113 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #000;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+    overflow-x: hidden; /* Evita scroll horizontal */
+    transform: scale(0.9); /* substitui scale */
+    transform-origin: top left;
+}
+
+.container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    overflow-x: auto; /* só horizontal se realmente necessário */
+}
+
+header {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+h1, h2 {
+    color: #0056b3;
+}
+
+.balance-card {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: scale(0.8);
+    transform-origin: top left;
+    text-align: center; /* centraliza conteúdo */
+    position: relative;
+}
+
+.balance-card img.logo {
+    width: 60px; /* ajuste conforme necessário */
+    height: auto;
+    margin-bottom: 15px;
+    border-radius:50%;
+}
+
+.balance-amount {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.account-info {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.transactions-section h2 {
+    margin-bottom: 15px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+table th, table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    word-break: break-word; /* evita que colunas fiquem largas demais */
+}
+
+table thead th {
+    background-color: #0056b3;
+    color: white;
+    font-weight: normal;
+}
+
+/* Estilos específicos para linhas de entrada e saída */
+.income td:last-child {
+    color: #28a745; /* Verde para entradas */
+    font-weight: bold;
+}
+
+.expense td:last-child {
+    color: #dc3545; /* Vermelho para saídas */
+    font-weight: bold;
+}
+
+tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Ajuste responsivo para telas pequenas */
+@media (max-width: 768px) {
+    table th, table td {
+        padding: 8px;
+        font-size: 0.8em;
+    }
+
+    .balance-card {
+        transform: scale(0.7);
+    }
+}

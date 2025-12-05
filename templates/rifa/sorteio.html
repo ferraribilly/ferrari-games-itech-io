@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV AWARDS | Rifa digital sorteios</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home-dark.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <a href="#">
+                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">
+            </a>
+        </div>
+    </header>
+    <!-- Header -->
+
+    <!-- Content -->
+    <main>
+        <div class="main-container">
+            <div class="main-raffle">
+                <div class="main-image">
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">
+                </div>
+                <div class="info">
+                        <div class="main-description">
+                            <h4>{{data_sorteio}}</h4>
+                            <p>Sorteio Loteria Federal</p>
+                            <h4>{{concurso}}</h4> 
+                            <h4>{{dezenas_sorteadas}}</h4>    
+                            <h4>Ganhadores</h4>                   
+                            <h4>{{nome_ganhador}}</h4>
+                            <h4>{{cpf}}</h4>
+                            <h4>{{valor_premio}}</h4>
+                        </div>
+                       
+                    </a>
+                </div>
+            </div>
+            
+                            
+              
+                       
+                   
+                   
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Content -->
+    <script>
+    window.USER_ID = "{{ user_id }}";
+    </script>
+</body>
+</html>

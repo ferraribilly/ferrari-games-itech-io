@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV AWARDS | Review</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/review.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <a href="#">
+                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">
+            </a>
+        </div>
+    </header>
+    <!-- Header -->
+
+    <!-- Content -->
+    <main>
+        <div class="main-container">
+            <div class="checkout-list">
+                <div class="information-list">
+                    <div class="info">
+                        <span>Nome:</span>
+                        <b>{{nome}}</b>
+                    </div>
+                    <div class="info">
+                        <span>Email:</span>
+                        <b>{{email}}</b>
+                    </div>
+                    <div class="info">
+                     <span>Cpf:</span>
+                     <b>{{cpf}}</b>
+                      </div>
+                    <div class="info">
+                        <span>Telefone/WhatsApp:</span>
+                        <b>27998031796</b>
+                    </div>
+                    <div class="info">
+                        <span>Quantidade de bilhetes:</span>
+                        <b>{{quantity}}</b>
+                    </div>
+                    <div class="info">
+                         <span>valor:</span>
+                        <b>{{valor}}</b>
+                    </div>
+
+                    <div id="see-tickets" class="see-tickets">
+                        <span>ver bilhetes</span>
+                    </div>
+
+                    <div id="ticket-numbers" class="ticket-numbers">
+                        {% for t in tickets %}
+                            <p>{{ t }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <a class="purchase" id="btn-pagar">
+                <span>Pagar com o PIX</span>
+            </a>
+
+        </div>
+    </main>
+    <!-- Content -->
+
+<script src="{{ url_for('static', filename='js/see-tickets.js') }}"></script>
+
+<script>
+document.getElementById("btn-pagar").onclick = () => {
+
+    const nome = document.querySelectorAll('.info b')[0].innerText;
+    const email = document.querySelectorAll('.info b')[1].innerText;
+    const cpf = document.querySelectorAll('.info b')[2].innerText;
+    const telefone = document.querySelectorAll('.info b')[3].innerText;
+    const qtd = document.querySelectorAll('.info b')[4].innerText;
+
+    const url = `/raffle/pagamento_pix/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}`;
+
+    window.location.href = url;
+};
+window.USER_ID = "{{ user_id }}";
+
+</script>
+
+</body>
+</html>

@@ -96,7 +96,7 @@ export default class Slot {
     msg.innerHTML=`<p>Saldo insuficiente!!</p><button id="deposit-btn">Ir para Depósitos</button>`;
     document.body.appendChild(msg);
     document.getElementById("deposit-btn").addEventListener("click",()=>{
-      window.location.href=`/acesso/users/compras/${window.USER_ID}`;
+      window.location.href=`/acesso/users/compra/${window.USER_ID}`;
     });
   }
 

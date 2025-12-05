@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV AWARDS | Pix</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/transaction_pix.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    <header>
+        <div class="logo">
+            <a href="#">
+                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="pix-container">
+            <div class="payment">
+
+                <p>Abra seu aplicativo de pagamento e escolha <b>Ler QR Code</b></p>
+
+                <div class="qrcode-info">
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/cellphone-icon_remhjc.svg" draggable="false">
+                    <span>Aponte a câmera do seu celular</span>
+                </div>
+
+                <div class="qrcode">
+                    <img src="{{ qrcode }}" alt="QR CODE">
+                </div>
+
+                <div class="pix-value">
+                    <span>Valor do Pix:</span>
+                    <strong>{{ valor }}</strong>
+                </div>
+
+                <div id="copy-mobile" class="pix-copy-mobile">
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290949/copy-icon_z8ur77.svg" alt="Copiar" draggable="false">
+                    <span>Copiar código</span>
+                </div>
+
+                <div class="pix-copy-and-past">
+                    <span>Você também pode pagar usando <b>Pix Copia e Cola</b>. Copie o código abaixo:</span>
+                    <div class="qrcode-text">
+                        <img id="copy" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290949/copy-icon_z8ur77.svg" alt="Copiar" draggable="false">
+                        <div id="copied-code">Código copiado.</div>
+                        <p id="qrcode-text">{{ qr_code_cola }}</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Copy qrcode
+        document.getElementById('copy').addEventListener('click', copyText);
+        document.getElementById('copy-mobile').addEventListener('touchstart', copyText);
+      
+        function copyText() {
+            var qrcodeText = document.getElementById('qrcode-text');
+            var copiedCodeBox = document.getElementById('copied-code');
+            
+            navigator.clipboard.writeText(qrcodeText.textContent).then(function() {
+                qrcodeText.style.filter = 'blur(1px)';
+                copiedCodeBox.style.visibility = 'visible';
+                copiedCodeBox.style.opacity = '0.9';
+                copiedCodeBox.style.transition = 'all 0.3s';
+            
+                setTimeout(function() {
+                    qrcodeText.style.filter = '';
+                    copiedCodeBox.style.visibility = '';
+                    copiedCodeBox.style.opacity = '';
+                }, 1000);
+            });
+        }
+    </script>
+
+</body>
+</html>

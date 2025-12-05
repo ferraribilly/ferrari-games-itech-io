@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saldo e Movimentações da Conta</title>
+    <!-- Linka o arquivo CSS externo -->
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/movimentacoes.css') }}">
+    <!-- Opcional: Adiciona ícones para um visual melhor -->
+    <link rel="stylesheet" href="cdnjs.cloudflare.com">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Minha Conta</h1>
+        </header>
+
+        <section class="balance-section">
+            <div class="balance-card">
+                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1762726173/logo_dna0xx.jpg" alt="Logo" class="logo">
+                <h2>Saldo Disponível</h2>
+                <p class="balance-amount" id="balance">{{balance}}</p>
+                <p class="account-info" id="user_id">{{user_id}}</p>
+                <p class="account-info" id="cpf">{{cpf}}</p>
+                <p class="account-info" id="convite_ganbista">{{convite_ganbista}}</p>
+                
+                
+            </div>
+        </section>
+
+        <section class="transactions-section">
+            <h2>Últimas Movimentações</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th id="data">Data</th>
+                        <th id="id">Id</th>
+                        <th id≈"title">Descrição</th>
+                        <th id="tipo">Tipo</th>
+                        <th id="valor">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--  (saída) -->
+                    <tr class="expense">
+                        <td>25/11/2025</td>
+                        <td>agiuytfgdersjkbv</td>
+                        <td>Ganhos</td>                        
+                        <td>Saída</td>
+                        <td>- R$ 150,00</td>
+                    </tr>
+                    <!-- (entrada) -->
+                    <tr class="income">
+                        <td>24/11/2025</td>
+                        <td>12345</td>                        
+                        <td>Compra Bloco Bichos</td>
+                        <td>Entrada</td>
+                        <td>+ R$ 5,00</td>
+                    </tr>
+                    <tr class="expense">
+                        <td>23/11/2025</td>
+                        <td>asgdfcgfhhfrrfgg7</td>                        
+                        <td>Ganhos</td>
+                        <td>Saída</td>
+                        <td>- R$ 500,00</td>
+                    </tr>
+                    <tr class="income">
+                        <td>22/11/2025</td>
+                        <td>123456</td>                        
+                        <td>Compra Bloco Bichos</td>
+                        <td>Entrada</td>
+                        <td>+ R$ 10,00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+    <!-- Usando módulos ES6 -->
+    <script type="module">
+      import Symbol from "{{ url_for('static', filename='js/') }}";
+    
+      window.USER_ID = "{{ user_id }}";
+    </script>
+</body>
+</html>

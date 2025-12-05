@@ -3,6 +3,8 @@ from bson.objectid import ObjectId
 import datetime
 from dotenv import load_dotenv
 import os
+from datetime import datetime, timezone
+
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -11,22 +13,28 @@ MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
 USERS_COLLECTION_NAME = "users"
 PAGAMENTOS_COLLECTION_NAME = "pagamentos"
-BALANCE_COLLECTION_NAME = "balance"
+ADMINS_COLLECTION_NAME = "admins"
+COMPRAS_RF_COLLECTION_NAME = "compras_rf"
+SORTEIO_COLLECTION_NAME = "sorteio"
+
+
+
+
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
-
+#--------------------------------------------------------------------
+# -PAGAMENTOS
+#--------------------------------------------------------------------
 pagamentos_collection = db[PAGAMENTOS_COLLECTION_NAME]
-balance_collection = db[BALANCE_COLLECTION_NAME]
-
-
 
 def criar_documento_pagamento(payment_id, status, valor, user_id, email_user, data_criacao=None):
     if data_criacao is None:
-        data_criacao = datetime.datetime.utcnow()
+        
+        data_criacao = datetime.now(timezone.utc)
 
     return {
-        "_id": payment_id,
+        "_id": str(payment_id),
         "status": status,
         "valor": valor,
         "user_id": user_id,
@@ -37,57 +45,6 @@ def criar_documento_pagamento(payment_id, status, valor, user_id, email_user, da
     }
 
 
-def criar_balance(user_id, balance):
-    user_id = str(user_id)
-    existente = balance_collection.find_one({"user_id": user_id})
-    if existente:
-        balance_collection.update_one(
-            {"user_id": user_id},
-            {"$inc": {"balance": float(balance)}}
-        )
-    else:
-        balance_collection.insert_one({
-            "user_id": user_id,
-            "balance": float(balance),
-            "data_criacao": datetime.datetime.utcnow()
-        })
-
-
-class BalanceModel:
-    def __init__(self):
-        self.collection = balance_collection
-
-    def get_balance_by_user(self, user_id):
-        user_id = str(user_id)
-        bal = self.collection.find_one({"user_id": user_id})
-        if bal:
-            bal["_id"] = str(bal["_id"])
-        return bal
-
-    def get_all_balances(self):
-        list_bal = list(self.collection.find())
-        for b in list_bal:
-            b["_id"] = str(b["_id"])
-        return list_bal
-
-    def update_balance(self, user_id, new_data):
-        user_id = str(user_id)
-        result = self.collection.update_one(
-            {"user_id": user_id},
-            {"$set": new_data},
-            upsert=True
-        )
-        # Se inserir novo documento, upserted_id será != None. Retornamos 1 para indicar sucesso.
-        if getattr(result, "upserted_id", None):
-            return 1
-        return result.modified_count
-
-    def delete_balance(self, user_id):
-        user_id = str(user_id)
-        result = self.collection.delete_one({"user_id": user_id})
-        return result.deleted_count
-
-
 class PagamentoModel:
     def __init__(self):
         self.collection = pagamentos_collection
@@ -96,24 +53,140 @@ class PagamentoModel:
         result = self.collection.insert_one(data)
         return str(result.inserted_id)
 
+    # existing method renamed/kept for backward compat
     def get_pagamento(self, pagamento_id):
-        return self.collection.find_one({"_id": pagamento_id})
+        doc = self.collection.find_one({"_id": str(pagamento_id)})
+        if doc:
+            doc["_id"] = str(doc.get("_id"))
+        return doc
 
+    # alias esperado pela rota — evita AttributeError
+    def get_pagamento_by_id(self, pagamento_id):
+        return self.get_pagamento(pagamento_id)
+
+    # garantir que todos os _id venham como string
     def get_all_pagamentos(self):
-        return list(self.collection.find())
+        docs = list(self.collection.find())
+        for d in docs:
+            d["_id"] = str(d.get("_id"))
+        return docs
 
     def update_pagamento(self, pagamento_id, new_data):
         result = self.collection.update_one(
-            {"_id": pagamento_id},
+            {"_id": str(pagamento_id)},
             {"$set": new_data}
         )
         return result.modified_count
 
     def delete_pagamento(self, pagamento_id):
-        result = self.collection.delete_one({"_id": pagamento_id})
+        result = self.collection.delete_one({"_id": str(pagamento_id)})
         return result.deleted_count
+#==================================================================================================
+#==================================================================================================
+
+#-------------------------------------------------------------------------
+# -COMPRAS
+#-------------------------------------------------------------------------
+compras_rf_collection = db[COMPRAS_RF_COLLECTION_NAME]
+class Compras_rfModel:
+    def __init__(self):
+        self.collection = compras_rf_collection
+
+    def create_compras_rf(self, data):
+        result = self.collection.insert_one(data)
+        return str(result.inserted_id)
+
+    def get_compras_rf(self, compras_rf_id):
+        doc = self.collection.find_one({"_id": str(compras_rf_id)})
+        if doc:
+            doc["_id"] = str(doc.get("_id"))
+        return doc
+
+    def get_compras_rf_by_id(self, compras_rf_id):
+        return self.get_compras_rf(compras_rf_id)
+
+    def get_all_compras_rf(self):
+        docs = list(self.collection.find())
+        for d in docs:
+            d["_id"] = str(d.get("_id"))
+        return docs
+
+    def update_compras_rf(self, compras_rf_id, new_data):
+        result = self.collection.update_one(
+            {"_id": str(compras_rf_id)},
+            {"$set": new_data}
+        )
+        return result.modified_count
+
+    def delete_compras_rf(self, compras_rf_id):
+        result = self.collection.delete_one({"_id": str(compras_rf_id)})
+        return result.deleted_count
+#===================================================================================================
+#===================================================================================================
 
 
+
+#--------------------------------------------------------------------
+# - SORTEIO
+#--------------------------------------------------------------------
+sorteio_collection = db[SORTEIO_COLLECTION_NAME]
+
+class SorteioModel:
+    def __init__(self):
+        self.collection = sorteio_collection
+
+    def create_sorteio(self, data):
+        result = self.collection.insert_one(data)
+        return str(result.inserted_id)
+
+    def get_sorteio(self, sorteio_id):
+        try:
+            oid = ObjectId(sorteio_id)
+        except:
+            return None
+
+        doc = self.collection.find_one({"_id": oid})
+        if doc:
+            doc["_id"] = str(doc["_id"])
+        return doc
+
+    def get_sorteio_by_id(self, sorteio_id):
+        return self.get_sorteio(sorteio_id)
+
+    def get_all_sorteio(self):
+        docs = list(self.collection.find())
+        for d in docs:
+            d["_id"] = str(d["_id"])
+        return docs
+
+    def update_sorteio(self, sorteio_id, new_data):
+        try:
+            oid = ObjectId(sorteio_id)
+        except:
+            return 0
+
+        result = self.collection.update_one(
+            {"_id": oid},
+            {"$set": new_data}
+        )
+        return result.modified_count
+
+    def delete_sorteio(self, sorteio_id):
+        try:
+            oid = ObjectId(sorteio_id)
+        except:
+            return 0
+
+        result = self.collection.delete_one({"_id": oid})
+        return result.deleted_count
+#===================================================================================================
+#===================================================================================================
+
+
+
+#------------------------------------------------------------
+# -USERS
+#------------------------------------------------------------
 class UsuarioModel:
     def __init__(self):
         self.client = MongoClient(MONGO_URI)
@@ -152,3 +225,54 @@ class UsuarioModel:
     def delete_user(self, user_id):
         result = self.collection.delete_one({"_id": ObjectId(user_id)})
         return result.deleted_count
+
+
+
+
+
+
+#======================================
+# -Admins
+#======================================
+
+class AdminModel:
+    def __init__(self):
+        self.client = MongoClient(MONGO_URI)
+        self.db = self.client[DB_NAME]
+        self.collection = self.db[ADMINS_COLLECTION_NAME]
+
+    def create_admin(self, admin_data):
+        result = self.collection.insert_one(admin_data)
+        return str(result.inserted_id)
+
+    def get_all_admins(self):
+        admins = list(self.collection.find())
+        for admin in admins:
+            admin['_id'] = str(admin['_id'])
+        return admins
+
+    def get_admin_by_id(self, admin_id):
+        admin = self.collection.find_one({"_id": ObjectId(admin_id)})
+        if admin:
+            admin['_id'] = str(admin['_id'])
+        return admin
+
+    def get_admin_by_cpf(self, cpf):
+        admin = self.collection.find_one({"cpf": cpf})
+        if admin:
+            admin['_id'] = str(admin['_id'])
+        return admin
+
+    def update_admin(self, admin_id, new_data):
+        result = self.collection.update_one(
+            {"_id": ObjectId(admin_id)},
+            {"$set": new_data}
+        )
+        return result.modified_count
+
+    def delete_admin(self, admin_id):
+        result = self.collection.delete_one({"_id": ObjectId(admin_id)})
+        return result.deleted_count
+
+
+

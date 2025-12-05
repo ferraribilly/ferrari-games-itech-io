@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Criar Nova Rifa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../static/css/admin_dashboard/create-raffle.css">
+    <style>
+        .preview-img{
+            max-width:200px;
+            max-height:200px;
+            margin-top:10px;
+            border:1px solid #ccc;
+            display:none;
+        }
+    </style>
+</head>
+<body data-admin="{{ admin_id }}">
+
+<div class="container">
+  <h1>Criar Nova Rifa</h1>
+
+  <form id="create-raffle-form">
+
+      <div class="form-group">
+          <label for="nome_rifa">Nome da Rifa</label>
+          <input type="text" id="nome_rifa" name="nome_rifa" required>
+      </div>
+
+      <div class="form-group">
+          <label for="descricao">Descrição</label>
+          <textarea id="descricao" name="descricao" required></textarea>
+      </div>
+
+      <div class="form-group">
+          <label for="imagem_rifa">Imagem da Rifa</label>
+          <input type="file" id="file-input-rifa" accept="image/*">
+          <button type="button" onclick="uploadFile('file-input-rifa','imagem_rifa')">Upload</button>
+          <p>URL da imagem: <span id="imagem_rifa"></span></p>
+      </div>
+
+      <div class="form-group">
+          <label for="quantidade_numeros">Quantidade de Números</label>
+          <input type="number" id="quantidade_numeros" name="quantidade_numeros" min="1" required>
+      </div>
+
+      <div class="form-group">
+          <label for="valor_por_numero">Valor por Número (R$)</label>
+          <input type="number" id="valor_por_numero" name="valor_por_numero" step="0.01" required>
+      </div>
+
+      <div class="form-group">
+          <label for="valor_do_premio">Valor da Premiação (R$)</label>
+          <input type="number" id="valor_do_premio" name="valor_do_premio" step="0.01" required>
+      </div>
+
+      <div class="form-group">
+          <label for="data_sorteio">Data do Sorteio</label>
+          <input type="date" id="data_sorteio" name="data_sorteio" required>
+      </div>
+
+      <div class="form-group checkbox-group">
+          <label>
+              <input type="checkbox" id="show_leaderboard" name="show_leaderboard" checked>
+              Exibir classificação dos colaboradores
+          </label>
+      </div>
+
+      <div class="form-group">
+          <label>Métodos de Pagamento</label>
+          <div class="payment-options">
+              <label><input type="checkbox" name="metodo_pagamento" value="pix" checked> Pix</label>
+              <label><input type="checkbox" name="metodo_pagamento" value="card"> Cartão de Crédito</label>
+              <label><input type="checkbox" name="metodo_pagamento" value="boleto"> Boleto</label>
+          </div>
+      </div>
+
+      <div class="form-row">
+          <div class="form-group">
+              <label for="nome_organizador">Nome do Organizador</label>
+              <input type="text" id="nome_organizador" name="nome_organizador" required>
+          </div>
+
+          <div class="form-group">
+              <label for="foto_organizador">Foto do Organizador</label>
+              <input type="file" id="file-input-organizador" accept="image/*">
+              <button type="button" onclick="uploadFile('file-input-organizador','foto_organizador')">Upload</button>
+              <p>URL da foto: <span id="foto_organizador"></span></p>
+          </div>
+      </div>
+
+      <div class="form-group">
+          <label>Links de Contato (opcional)</label>
+          <div class="social">
+              <input type="url" id="whatsapp_link" name="whatsapp_link" placeholder="Link do WhatsApp">
+              <input type="url" id="telegram_link" name="telegram_link" placeholder="Link do Telegram">
+              <input type="url" id="instagram_link" name="instagram_link" placeholder="Link do Instagram">
+          </div>
+      </div>
+
+      <div class="form-actions">
+          <button type="submit">Criar Rifa</button>
+      </div>
+
+      <div id="registerMsg" style="color:red; display:none;"></div>
+  </form>
+
+</div>
+
+<script>        
+const cloudName = "dptprh0xk";    
+const uploadPreset = "vaiturbo";    
+    
+// Função genérica para upload    
+async function uploadFile(fileInputId, outputSpanId) {    
+    const fileInput = document.getElementById(fileInputId);    
+    const file = fileInput.files[0];    
+    
+    if (!file) {    
+        alert("Por favor, selecione um arquivo.");    
+        return;    
+    }    
+    
+    const formData = new FormData();    
+    formData.append('file', file);    
+    formData.append('upload_preset', uploadPreset);    
+    
+    try {    
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {    
+            method: 'POST',    
+            body: formData    
+        });    
+    
+        if (response.ok) {    
+            const data = await response.json();    
+            document.getElementById(outputSpanId).textContent = data.secure_url;    
+            console.log(`Upload bem-sucedido (${outputSpanId}):`, data.secure_url);    
+        } else {    
+            console.error('Falha no upload para o Cloudinary');    
+        }    
+    } catch (error) {    
+        console.error('Erro na requisição:', error);    
+    }    
+}    
+    
+// Submit do formulário    
+document.getElementById("create-raffle-form").addEventListener("submit", async function(e){        
+    e.preventDefault();        
+    const msg = document.getElementById("registerMsg");        
+    msg.style.display = "none";        
+        
+    try {        
+        const form = e.target;        
+    
+        const payload = {        
+            nome_rifa: form.nome_rifa.value,        
+            descricao: form.descricao.value,        
+            quantidade_numeros: form.quantidade_numeros.value,        
+            valor_por_numero: form.valor_por_numero.value,        
+            valor_do_premio: form.valor_do_premio.value,    
+            data_sorteio: form.data_sorteio.value,    
+            nome_organizador: form.nome_organizador.value,        
+            imagem_rifa: document.getElementById('imagem_rifa').textContent,    
+            foto_organizador: document.getElementById('foto_organizador').textContent,    
+            links_contato: {        
+                whatsapp: form.whatsapp_link.value || "",        
+                telegram: form.telegram_link.value || "",        
+                instagram: form.instagram_link.value || ""        
+            },        
+            metodo_pagamento: Array.from(        
+                form.querySelectorAll('input[name="metodo_pagamento"]:checked')        
+            ).map(i => i.value)        
+        };        
+    
+        const res = await fetch("/create-raffle/${admin_id}", {        
+            method:"POST",        
+            headers:{ "Content-Type":"application/json" },        
+            body: JSON.stringify(payload)        
+        });        
+    
+        const data = await res.json();        
+        if(res.status === 201 && data.id){        
+            window.location.href = `/index/${data.id}`;        
+        } else {        
+            msg.innerText = data.error || "Erro ao criar rifa.";        
+            msg.style.display = "block";        
+        }        
+    
+    } catch(err){        
+        msg.innerText = "Erro ao criar rifa.";        
+        msg.style.display = "block";        
+        console.error(err);        
+    }        
+});    
+    
+</script>      
+ </body>        
+</html>       
+</body>
+</html>
