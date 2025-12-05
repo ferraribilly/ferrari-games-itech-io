@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, abort, render_template, redirect, render_template_string, url_for
+from flask import Flask, request, jsonify, abort, render_template, redirect,  url_for
 import mercadopago
 from io import BytesIO
 import base64
