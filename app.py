@@ -973,7 +973,15 @@ def pagamento_pix(user_id):
         status=status,
         user_id=user_id
     )
-  
+
+
+
+@app.route("/payment_status/<string:user_id>")
+def payment_status(user_id):
+    pag = pagamentos_collection.find_one({"user_id": user_id}, sort=[("data_atualizacao", -1)])
+    if not pag:
+        return jsonify({"status": "pendente"})
+    return jsonify({"status": pag["status"]})  
 #========================================
 # -WEBHOOK
 #========================================
