@@ -905,7 +905,6 @@ def pagamento_preference(user_id):
 #===========================================================
 MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN")
 sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
-
 @app.route("/payment_qrcode_pix/pagamento_pix/<string:user_id>")
 def pagamento_pix(user_id):
     nome = request.args.get("nome") or ""
@@ -916,11 +915,36 @@ def pagamento_pix(user_id):
 
     valor_total = qtd * 0.05
 
+    # 1. BUSCAR PAGAMENTO PENDENTE EXISTENTE
+    existente = pagamentos_collection.find_one({
+        "user_id": user_id,
+        "status": {"$in": ["pending", "in_process"]}
+    })
+
+    # 2. SE EXISTE, REUSA O QRCODE
+    if existente:
+        payment_id = existente["_id"]
+
+        info = sdk.payment().get(payment_id)
+        mp = info["response"]
+
+        tx = mp["point_of_interaction"]["transaction_data"]
+
+        return render_template(
+            "rifa/transaction_pix.html",
+            qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
+            valor=f"R$ {valor_total:.2f}",
+            qr_code_cola=tx["qr_code"],
+            status=existente["status"],
+            user_id=user_id
+        )
+
+    # 3. SE NÃO EXISTE, CRIA UM NOVO
     payment_data = {
         "transaction_amount": valor_total,
-        "description": "Block",
+        "description": "Manually Card Games",
         "payment_method_id": "pix",
-
+        "external_reference": user_id,
         "payer": {
             "email": email,
             "first_name": nome,
@@ -929,18 +953,14 @@ def pagamento_pix(user_id):
                 "number": cpf
             }
         },
-
-        "external_reference": user_id,
-        
-
-          "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"
+        "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"
     }
 
     response = sdk.payment().create(payment_data)
     mp = response.get("response", {})
 
     if "id" not in mp:
-        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
+        return f"ERRO MP:<br>{mp}", 500
 
     payment_id = str(mp["id"])
     status = mp.get("status", "pending")
@@ -962,7 +982,8 @@ def pagamento_pix(user_id):
         qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
         valor=f"R$ {valor_total:.2f}",
         qr_code_cola=tx["qr_code"],
-        status=status
+        status=status,
+        user_id=user_id
     )
 
 #========================================
@@ -972,11 +993,11 @@ def pagamento_pix(user_id):
 def webhook_mps():
     data = request.get_json()
 
-    topic = data.get("type") or data.get("topic")
-    if topic != "payment":
-        return jsonify({"status": "ignored"}), 200
+    if not data:
+        return jsonify({"status": "no body"}), 200
 
-    payment_id = data.get("data", {}).get("id")
+    payment_id = data.get("data", {}).get("id") or data.get("id")
+
     if not payment_id:
         return jsonify({"status": "no payment"}), 200
 
@@ -987,17 +1008,16 @@ def webhook_mps():
 
     pag = info["response"]
     status = pag.get("status")
-    user_id = pag.get("external_reference")  # ← AQUI VEM O USER_ID
+    user_id = pag.get("external_reference")
 
     pagamentos_collection.update_one(
-        {"_id": str(payment_id)},
+        {"payment_id": str(payment_id)},
         {"$set": {
             "status": status,
             "user_id": user_id,
-            "data_atualizacao": datetime.utcnow(),
-            "detalhes_webhook": pag
+            "data_atualizacao": datetime.utcnow()
         }},
-        upsert=True
+        upsert=False
     )
 
     return jsonify({"status": "ok"}), 200

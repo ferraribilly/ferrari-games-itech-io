@@ -89,26 +89,24 @@
       const linkAprovado = "https://ferrari-games-itech-io.onrender.com/sorteio/{{user_id}}";
       const linkRecusado = "https://ferrari-games-itech-io.onrender.com/compra/recusada";
   
-      // status vindo do Mercado Pago
-      const status = "{{ status }}".toLowerCase();
-  
-      if (status === "aprovado") {
-  
-          const statusElement = document.getElementById("status");
-          statusElement.innerHTML = "Obrigado! Você será direcionado...";
-  
-          setTimeout(() => {
-              window.location.href = linkAprovado;
-          }, 5000);
-  
-      } else if (status === "recusado") {
-  
-          const statusElement = document.getElementById("status");
-          statusElement.innerHTML = "Pagamento recusado. Redirecionando...";
-  
-          window.location.href = linkRecusado;
-      }
-  
+const status = "{{ status }}".toLowerCase();
+
+if (status === "approved") {
+
+    const statusElement = document.getElementById("status");
+    statusElement.innerHTML = "Obrigado! Você será direcionado...";
+
+    setTimeout(() => {
+        window.location.href = linkAprovado;
+    }, 5000);
+
+} else if (status === "rejected") {
+
+    const statusElement = document.getElementById("status");
+    statusElement.innerHTML = "Pagamento recusado. Redirecionando...";
+
+    window.location.href = linkRecusado;
+}
 
         
     </script>
