@@ -905,6 +905,7 @@ def pagamento_preference(user_id):
 #===========================================================
 MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN")
 sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
+
 @app.route("/payment_qrcode_pix/pagamento_pix/<string:user_id>")
 def pagamento_pix(user_id):
     nome = request.args.get("nome") or ""
@@ -915,36 +916,47 @@ def pagamento_pix(user_id):
 
     valor_total = qtd * 0.05
 
-    # 1. BUSCAR PAGAMENTO PENDENTE EXISTENTE
+    # ================================
+    # BUSCAR PAGAMENTO PENDENTE
+    # ================================
     existente = pagamentos_collection.find_one({
         "user_id": user_id,
         "status": {"$in": ["pending", "in_process"]}
     })
 
-    # 2. SE EXISTE, REUSA O QRCODE
+    # SE JÁ EXISTE, REUTILIZA
     if existente:
-        payment_id = existente["_id"]
+        payment_id = existente.get("payment_id")
 
-        info = sdk.payment().get(payment_id)
-        mp = info["response"]
+        if payment_id:
+            info = sdk.payment().get(payment_id)
+            mp = info.get("response", {})
 
-        tx = mp["point_of_interaction"]["transaction_data"]
+            tx = mp.get("point_of_interaction", {}).get("transaction_data", {})
 
-        return render_template(
-            "rifa/transaction_pix.html",
-            qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
-            valor=f"R$ {valor_total:.2f}",
-            qr_code_cola=tx["qr_code"],
-            status=existente["status"],
-            user_id=user_id
-        )
+            qr_img = tx.get("qr_code_base64")
+            qr_txt = tx.get("qr_code")
 
-    # 3. SE NÃO EXISTE, CRIA UM NOVO
+            if qr_img and qr_txt:
+                return render_template(
+                    "rifa/transaction_pix.html",
+                    qrcode=f"data:image/png;base64,{qr_img}",
+                    valor=f"R$ {valor_total:.2f}",
+                    qr_code_cola=qr_txt,
+                    status=existente.get("status", "pending"),
+                    user_id=user_id
+                )
+
+    # ================================
+    # CRIAR NOVO PAGAMENTO
+    # ================================
     payment_data = {
         "transaction_amount": valor_total,
+        "title": "Block Card Games",
         "description": "Manually Card Games",
         "payment_method_id": "pix",
         "external_reference": user_id,
+
         "payer": {
             "email": email,
             "first_name": nome,
@@ -953,6 +965,7 @@ def pagamento_pix(user_id):
                 "number": cpf
             }
         },
+
         "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"
     }
 
@@ -960,7 +973,7 @@ def pagamento_pix(user_id):
     mp = response.get("response", {})
 
     if "id" not in mp:
-        return f"ERRO MP:<br>{mp}", 500
+        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
 
     payment_id = str(mp["id"])
     status = mp.get("status", "pending")
@@ -975,13 +988,15 @@ def pagamento_pix(user_id):
 
     PagamentoModel().create_pagamento(documento)
 
-    tx = mp["point_of_interaction"]["transaction_data"]
+    tx = mp.get("point_of_interaction", {}).get("transaction_data", {})
+    qr_img = tx.get("qr_code_base64")
+    qr_txt = tx.get("qr_code")
 
     return render_template(
         "rifa/transaction_pix.html",
-        qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
+        qrcode=f"data:image/png;base64,{qr_img}" if qr_img else "",
         valor=f"R$ {valor_total:.2f}",
-        qr_code_cola=tx["qr_code"],
+        qr_code_cola=qr_txt if qr_txt else "",
         status=status,
         user_id=user_id
     )
