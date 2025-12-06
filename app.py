@@ -913,75 +913,67 @@ def pagamento_pix(user_id):
     cpf = request.args.get("cpf") or ""
     telefone = request.args.get("telefone") or ""
     qtd = int(request.args.get("qtd") or 0)
-
     valor_total = qtd * 0.05
 
-    payment_data = {
-        "transaction_amount": valor_total,
-        "title": "Block Card Games",
-        "description": "Manually Card Games",
-        "payment_method_id": "pix",
-
-        "payer": {
-            "email": email,
-            "first_name": nome,
-            "identification": {
-                "type": "CPF",
-                "number": cpf
-            }
-        },
-
-        "external_reference": user_id,
-        "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"
-    }
-
-    # ================================
-    # 🔒 NÃO CRIA SE JÁ EXISTE
-    # ================================
-    existente = pagamentos_collection.find_one({
+    # --- Checa pagamento pendente existente ---
+    pagamento_existente = pagamentos_collection.find_one({
         "user_id": user_id,
-        "status": {"$in": ["pending", "in_process"]}
+        "status": "pending"
     })
 
-    if existente:
-        payment_id = existente["payment_id"]
-
-        info = sdk.payment().get(payment_id)
-        mp = info["response"]
-
+    if pagamento_existente:
+        mp = pagamento_existente
+        payment_id = mp["_id"]
+        status = mp["status"]
+        tx = mp.get("transaction_data", {})
+        qr_code_base64 = tx.get("qr_code_base64", "")
+        qr_code_cola = tx.get("qr_code", "")
     else:
+        payment_data = {
+            "transaction_amount": valor_total,
+            "title": "Block Card Games",
+            "description": "Manually Card Games",
+            "payment_method_id": "pix",
+            "payer": {
+                "email": email,
+                "first_name": nome,
+                "identification": {"type": "CPF", "number": cpf}
+            },
+            "external_reference": user_id,
+            "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"
+        }
+
         response = sdk.payment().create(payment_data)
-        mp = response.get("response", {})
+        mp_resp = response.get("response", {})
 
-        if "id" not in mp:
-            return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
+        if "id" not in mp_resp:
+            return f"ERRO NO MERCADO PAGO:<br><br>{mp_resp}", 500
 
-        payment_id = str(mp["id"])
-        status = mp.get("status", "pending")
+        payment_id = str(mp_resp["id"])
+        status = mp_resp.get("status", "pending")
+        tx = mp_resp["point_of_interaction"]["transaction_data"]
 
         documento = criar_documento_pagamento(
             payment_id=payment_id,
             status=status,
             valor=valor_total,
             user_id=user_id,
-            email_user=email
+            email_user=email,
+            transaction_data=tx  # guardar o qr_code para reutilizar
         )
-
         PagamentoModel().create_pagamento(documento)
-
-    # ================================
-    # QR CODE (SEM QUEBRAR)
-    # ================================
-    tx = mp.get("point_of_interaction", {}).get("transaction_data", {})
+        qr_code_base64 = tx["qr_code_base64"]
+        qr_code_cola = tx["qr_code"]
 
     return render_template(
         "rifa/transaction_pix.html",
-        qrcode=f"data:image/png;base64,{tx.get('qr_code_base64', '')}",
+        qrcode=f"data:image/png;base64,{qr_code_base64}",
         valor=f"R$ {valor_total:.2f}",
-        qr_code_cola=tx.get("qr_code", ""),
-        status=mp.get("status", "pending"),
+        qr_code_cola=qr_code_cola,
+        status=status,
         user_id=user_id
     )
+  
 #========================================
 # -WEBHOOK
 #========================================

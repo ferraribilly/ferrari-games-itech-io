@@ -60,56 +60,58 @@
         </div>
     </main>
 
-    <script>
-        // Copy qrcode
-        document.getElementById('copy').addEventListener('click', copyText);
-        document.getElementById('copy-mobile').addEventListener('touchstart', copyText);
-      
-        function copyText() {
-            var qrcodeText = document.getElementById('qrcode-text');
-            var copiedCodeBox = document.getElementById('copied-code');
-            
-            navigator.clipboard.writeText(qrcodeText.textContent).then(function() {
-                qrcodeText.style.filter = 'blur(1px)';
-                copiedCodeBox.style.visibility = 'visible';
-                copiedCodeBox.style.opacity = '0.9';
-                copiedCodeBox.style.transition = 'all 0.3s';
-            
-                setTimeout(function() {
-                    qrcodeText.style.filter = '';
-                    copiedCodeBox.style.visibility = '';
-                    copiedCodeBox.style.opacity = '';
-                }, 1000);
-            });
-        }
-
-
- 
-      // links de destino
-      const linkAprovado = "https://ferrari-games-itech-io.onrender.com/sorteio/{{user_id}}";
-      const linkRecusado = "https://ferrari-games-itech-io.onrender.com/compra/recusada";
-  
-const status = "{{ status }}".toLowerCase();
-
-if (status === "approved") {
-
-    const statusElement = document.getElementById("status");
-    statusElement.innerHTML = "Obrigado! Você será direcionado...";
-
-    setTimeout(() => {
-        window.location.href = linkAprovado;
-    }, 5000);
-
-} else if (status === "rejected") {
-
-    const statusElement = document.getElementById("status");
-    statusElement.innerHTML = "Pagamento recusado. Redirecionando...";
-
-    window.location.href = linkRecusado;
-}
-
-        
-    </script>
+   <script>
+       // Copy qrcode
+       document.getElementById('copy').addEventListener('click', copyText);
+       document.getElementById('copy-mobile').addEventListener('touchstart', copyText);
+   
+       function copyText() {
+           var qrcodeText = document.getElementById('qrcode-text');
+           var copiedCodeBox = document.getElementById('copied-code');
+   
+           navigator.clipboard.writeText(qrcodeText.textContent).then(function() {
+               qrcodeText.style.filter = 'blur(1px)';
+               copiedCodeBox.style.visibility = 'visible';
+               copiedCodeBox.style.opacity = '0.9';
+               copiedCodeBox.style.transition = 'all 0.3s';
+   
+               setTimeout(function() {
+                   qrcodeText.style.filter = '';
+                   copiedCodeBox.style.visibility = '';
+                   copiedCodeBox.style.opacity = '';
+               }, 1000);
+           });
+       }
+   
+       // --- Atualização de status via polling ---
+       const userId = "{{ user_id }}";
+       const statusElement = document.getElementById("status");
+   
+       async function atualizarStatus() {
+           try {
+               const res = await fetch(`/payment_status/${userId}`);
+               const data = await res.json();
+               const status = data.status.toLowerCase();
+   
+               if (status === "aprovado") {
+                   statusElement.innerHTML = "Obrigado! Você será direcionado...";
+                   setTimeout(() => {
+                       window.location.href = "https://ferrari-games-itech-io.onrender.com/sorteio/" + userId;
+                   }, 5000);
+               } else if (status === "recusado") {
+                   statusElement.innerHTML = "Pagamento recusado. Redirecionando...";
+                   window.location.href = "https://ferrari-games-itech-io.onrender.com/compra/recusada";
+               } else {
+                   statusElement.innerHTML = "Aguardando pagamento...";
+               }
+           } catch (err) {
+               console.error("Erro ao atualizar status:", err);
+           }
+       }
+   
+       // Atualiza status a cada 3 segundos
+       setInterval(atualizarStatus, 3000);
+   </script>
 
 </body>
 </html>
