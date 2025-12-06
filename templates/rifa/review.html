@@ -87,7 +87,7 @@ document.getElementById("btn-pagar").onclick = () => {
     const telefone = document.querySelectorAll('.info b')[3].innerText;
     const qtd = document.querySelectorAll('.info b')[4].innerText;
 
-    const url = `/raffle/pagamento_pix/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}`;
+    const url = `/payment_qrcode_pix/pagamento_pix/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}`;
 
     window.location.href = url;
 };
