@@ -114,9 +114,9 @@ nav ul li a {
 #reels {                                  
   display: flex;                                  
   width: 100vw;                                  
-  height: calc((5 / 5) * 125vw);                                  
+  height: calc((5 / 4) * 110vw);                                  
   max-height: calc(100vh - 50px - 50px);                                  
-  max-width: calc((5 / 5) * (90vh - 50px - 40px));                                  
+  max-width: calc((5 / 3) * (90vh - 50px - 40px));                                  
   border:10px solid purple;                                
   animation: piscar 1s infinite alternate;                                
   background: transparent;   

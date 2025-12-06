@@ -1,5 +1,5 @@
-import Reel from "./Reel.js";
-import Symbol from "./Symbol.js";
+import Reel from "./Reel5x3.js";
+import Symbol from "./Symbol5x3.js";
 
 export default class Slot {
   constructor(domElement, config={}) {
@@ -54,7 +54,7 @@ export default class Slot {
 
   async init() {
     try {
-      const resp = await fetch(`/rodar/${window.USER_ID}`, {
+      const resp = await fetch(`/rodar3x3/${window.USER_ID}`, {
         method: "POST",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify({bet:0})
@@ -96,7 +96,7 @@ export default class Slot {
     msg.innerHTML=`<p>Saldo insuficiente!!</p><button id="deposit-btn">Ir para Depósitos</button>`;
     document.body.appendChild(msg);
     document.getElementById("deposit-btn").addEventListener("click",()=>{
-      window.location.href=`/acesso/users/compra/${window.USER_ID}`;
+      window.location.href=`/acesso/users/compras/${window.USER_ID}`;
     });
   }
 
@@ -105,7 +105,7 @@ export default class Slot {
     this.spinButton.disabled=true;
     let backend=null;
     try {
-      const resp = await fetch(`/rodar/${window.USER_ID}`, {
+      const resp = await fetch(`/rodar3x3/${window.USER_ID}`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({bet:this.betValue})

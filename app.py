@@ -42,13 +42,15 @@ CORS(app)
 LEVEL_5X3 = 1
 
 SYMBOL_NAMES_5X3 = [
-    "pato","ganso","coruja","papagaio","pombo",
-    "andorinha","gaivota","beija-flor","pavão","tucano",
-    "pardal","corvo","flamingo","rouxinol","galinha"
+    "avestruz","aguia","burro","borboleta","cachorro",
+        "cabra","carneiro","camelo","cobra","coelho",
+        "galo","cavalo","elefante","gato","jacare",
+        "leao","macaco","porco","pavao","peru",
+        "tigre","touro","urso","veado","vaca"
 ]
 
 class Machine5x3:
-    def __init__(self, balance=500.0):
+    def __init__(self, balance=1000.0):
         self.balance = float(balance)
 
 machine_5x3 = Machine5x3()
@@ -202,15 +204,20 @@ def rodar_5x3(user_id):
         "level": LEVEL_5X3
     })
 
-#==================================================================================================
-#==================================================================================================
 # -------------------------------------------------------------------------------------------------
-# MAQUINA 3x3 
+# MAQUINA 3x3 (SEM BICHOS / COMPATIVEL COM FRONT 5x3)
 # ------------------------------------------------------------------------------------------------
+import random
+from flask import request, jsonify
+
 LEVEL_3X3 = 1
 
 SYMBOL_NAMES_3X3 = [
-    "estrela","lua","sol","cometa","planeta","asteroide","meteoro"
+    "avestruz","aguia","burro","borboleta","cachorro",
+        "cabra","carneiro","camelo","cobra","coelho",
+        "galo","cavalo","elefante","gato","jacare",
+        "leao","macaco","porco","pavao","peru",
+        "tigre","touro","urso","veado","vaca"
 ]
 
 class Machine3x3:
@@ -220,38 +227,34 @@ class Machine3x3:
 machine_3x3 = Machine3x3()
 
 def random_symbol_3x3():
-    return random.choice(SYMBOL_NAMES_3x3 := SYMBOL_NAMES_3X3)  # alias para clareza
+    return random.choice(SYMBOL_NAMES_3X3)
 
 def generate_grid_3x3():
     cols, rows = 3, 3
-    grid = [[random_symbol_3x3() for r in range(rows)] for c in range(cols)]
+    grid = [[random_symbol_3x3() for _ in range(rows)] for _ in range(cols)]
 
     if LEVEL_3X3 == 1:
-        # facilitar linhas e colunas e diagonais
         for c in range(cols):
             sym = random_symbol_3x3()
             for r in range(rows):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+                if random.randint(0, 1):
+                    grid[c][r] = sym
+
         for r in range(rows):
             sym = random_symbol_3x3()
             for c in range(cols):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+                if random.randint(0, 1):
+                    grid[c][r] = sym
+
         sym = random_symbol_3x3()
         for i in range(rows):
-            grid[i][i] = sym if random.randint(0,1) else grid[i][i]
+            if random.randint(0, 1):
+                grid[i][i] = sym
+
         sym = random_symbol_3x3()
         for i in range(rows):
-            grid[cols-1-i][i] = sym if random.randint(0,1) else grid[cols-1-i][i]
-    elif LEVEL_3X3 == 2:
-        for c in range(cols):
-            sym = random_symbol_3x3()
-            for r in range(rows):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-    elif LEVEL_3X3 == 3:
-        for c in range(cols):
-            sym = random_symbol_3x3()
-            for r in range(rows):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+            if random.randint(0, 1):
+                grid[cols - 1 - i][i] = sym
 
     return grid
 
@@ -276,30 +279,31 @@ def check_wins_3x3(grid):
     # horizontais
     for r in range(rows):
         if all(grid[c][r] == grid[0][r] for c in range(cols)):
-            addWin("horizontal", [(c,r) for c in range(cols)])
+            addWin("horizontal", [(c, r) for c in range(cols)])
 
     # verticais
     for c in range(cols):
         if all(grid[c][r] == grid[c][0] for r in range(rows)):
-            addWin("vertical", [(c,r) for r in range(rows)])
+            addWin("vertical", [(c, r) for r in range(rows)])
 
-    # diagonais
-    diag_pr = [(i,i) for i in range(rows)]
-    if all(grid[c][r] == grid[diag_pr[0][0]][diag_pr[0][1]] for (c,r) in diag_pr):
+    # diagonal principal
+    diag_pr = [(i, i) for i in range(rows)]
+    if all(grid[c][r] == grid[0][0] for (c, r) in diag_pr):
         addWin("diagonal_principal", diag_pr)
 
-    diag_inv = [(cols-1-i, i) for i in range(rows)]
-    if all(grid[c][r] == grid[diag_inv[0][0]][diag_inv[0][1]] for (c,r) in diag_inv):
+    # diagonal invertida
+    diag_inv = [(cols - 1 - i, i) for i in range(rows)]
+    if all(grid[c][r] == grid[cols - 1][0] for (c, r) in diag_inv):
         addWin("diagonal_invertida", diag_inv)
 
-    # cruzado X: cantos + centro
-    cross_positions = [(0,0),(2,2),(0,2),(2,0),(1,1)]
-    if all(grid[c][r] == grid[cross_positions[0][0]][cross_positions[0][1]] for (c,r) in cross_positions):
+    # cruzado X
+    cross_positions = [(0,0), (2,2), (0,2), (2,0), (1,1)]
+    if all(grid[c][r] == grid[1][1] for (c, r) in cross_positions):
         addWin("cruzado_x", cross_positions)
 
     # cheio
-    full_positions = [(c,r) for c in range(cols) for r in range(rows)]
-    flat = [grid[c][r] for (c,r) in full_positions]
+    full_positions = [(c, r) for c in range(cols) for r in range(rows)]
+    flat = [grid[c][r] for (c, r) in full_positions]
     if all(s == flat[0] for s in flat):
         addWin("cheio", full_positions)
 
@@ -313,6 +317,7 @@ def rodar_3x3(user_id):
 
     user_balance = float(user.get("balance", 0.0))
     bet_raw = request.json.get("bet") if request.json else 0.5
+
     try:
         bet = max(0.01, float(bet_raw))
     except:
@@ -323,7 +328,11 @@ def rodar_3x3(user_id):
 
     grid = generate_grid_3x3()
     wins = check_wins_3x3(grid)
-    total_win = bet * len(wins) * 10.0 if wins else 0.0
+
+    # PAGAMENTO USANDO MULTIPLICADOR REAL
+    total_win = 0.0
+    for w in wins:
+        total_win += bet * w["payout"]
 
     if total_win > 0:
         new_balance = user_balance + total_win
@@ -653,7 +662,7 @@ def acesso_users_machine(user_id):
 #==========================================================
 # -ROTA MAQUINA 5x4
 #==========================================================
-@app.route("/acesso/users/5x4/<string:user_id>")
+@app.route("/acesso/users/5x3/<string:user_id>")
 def acesso_users_machine_5x4(user_id):
     user = user_model.get_user_by_id(user_id)
 
@@ -668,12 +677,12 @@ def acesso_users_machine_5x4(user_id):
             # Formata com duas casas decimais
             balance_value = f"{balance_value:.2f}"
 
-        return render_template("slotmachine5x4.html", user_id=user_id, balance=balance_value)
+        return render_template("slotmachine5x3.html", user_id=user_id, balance=balance_value)
     else:
         return "Usuário não encontrado"       
 
 #==========================================================
-# -ROTA MAQUINA 3x3
+# -ROTA MAQUINA 5x3
 #==========================================================
 @app.route("/acesso/users/3x3/<string:user_id>")
 def acesso_users_machine3x3(user_id):

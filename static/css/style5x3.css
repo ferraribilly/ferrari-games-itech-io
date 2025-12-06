@@ -86,7 +86,6 @@ nav ul li a{
   max-height:80vh;
   min-height:360px;
   background:transparent;
-  /* border:8px solid purple; */
   border-radius:20px;
   display:flex;
   flex-direction:column;
@@ -94,6 +93,7 @@ nav ul li a{
   justify-content:center;
   padding:10px;
   box-shadow:0 0 10px #fff,0 0 30px #0ff,0 0 50px #0ff;
+  scale:98%;
 }
 
 /* ÁREA DOS REELS */
@@ -104,10 +104,9 @@ nav ul li a{
   height:100%;
   aspect-ratio:3 / 3;
   max-height:60vh;
-  /* border:8px solid purple; */
   background:transparent;
   box-shadow:0 0 10px #fff,0 0 20px #0ff,0 0 40px #0ff;
-  gap:6px;
+  gap:0 !important;            /* SEM ESPAÇO ENTRE COLUNAS */
 }
 
 /* COLUNA */
@@ -116,8 +115,8 @@ nav ul li a{
   height:100%;
   overflow:hidden;
   position:relative;
-  border:2px solid orange;
-  border-radius:12px;
+  border:none;                  /* REMOVE BORDA QUE CRIA ESPAÇO VISUAL */
+  border-radius:0;              /* REMOVE ARREDONDAMENTO ENTRE REELS */
   background:rgba(0,0,0,0.2);
 }
 
@@ -129,11 +128,11 @@ nav ul li a{
   flex-direction:column;
   align-items:stretch;
   justify-content:flex-start;
-  gap:0;
+  gap:0 !important;             /* SEM GAP ENTRE ÍCONES */
   position:relative;
   will-change:transform;
   transform:translateY(0);
-  
+  opacity:.95;
 }
 
 /* CÉLULA */
@@ -149,17 +148,19 @@ nav ul li a{
   box-sizing:border-box;
   user-select:none;
   -webkit-user-drag:none;
-  border-bottom:1px solid rgba(255,255,255,0.1);
-  object-fit:contain;
+  border:0 !important;          /* REMOVE LINHAS ENTRE IMAGENS */
+  outline:0;
+  margin:0 !important;
+  padding:0 !important;
+  object-fit:cover;             /* PREENCHE SEM ESPAÇO */
   pointer-events:none;
-  
 }
 
 /* ÚLTIMA LINHA */
 .reel .icons .symbol:last-child,
 .reel .icons img:last-child,
 .reel .icons .emoji-symbol:last-child{
-  border-bottom:none;
+  border:none;
 }
 
 /* WIN */
@@ -176,7 +177,7 @@ nav ul li a{
 #controls{
   width:95vw;
   max-width:900px;
-  background:trasparent;
+  background:transparent;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -188,33 +189,52 @@ nav ul li a{
 }
 
 /* INFO */
-.secao-saldo,
-.secao-ganhos,
-.secao-apostas{
-  flex:1;
-  padding:10px;
-  text-align:center;
-  border-radius:12px;
-  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763614144/Pngtree_button_button_colorful__3911001_xudrfv.png");
-  background-size:cover;
-  background-position:center;
-  font-weight:bold;
-  height:90px;
-}
-.secao-saldo{color:#00ff00;}
-.secao-ganhos{color:#ffd700;}
-.secao-apostas{color:#ff4444;}
-
-.titulo-saldo,
-.titulo-ganhos,
-.titulo-apostas{
-  font-size:14px;
-  opacity:.8;
-}
-.valor-saldo,
-.valor-ganhos,
-.valor-apostas{
-  font-size:22px;
+.secao-saldo, .secao-ganhos, .secao-apostas{                                  
+  flex:1;                                  
+  padding:30px;                                  
+  text-align:center;                                  
+  border-radius:10px;                                
+  margin-top:10px;                            
+}                            
+        
+.secao-saldo{                             
+  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763614144/Pngtree_button_button_colorful__3911001_xudrfv.png");                            
+  background-size:cover;                                  
+  color:green;                                
+  font-weight:bold;                            
+}                            
+        
+.secao-ganhos{                                  
+  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763614144/Pngtree_button_button_colorful__3911001_xudrfv.png");                             
+  background-size:cover;                                    
+  color:gold;                                  
+  font-weight:bold;                            
+  border-left:1px solid rgba(255,255,255,0.2);                                  
+}                               
+        
+.secao-apostas{                                  
+  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763614144/Pngtree_button_button_colorful__3911001_xudrfv.png");                                
+  color:red;                                 
+  font-weight:bold;                             
+  background-size:cover;                                    
+}                            
+        
+.titulo-saldo, .titulo-ganhos, .titulo-apostas{                                  
+  display:block;                                  
+  font-size:1em;                                  
+  opacity:.8;                                  
+  margin-bottom:5px;                                  
+}                            
+        
+.valor-saldo, .valor-ganhos, .valor-apostas{                                  
+  display:block;                                  
+  font-size:1.5em;                                  
+  font-weight:bold;                                  
+}            
+        
+#betValue{                                  
+  font-size:36px;                                  
+  font-weight:bold;                                  
 }
 
 /* SPIN CONTROL */

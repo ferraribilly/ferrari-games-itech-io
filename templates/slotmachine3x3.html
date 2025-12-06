@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Slot Machine</title>
+  <title>Ferrari Games Itech.io fortune 3x3 </title>
   <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
   <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.2.3/dist/css/bootstrap-reboot.min.css"/>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style3x3.css') }}">
 </head>
 
 <body>
@@ -20,13 +20,17 @@
     <li><a href="/acesso/users/painel/{{ user_id }}">Home</a></li>
     <li><a href="/acesso/users/pagamentos/{{ user_id }}">Movimentações</a></li>
     <li><a href="#">Informaçoes Jogo</a></li>
+    <li><a href="#">Depositar</a></li>
+    <li><a href="#">Sacar Ganhos</a></li>
+    <li><a href="#">Ajuda</a></li>
+    <li><a href="#">Compartilhar e ganhe mesmo valor depositado</a></li>
   </ul>
 </nav>
 
 <div id="slotCanvas">
 
   <div id="jackpot">
-    <h1 class="slogan">Ferrari Games Itech.Io</h1>
+    <h1 class="slogan"></h1>
   </div>
 
   <div id="linesLayer"></div>
@@ -35,8 +39,8 @@
     <div class="reel"></div>
     <div class="reel"></div>
     <div class="reel"></div>
-    <div class="reel"></div>
-    <div class="reel"></div>
+    <!-- <div class="reel"></div> -->
+    <!-- <div class="reel"></div> -->
   </div>
 
   <div id="controls">
@@ -81,9 +85,9 @@
 
 <!-- Usando módulos ES6 -->
 <script type="module">
-  import Slot from "{{ url_for('static', filename='js/Slot.js') }}";
-  import Reel from "{{ url_for('static', filename='js/Reel.js') }}";
-  import Symbol from "{{ url_for('static', filename='js/Symbol.js') }}";
+  import Slot from "{{ url_for('static', filename='js/Slot3x3.js') }}";
+  import Reel from "{{ url_for('static', filename='js/Reel3x3.js') }}";
+  import Symbol from "{{ url_for('static', filename='js/Symbol3x3.js') }}";
 
   const config = {
     inverted: false,
