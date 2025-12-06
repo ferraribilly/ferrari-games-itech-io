@@ -605,130 +605,7 @@ def login():
 def index():
     return render_template("index.html")
 
-#======================================================
-# -ROTAS COMPRAS NO APP
-#======================================================
-# @app.route("/compras/<string:user_id>")
-# def compras(user_id):
-#     return render_template("payments.html")
 
-@app.route("/carrinho/<string:user_id>")
-def carrinho(user_id):
-    return render_template("carrinho.html")    
-#======================================================
-# -PAGAMENTO VIA PIX QRCODE
-#======================================================
-MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN")
-sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
-
-@app.route("/compras/pagamento_pix/<string:user_id>")
-def compras_pagamento_pix(user_id):
-    nome = request.args.get("nome") or ""
-    email = request.args.get("email") or ""
-    cpf = request.args.get("cpf") or ""
-    qtd = request.args.get("qtd") or "0"
-
-    quantity = int(qtd)
-    valor_total = quantity * 5.00
-
-    payment_data = {
-        "transaction_amount": valor_total,
-        "description": "Block Animation",
-        "payment_method_id": "pix",
-        "payer": {
-            "email": email,
-            "first_name": nome,
-            "identification": {
-                "type": "CPF",
-                "number": cpf
-            }
-        },
-        "additional_info": {
-            "items": [
-                {
-                    "title": "Bloco Animation",
-                    "quantity": quantity,
-                    "unit_price": 5.00
-                }
-            ]
-        },
-        "external_reference": email
-    }
-
-    response = sdk.payment().create(payment_data)
-    mp = response.get("response", {})
-
-    if "id" not in mp:
-        return f"ERRO NO RETORNO DO MERCADO PAGO:<br><br>{mp}", 500
-
-    payment_id = str(mp["id"])
-    status = mp.get("status", "pending")
-
-    documento = criar_documento_pagamento(
-        payment_id=payment_id,
-        status=status,
-        valor=valor_total,
-        user_id=user_id,
-        email_user=email
-    )
-
-    PagamentoModel().create_pagamento(documento)
-
-    transaction = mp["point_of_interaction"]["transaction_data"]
-    qrcode_base64 = transaction["qr_code_base64"]
-    qrcode_text = transaction["qr_code"]
-
-    return render_template(
-        "compras/transaction_pix.html",
-        qrcode=f"data:image/png;base64,{qrcode_base64}",
-        valor=f"R$ {valor_total:.2f}",
-        qr_code_cola=qrcode_text
-    )
-#========================================
-# WEBHOOK MERCADO PAGO
-#========================================
-@app.route("/notificacoes", methods=["POST"])
-def webhook_mp():
-    data = request.get_json()
-    topic = data.get("topic", data.get("type"))
-
-    if topic == "payment":
-        payment_id = data.get("data", {}).get("id")
-
-        if payment_id:
-            info = sdk.payment().get(payment_id)
-
-            if info["status"] == 200:
-                pag_data = info["response"]
-                status = pag_data.get("status")
-
-                pagamentos_collection.update_one(
-                    {"_id": str(payment_id)},
-                    {"$set": {
-                        "status": status,
-                        "data_atualizacao": datetime.utcnow(),
-                        "detalhes_webhook": pag_data
-                    }},
-                    upsert=True
-                )
-
-                if status == "approved":
-                    return redirect("/compra/sucesso")
-
-                if status in ["rejected", "cancelled"]:
-                    return redirect("/compra/recusada")
-
-    return jsonify({"status": "ok"}), 200
-
-
-# @app.route("/compra/sucesso")
-# def compra_sucesso():
-#     return render_template("compras/sucesso.html")
-
-
-# @app.route("/compra/recusada")
-# def compra_recusada():
-#     return render_template("compras/recusada.html") 
 #=======================================================
 # -PAINEL DE CONTROLE ACESSO
 #=======================================================
@@ -945,14 +822,82 @@ def review_raffle(user_id):
     )
                    
 
+#===========================================================
+# -PAGAMENTO VIA SOMENTE PIX PREFERENCE MERCADO´PAGO 
+#===========================================================
+@app.route("/compra/preference/pagamento_pix/<string:user_id>")
+def pagamento_preference(user_id):
+    nome = request.args.get("nome") or ""
+    email = request.args.get("email") or ""
+    cpf = request.args.get("cpf") or ""
+    qtd = int(request.args.get("qtd") or 0)
 
-#============================================================
-# -PAGAMENTO VIA PIX QRCODE
+    valor_total = qtd * 0.05
+
+    # preference IGUAL ao gerar_link_pagamento()
+    payment_data = {
+        "items": [
+            {
+                "id": user_id,
+                "title": "Block Gold",
+                "quantity": 1,
+                "currency_id": "BRL",
+                "unit_price": valor_total
+            }
+        ],
+        "payer": {
+            "email": email,
+            "first_name": nome,
+            "identification": {
+                "type": "CPF",
+                "number": cpf
+            }
+        },
+        "external_reference": user_id,
+
+        "back_urls": {
+            "success": "https://ferrari-games-itech-io.onrender.com/compra/sucesso",
+            "failure": "https://ferrari-games-itech-io.onrender.com/compra/recusada",
+        },
+
+        "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes",
+        "payment_methods": {
+            "excluded_payment_types": [
+                {"id": "credit_card"}
+            ]
+        }
+    }
+
+    result = sdk.preference().create(payment_data)
+    mp = result.get("response", {})
+
+    if "id" not in mp:
+        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
+
+    payment_id = mp["id"]
+    status = "pending"
+
+    documento = criar_documento_pagamento(
+        payment_id=str(payment_id),
+        status=status,
+        valor=valor_total,
+        user_id=user_id,
+        email_user=email
+    )
+
+    PagamentoModel().create_pagamento(documento)
+
+    # IGUAL seu exemplo → só retorna o link
+    link_pagamento = mp.get("init_point", "")
+    return link_pagamento
+
+#===========================================================
+# -PAGAMENTO VIA SOMENTE PIX QRCODE 
 #===========================================================
 MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN")
 sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
 
-@app.route("/raffle/pagamento_pix/<string:user_id>")
+@app.route("/payment_qrcode_pix/pagamento_pix/<string:user_id>")
 def pagamento_pix(user_id):
     nome = request.args.get("nome") or ""
     email = request.args.get("email") or ""
@@ -960,11 +905,11 @@ def pagamento_pix(user_id):
     telefone = request.args.get("telefone") or ""
     qtd = int(request.args.get("qtd") or 0)
 
-    valor_total = qtd * 0.5
+    valor_total = qtd * 0.05
 
     payment_data = {
         "transaction_amount": valor_total,
-        "description": "Block Animation",
+        "description": "Block",
         "payment_method_id": "pix",
 
         "payer": {
@@ -1007,7 +952,8 @@ def pagamento_pix(user_id):
         "rifa/transaction_pix.html",
         qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
         valor=f"R$ {valor_total:.2f}",
-        qr_code_cola=tx["qr_code"]
+        qr_code_cola=tx["qr_code"],
+        status=status
     )
 
 #========================================
@@ -1049,7 +995,7 @@ def webhook_mps():
 
 
 #------------------------------------------------
-# -COMPRA SUCCESS
+# -COMPRA Sorteio 
 #------------------------------------------------
 # @app.route("/sorteio/<string:user_id>")
 # def compra_sucesso_raffle(user_id):
