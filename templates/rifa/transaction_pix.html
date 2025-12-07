@@ -5,6 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <title>SAV AWARDS | Pix</title>  
+
+    <!-- SOCKET.IO CDN CORRETO -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/transaction_pix.css') }}">  
     <link rel="preconnect" href="https://fonts.googleapis.com">  
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
@@ -12,7 +16,6 @@
 </head>  
   
 <body>  
-      
     <header>  
         <div class="logo">  
             <a href="#">  
@@ -24,24 +27,33 @@
     <main>  
         <div class="pix-container">  
             <div class="payment">  
-                <h2 id="status">{{status}}</h2>  
-                <h3 id="payment_id">((payment_id)) </h3>
+                <div id="notifications"></div>
+
                 <p>Abra seu aplicativo de pagamento e escolha <b>Ler QR Code</b></p>  
-  
+                <span>Aponte a câmera do seu celular</span>  
                 <div class="qrcode-info">  
                     <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/cellphone-icon_remhjc.svg" draggable="false">  
-                    <span>Aponte a câmera do seu celular</span>  
+                    
                 </div>  
   
                 <div class="qrcode">  
                     <img src="{{ qrcode }}" alt="QR CODE">  
                 </div>  
+                <div class="pix-value">  
+                <span></span>  
+                <strong>FERRARI GAMES ITECH</strong>  
+                 </div>  
   
                 <div class="pix-value">  
                     <span>Valor do Pix:</span>  
                     <strong>{{ valor }}</strong>  
                 </div>  
-  
+
+                <div class="pix-value">  
+                    <span>Descrição:</span>  
+                    <strong>{{ description }}</strong>  
+                </div>    
+
                 <div id="copy-mobile" class="pix-copy-mobile">  
                     <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290949/copy-icon_z8ur77.svg" alt="Copiar" draggable="false">  
                     <span>Copiar código</span>  
@@ -55,62 +67,54 @@
                         <p id="qrcode-text">{{ qr_code_cola }}</p>  
                     </div>  
                 </div>  
-  
             </div>  
         </div>  
     </main>  
   
-   <script>
-   document.getElementById('copy').addEventListener('click', copyText);
-   document.getElementById('copy-mobile').addEventListener('touchstart', copyText);
-   
-   function copyText() {
-       var qrcodeText = document.getElementById('qrcode-text');
-       var copiedCodeBox = document.getElementById('copied-code');
-   
-       navigator.clipboard.writeText(qrcodeText.textContent).then(function() {
-           qrcodeText.style.filter = 'blur(1px)';
-           copiedCodeBox.style.visibility = 'visible';
-           copiedCodeBox.style.opacity = '0.9';
-           copiedCodeBox.style.transition = 'all 0.3s';
-   
-           setTimeout(function() {
-               qrcodeText.style.filter = '';
-               copiedCodeBox.style.visibility = '';
-               copiedCodeBox.style.opacity = '';
-           }, 1000);
-       });
-   }
-   
-   // --- Atualização de status via polling ---
-   const userId = "{{ user_id }}";
-   const paymentId = "{{ payment_id }}";
-   const statusElement = document.getElementById("status");
-   
-   async function atualizarStatus() {
-       try {
-           const res = await fetch(`/payment_status/${userId}`);
-           const data = await res.json();
-           const status = data.status.toLowerCase();
-   
-           if (status === "approved" || status === "aprovado") {
-               statusElement.innerHTML = "Obrigado! Você será direcionado...";
-               setTimeout(() => {
-                   window.location.href = "/sucesso/" + userId;
-               }, 2000);
-           } else if (status === "rejected" || status === "recusado") {
-               statusElement.innerHTML = "Pagamento recusado...";
-               window.location.href = "/compra/recusada/" + userId;
-           } else {
-               statusElement.innerHTML = "Aguardando pagamento...";
-           }
-       } catch (err) {
-           console.error("Erro:", err);
-       }
-   }
-   
-   setInterval(atualizarStatus, 3000);
-   </script>
+<script>
+document.getElementById('copy').addEventListener('click', copyText);
+document.getElementById('copy-mobile').addEventListener('touchstart', copyText);
+
+function copyText() {
+    var qrcodeText = document.getElementById('qrcode-text');
+    var copiedCodeBox = document.getElementById('copied-code');
+
+    navigator.clipboard.writeText(qrcodeText.textContent).then(function() {
+        qrcodeText.style.filter = 'blur(1px)';
+        copiedCodeBox.style.visibility = 'visible';
+        copiedCodeBox.style.opacity = '0.9';
+        copiedCodeBox.style.transition = 'all 0.3s';
+
+        setTimeout(function() {
+            qrcodeText.style.filter = '';
+            copiedCodeBox.style.visibility = '';
+            copiedCodeBox.style.opacity = '';
+        }, 1000);
+    });
+}
+
+// SOCKET.IO COM URL HTTP CORRETA
+var socket = io("http://" + window.location.hostname + ":" + window.location.port);
+
+socket.on("connect", function() {
+    console.log("Socket conectado");
+});
+
+socket.on("payment_update", function(data) {
+    var notificationsDiv = document.getElementById("notifications");
+    var newNotification = document.createElement("p");
+
+    if (data.status === "approved") {
+        newNotification.style.color = "green";
+        newNotification.textContent = "✅ " + data.message;
+    } else {
+        newNotification.style.color = "red";
+        newNotification.textContent = "❌ " + data.message;
+    }
+
+    notificationsDiv.appendChild(newNotification);
+});
+</script>
 
 </body>
 </html>

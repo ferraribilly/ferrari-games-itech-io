@@ -205,7 +205,7 @@
                 <div class="main-statement">por <b>R$0,05</b> cada número</div>        
             </div>        
         
-            <h2>Premiação R$ 300,00</h2>        
+            <h2>Premiação R$ 50,00</h2>        
         
             <div class="raffle-organizer">        
                 <div class="organizer-image">        
@@ -242,7 +242,7 @@
             <div class="raffle-description">        
                 <h4>Descrição / Regulamento</h4>        
                 <p>O vencedor será definido no primeiro prêmio da loteria federal!</p>        
-                <p>O que comprar mais números leva: <b>R$ 200,00</b></p>        
+                <p>O que comprar mais números leva: <b>R$ 50,00</b></p>        
             </div>        
         
             <div class="raffle-ranking">        
@@ -250,18 +250,18 @@
                 <div class="podium">        
                     <div class="rank">        
                         <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290950/gold-medal_jdgwm3.svg" alt="Top 1" draggable="false">        
-                        <p>Diego Rauny</p>        
-                        <p><b>5.000</b> bilhetes</p>        
+                        <p>{{nome_organizador1}}</p>        
+                        <p><b>{{bilhetes1}}</b> bilhetes</p>        
                     </div>        
                     <div class="rank">        
                         <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290956/silver-medal_odyw6y.svg" alt="Top 2" draggable="false">                                           
-                        <p>Nicolas</p>        
-                        <p><b>3.000</b> bilhetes</p>        
+                        <p>{{nome_organizador2}}</p>        
+                        <p><b>{{bilhetes2}}</b> bilhetes</p>        
                     </div>        
                     <div class="rank">        
                         <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/bronze-medal_bunwsf.svg" alt="Top 3" draggable="false">        
-                        <p>Wellingthon Mota</p>        
-                        <p><b>1.000</b> bilhetes</p>        
+                        <p>{{organizador3}}</p>        
+                        <p><b>{{bilhetes3}}</b> bilhetes</p>        
                     </div>        
                 </div>        
             </div>        
@@ -383,7 +383,7 @@ document.querySelector(".purchase-submit-btn").addEventListener("click", async (
     const json = await response.json();
 
     if (response.status === 201) {
-        window.location.href = `/raffle/diego/review/users/${userId}`;
+        window.location.href = `/review/users/${userId}`;
     } else {
         alert(json.error || "Erro ao registrar compra");
     }

@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify, abort, render_template, redirect,  url_for
+from flask_socketio import SocketIO, emit
+import requests
 import mercadopago
 from io import BytesIO
 import base64
@@ -20,6 +22,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 app = Flask(__name__)
+# app = Flask(__name__, static_folder="static", template_folder="templates")
+socketio = SocketIO(app, cors_allowed_origins="*") 
 app.secret_key = 'sua_chave_secreta' 
 user_model = UsuarioModel()
 pagamento_model = PagamentoModel()
@@ -28,9 +32,6 @@ compras_rf_model = Compras_rfModel()
 sorteio_model = SorteioModel()
 os.makedirs('static/images', exist_ok=True)
 os.makedirs('static/upload', exist_ok=True)
-
-
-app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
 
@@ -732,7 +733,7 @@ def acesso_users_movimentacoes(user_id):
 
 
 #====================================================================================================
-# -PLATAFORMA RAFFLES
+# -PLATAFORMA RAFFLES ACESSADO POR TODOS USERS
 #=====================================================================================================
 @app.route("/compras_rf/<string:user_id>", methods=["POST"])
 def compras_rf_user(user_id):
@@ -777,20 +778,9 @@ def raffle_inicio(user_id):
 def raffle(user_id):
     return render_template("rifa/raffle.html", user_id=user_id)
 
-# @app.route("/raffle/diego/review/users/<string:user_id>")
-# def review_raffle(user_id):
-# 
-#     user = user_model.get_user_by_id(user_id)
-#     if user:
-#         nome_value = user.get('nome')
-#         cpf_value = user.get('cpf')
-#         email_value = user.get('email')
-# 
-# 
-#     return render_template("rifa/review.html", user_id=user_id, nome=nome_value, cpf=cpf_value, email=email_value)
 
-@app.route("/raffle/diego/review/users/<string:user_id>")
-def review_raffle(user_id):
+@app.route("/review/users/<string:user_id>")
+def review_compra(user_id):
 
     # Buscar a última compra desse usuário
     compra_rf = compras_rf_model.collection.find_one(
@@ -924,8 +914,7 @@ def pagamento_pix(user_id):
     valor_total = qtd * 0.05              
               
     payment_data = {              
-        "transaction_amount": valor_total,              
-        # "title":"Block Card Games"              
+        "transaction_amount": valor_total,                           
         "description": "Manually Card Games",              
         "payment_method_id": "pix",              
               
@@ -968,7 +957,8 @@ def pagamento_pix(user_id):
     return render_template(              
         "rifa/transaction_pix.html",              
         qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",              
-        valor=f"R$ {valor_total:.2f}",              
+        valor=f"R$ {valor_total:.2f}", 
+        description=f"Manually Card",             
         qr_code_cola=tx["qr_code"],              
         status=status,
         payment_id=payment_id, 
@@ -977,57 +967,62 @@ def pagamento_pix(user_id):
     )              
               
   
-@app.route("/payment_status/<string:user_id>")
-def payment_status_check(user_id):  
-    pag = pagamentos_collection.find_one(
-        {"user_id": user_id}, 
-        sort=[("data_atualizacao", -1)]
-    )
 
-    if not pag:
-        return jsonify({"status": "pendente"})
 
-    if pag["status"] == "approved":
-        return redirect(f"/sucesso/{user_id}")
-
-    return jsonify({"status": pag["status"]})
-
+# Um local temporário para armazenar o status do pagamento para demonstração
+# pois tem model.py que armazena pagamentos
+payment_status_store = {}
     
 #========================================      
 # -WEBHOOK      
 #========================================      
-@app.route("/notificacoes", methods=["POST"])      
-def webhook_mps():      
-    data = request.get_json()      
-      
-    if not data:      
-        return jsonify({"status": "no body"}), 200      
-      
-    payment_id = data.get("data", {}).get("id") or data.get("id")      
-      
-    if not payment_id:      
-        return jsonify({"status": "no payment"}), 200      
-      
-    info = sdk.payment().get(payment_id)      
-      
-    if info["status"] != 200:      
-        return jsonify({"status": "mp error"}), 200      
-      
-    pag = info["response"]      
-    status = pag.get("status")      
-    user_id = pag.get("external_reference")      
-      
-    pagamentos_collection.update_one(      
-        {"payment_id": str(payment_id)},      
-        {"$set": {      
-            "status": status,      
-            "user_id": user_id,      
-            "data_atualizacao": datetime.utcnow()      
-        }},      
-        upsert=False      
-    )      
-      
-    return jsonify({"status": "ok"}), 200      
+@app.route('/notificacoes', methods=['POST'])
+def handle_webhook():
+    data = request.json
+    # O Mercado Pago envia o ID da notificação. Você precisa buscar os detalhes.
+    # O 'data["id"]' é o ID da notificação, não do pagamento diretamente.
+    # Para o tipo 'payment', o 'data["data"]["id"]' conterá o ID do pagamento.
+    
+    if data['type'] == 'payment':
+        payment_id = data['data']['id']
+        # Use o payment_id para consultar a API do Mercado Pago para obter detalhes.
+        payment_details = get_payment_details(payment_id)
+        
+        if payment_details and payment_details['status'] == 'approved':
+            user_id = payment_details['payer']['id'] # Ou outro identificador de usuário
+            message = f"Pagamento Aprovado para o usuário: {user_id}! ID do pagamento: {payment_id}"
+            
+            # Armazena o status (opcional, para referência)
+            payment_status_store[payment_id] = 'approved'
+            
+            # Envia a notificação em tempo real para todos os clientes conectados
+            socketio.emit('payment_update', {'status': 'approved', 'message': message}, namespace='/')
+            
+            print(message)
+            
+    # O Mercado Pago espera uma resposta HTTP 200 OK ou 204 No Content
+    return '', 204
+
+def get_payment_details(payment_id):
+    """Consulta a API do Mercado Pago para obter detalhes do pagamento."""
+    url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
+    headers = {
+        "Authorization": f"Bearer {MP_ACCESS_TOKEN}"
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    return None
+
+
+
+
+
+
+
+
+
+
 
 #------------------------------------------------
 # -COMPRA Sorteio 
@@ -1078,7 +1073,7 @@ def webhook_mps():
 
 @app.route('/compra/sucesso')
 def success():
-    return render_template("rifa/sorteio.html")
+    return render_template("/loading.html")
 #=================================================================================================
     
 #----------------------------------------------------------
@@ -1147,13 +1142,13 @@ def login_admin():
 #===========================
 # LOGIN PÁGINA HTML
 #===========================
-@app.route("/login_admin/organizadores")
+@app.route("/login")
 def login_administradores():
     return render_template("rifa/admin_dashboard/login.html")
 
 
 
-@app.route("/users/full", methods=["GET"])
+@app.route("/ferrari/full/users", methods=["GET"])
 def users_full():
     users = user_model.get_all_users()
     pagamentos = pagamento_model.get_all_pagamentos()
@@ -1293,11 +1288,31 @@ def dash(payment_id):
         full=full
     )
 
+@app.route("/collections", methods=["GET"])
+def list_mongo_collections():
+    """
+    Rota para listar todas as coleções no banco de dados MongoDB.
+    """
+    try:
+        # Usa list_collection_names() para obter uma lista simples de nomes
+        collection_names = db.list_collection_names()
+        
+        # Ou use db.list_collections() para obter cursores com metadados
+        # collections_metadata = list(db.list_collections())
+        
+        return jsonify({
+            "database": DB_NAME,
+            "collections": collection_names,
+            "count": len(collection_names)
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 #===========================================
 # -Run
 #===========================================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    socketio.run(app, host="0.0.0.0", port=port, debug=True)
 
