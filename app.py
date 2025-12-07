@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, abort, render_template, redirect,  url_for
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, join_room
 import requests
 import mercadopago
 from io import BytesIO
@@ -903,116 +903,134 @@ def pagamento_preference(user_id):
 MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN")              
 sdk = mercadopago.SDK(MP_ACCESS_TOKEN)              
               
-@app.route("/payment_qrcode_pix/pagamento_pix/<string:user_id>")              
-def pagamento_pix(user_id):              
-    nome = request.args.get("nome") or ""              
-    email = request.args.get("email") or ""              
-    cpf = request.args.get("cpf") or ""              
-    telefone = request.args.get("telefone") or ""              
-    qtd = int(request.args.get("qtd") or 0)              
-              
-    valor_total = qtd * 0.05              
-              
-    payment_data = {              
-        "transaction_amount": valor_total,                           
-        "description": "Manually Card Games",              
-        "payment_method_id": "pix",              
-              
-        "payer": {              
-            "email": email,              
-            "first_name": nome,              
-            "identification": {              
-                "type": "CPF",              
-                "number": cpf              
-            }              
-        },              
-              
-        "external_reference": user_id,              
-                      
-              
-          "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"              
-    }              
-              
-    response = sdk.payment().create(payment_data)              
-    mp = response.get("response", {})              
-              
-    if "id" not in mp:              
-        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500              
-              
-    payment_id = str(mp["id"])              
-    status = mp.get("status", "pending")              
-              
-    documento = criar_documento_pagamento(              
-        payment_id=payment_id,              
-        status=status,              
-        valor=valor_total,              
-        user_id=user_id,              
-        email_user=email              
-    )              
-              
-    PagamentoModel().create_pagamento(documento)              
-              
-    tx = mp["point_of_interaction"]["transaction_data"]              
-              
-    return render_template(              
-        "rifa/transaction_pix.html",              
-        qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",              
-        valor=f"R$ {valor_total:.2f}", 
-        description=f"Manually Card",             
-        qr_code_cola=tx["qr_code"],              
+# ===========================================
+# GERAR QR CODE PIX
+# ===========================================
+@app.route("/payment_qrcode_pix/pagamento_pix/<string:user_id>")
+def pagamento_pix(user_id):
+
+    nome = request.args.get("nome") or ""
+    email = request.args.get("email") or ""
+    cpf = request.args.get("cpf") or ""
+    telefone = request.args.get("telefone") or ""
+    qtd = int(request.args.get("qtd") or 0)
+
+    valor_total = qtd * 0.05
+
+    payment_data = {
+        "transaction_amount": valor_total,
+        "description": "Manually Card Games",
+        "payment_method_id": "pix",
+        "payer": {
+            "email": email,
+            "first_name": nome,
+            "identification": {
+                "type": "CPF",
+                "number": cpf
+            }
+        },
+        "external_reference": user_id,
+        "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"
+    }
+
+    response = sdk.payment().create(payment_data)
+    mp = response.get("response", {})
+
+    if "id" not in mp:
+        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
+
+    payment_id = str(mp["id"])
+    status = mp.get("status", "pending")
+
+    documento = criar_documento_pagamento(
+        payment_id=payment_id,
         status=status,
-        payment_id=payment_id, 
-        user_id=user_id   
-               
-    )              
-              
-  
+        valor=valor_total,
+        user_id=user_id,
+        email_user=email
+    )
 
+    PagamentoModel().create_pagamento(documento)
 
-# Um local temporário para armazenar o status do pagamento para demonstração
-# pois tem model.py que armazena pagamentos
-payment_status_store = {}
-    
-#========================================      
-# -WEBHOOK      
-#========================================      
-@app.route('/notificacoes', methods=['POST'])
+    tx = mp["point_of_interaction"]["transaction_data"]
+
+    return render_template(
+        "rifa/transaction_pix.html",
+        qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
+        valor=f"R$ {valor_total:.2f}",
+        description="Manually Card",
+        qr_code_cola=tx["qr_code"],
+        status=status,
+        payment_id=payment_id,
+        user_id=user_id
+    )
+
+# ===========================================
+# SOCKET.IO - SALA POR PAGAMENTO
+# ===========================================
+@socketio.on("join_payment")
+def join_payment_room(data):
+    room = data["payment_id"]
+    join_room(room)
+
+# ===========================================
+# WEBHOOK MERCADO PAGO
+# ===========================================
+@app.route("/notificacoes", methods=["POST"])
 def handle_webhook():
-    data = request.json
-    # O Mercado Pago envia o ID da notificação. Você precisa buscar os detalhes.
-    # O 'data["id"]' é o ID da notificação, não do pagamento diretamente.
-    # Para o tipo 'payment', o 'data["data"]["id"]' conterá o ID do pagamento.
-    
-    if data['type'] == 'payment':
-        payment_id = data['data']['id']
-        # Use o payment_id para consultar a API do Mercado Pago para obter detalhes.
-        payment_details = get_payment_details(payment_id)
-        
-        if payment_details and payment_details['status'] == 'approved':
-            user_id = payment_details['payer']['id'] # Ou outro identificador de usuário
-            message = f"Pagamento Aprovado para o usuário: {user_id}! ID do pagamento: {payment_id}"
-            
-            # Armazena o status (opcional, para referência)
-            payment_status_store[payment_id] = 'approved'
-            
-            # Envia a notificação em tempo real para todos os clientes conectados
-            socketio.emit('payment_update', {'status': 'approved', 'message': message}, namespace='/')
-            
-            print(message)
-            
-    # O Mercado Pago espera uma resposta HTTP 200 OK ou 204 No Content
-    return '', 204
 
+    data = request.json
+
+    if not data:
+        return "", 204
+
+    if data.get("type") == "payment":
+
+        payment_id = data["data"]["id"]
+        payment_details = get_payment_details(payment_id)
+
+        if not payment_details:
+            return "", 204
+
+        status = payment_details.get("status")
+
+        if status == "approved":
+            msg = "Pagamento aprovado"
+        else:
+            msg = f"Status atualizado: {status}"
+
+        socketio.emit(
+            "payment_update",
+            {
+                "status": status,
+                "message": msg,
+                "payment_id": payment_id
+            },
+            room=payment_id
+        )
+
+        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
+
+    return "", 204
+
+# ===========================================
+# CONSULTA STATUS MERCADO PAGO
+# ===========================================
 def get_payment_details(payment_id):
-    """Consulta a API do Mercado Pago para obter detalhes do pagamento."""
+
     url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
+
     headers = {
         "Authorization": f"Bearer {MP_ACCESS_TOKEN}"
     }
+
     response = requests.get(url, headers=headers)
+
     if response.status_code == 200:
         return response.json()
+
     return None
+
 
 
 

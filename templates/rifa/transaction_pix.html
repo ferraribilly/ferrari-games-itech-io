@@ -1,91 +1,95 @@
-<!DOCTYPE html>  
-<html lang="pt-br">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>SAV AWARDS | Pix</title>  
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAV AWARDS | Pix</title>
 
-    <!-- SOCKET.IO CDN CORRETO -->
+    <!-- SOCKET.IO CDN -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/transaction_pix.css') }}">  
-    <link rel="preconnect" href="https://fonts.googleapis.com">  
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">  
-</head>  
-  
-<body>  
-    <header>  
-        <div class="logo">  
-            <a href="#">  
-                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">  
-            </a>  
-        </div>  
-    </header>  
-  
-    <main>  
-        <div class="pix-container">  
-            <div class="payment">  
-                <div id="notifications"></div>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/transaction_pix.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
 
-                <p>Abra seu aplicativo de pagamento e escolha <b>Ler QR Code</b></p>  
-                <span>Aponte a câmera do seu celular</span>  
-                <div class="qrcode-info">  
-                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/cellphone-icon_remhjc.svg" draggable="false">  
-                    
-                </div>  
-  
-                <div class="qrcode">  
-                    <img src="{{ qrcode }}" alt="QR CODE">  
-                </div>  
-                <div class="pix-value">  
-                <span></span>  
-                <strong>FERRARI GAMES ITECH</strong>  
-                 </div>  
-  
-                <div class="pix-value">  
-                    <span>Valor do Pix:</span>  
-                    <strong>{{ valor }}</strong>  
-                </div>  
+<body>
 
-                <div class="pix-value">  
-                    <span>Descrição:</span>  
-                    <strong>{{ description }}</strong>  
-                </div>    
+<header>
+    <div class="logo">
+        <a href="#">
+            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">
+        </a>
+    </div>
+</header>
 
-                <div id="copy-mobile" class="pix-copy-mobile">  
-                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290949/copy-icon_z8ur77.svg" alt="Copiar" draggable="false">  
-                    <span>Copiar código</span>  
-                </div>  
-  
-                <div class="pix-copy-and-past">  
-                    <span>Você também pode pagar usando <b>Pix Copia e Cola</b>. Copie o código abaixo:</span>  
-                    <div class="qrcode-text">  
-                        <img id="copy" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290949/copy-icon_z8ur77.svg" alt="Copiar" draggable="false">  
-                        <div id="copied-code">Código copiado.</div>  
-                        <p id="qrcode-text">{{ qr_code_cola }}</p>  
-                    </div>  
-                </div>  
-            </div>  
-        </div>  
-    </main>  
-  
+<main>
+    <div class="pix-container">
+        <div class="payment">
+
+            <div id="notifications"></div>
+
+            <p>Abra seu aplicativo de pagamento e escolha <b>Ler QR Code</b></p>
+            <span>Aponte a câmera do seu celular</span>
+
+            <div class="qrcode-info">
+                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/cellphone-icon_remhjc.svg" draggable="false">
+            </div>
+
+            <div class="qrcode">
+                <img src="{{ qrcode }}" alt="QR CODE">
+            </div>
+
+            <div class="pix-value">
+                <strong>FERRARI GAMES ITECH</strong>
+            </div>
+
+            <div class="pix-value">
+                <span>Valor do Pix:</span>
+                <strong>{{ valor }}</strong>
+            </div>
+
+            <div class="pix-value">
+                <span>Descrição:</span>
+                <strong>{{ description }}</strong>
+            </div>
+
+            <div id="copy-mobile" class="pix-copy-mobile">
+                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290949/copy-icon_z8ur77.svg" draggable="false">
+                <span>Copiar código</span>
+            </div>
+
+            <div class="pix-copy-and-past">
+                <span>Você também pode pagar usando <b>Pix Copia e Cola</b>. Copie o código abaixo:</span>
+                <div class="qrcode-text">
+                    <img id="copy" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290949/copy-icon_z8ur77.svg" draggable="false">
+                    <div id="copied-code">Código copiado.</div>
+                    <p id="qrcode-text">{{ qr_code_cola }}</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
 <script>
+// ===== COPIAR PIX =====
 document.getElementById('copy').addEventListener('click', copyText);
-document.getElementById('copy-mobile').addEventListener('touchstart', copyText);
+document.getElementById('copy-mobile').addEventListener('click', copyText);
 
 function copyText() {
     var qrcodeText = document.getElementById('qrcode-text');
     var copiedCodeBox = document.getElementById('copied-code');
 
-    navigator.clipboard.writeText(qrcodeText.textContent).then(function() {
+    navigator.clipboard.writeText(qrcodeText.textContent).then(function () {
         qrcodeText.style.filter = 'blur(1px)';
         copiedCodeBox.style.visibility = 'visible';
         copiedCodeBox.style.opacity = '0.9';
         copiedCodeBox.style.transition = 'all 0.3s';
 
-        setTimeout(function() {
+        setTimeout(function () {
             qrcodeText.style.filter = '';
             copiedCodeBox.style.visibility = '';
             copiedCodeBox.style.opacity = '';
@@ -93,26 +97,30 @@ function copyText() {
     });
 }
 
-// SOCKET.IO COM URL HTTP CORRETA
-var socket = io("http://" + window.location.hostname + ":" + window.location.port);
+// ===== SOCKET.IO (CORRETO E SEM DUPLICAÇÃO) =====
+var paymentId = "{{ payment_id }}";
+var socket = io(window.location.origin);
 
-socket.on("connect", function() {
-    console.log("Socket conectado");
+socket.on("connect", function () {
+    socket.emit("join_payment", { payment_id: paymentId });
 });
 
-socket.on("payment_update", function(data) {
-    var notificationsDiv = document.getElementById("notifications");
-    var newNotification = document.createElement("p");
+socket.on("payment_update", function (data) {
+    if (data.payment_id !== paymentId) return;
+
+    var div = document.getElementById("notifications");
+    var p = document.createElement("p");
 
     if (data.status === "approved") {
-        newNotification.style.color = "green";
-        newNotification.textContent = "✅ " + data.message;
+        p.style.color = "green";
+        p.innerText = "✅ Pagamento aprovado!";
     } else {
-        newNotification.style.color = "red";
-        newNotification.textContent = "❌ " + data.message;
+        p.style.color = "red";
+        p.innerText = "❌ Pagamento recusado!";
     }
 
-    notificationsDiv.appendChild(newNotification);
+    div.innerHTML = "";
+    div.appendChild(p);
 });
 </script>
 
