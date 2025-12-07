@@ -970,7 +970,8 @@ def pagamento_pix(user_id):
         qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",              
         valor=f"R$ {valor_total:.2f}",              
         qr_code_cola=tx["qr_code"],              
-        status=status, 
+        status=status,
+        payment_id=payment_id, 
         user_id=user_id   
                
     )              
@@ -986,41 +987,41 @@ def payment_status_check(user_id):   # <-- mudou o nome da função
     return jsonify({"status": pag["status"]})
 
     
-@app.route("/notificacoes", methods=["POST"])
-def webhook_mps():
-    data = request.get_json()
-
-    topic = data.get("type") or data.get("topic")
-    if topic != "payment":
-        return jsonify({"status": "ignored"}), 200
-
-    payment_id = data.get("data", {}).get("id")
-    if not payment_id:
-        return jsonify({"status": "no payment"}), 200
-
-    info = sdk.payment().get(payment_id)
-
-    if info["status"] != 200:
-        return jsonify({"status": "mp error"}), 200
-
-    pag = info["response"]
-    status = pag.get("status")
-    user_id = pag.get("external_reference")  # ← AQUI VEM O USER_ID
-
-    pagamentos_collection.update_one(
-        {"_id": str(payment_id)},
-        {"$set": {
-            "status": status,
-            "user_id": user_id,
-            "data_atualizacao": datetime.utcnow(),
-            "detalhes_webhook": pag
-        }},
-        upsert=True
-    )
-
-    return jsonify({"status": "ok"}), 200
-                
-
+#========================================      
+# -WEBHOOK      
+#========================================      
+@app.route("/notificacoes", methods=["POST"])      
+def webhook_mps():      
+    data = request.get_json()      
+      
+    if not data:      
+        return jsonify({"status": "no body"}), 200      
+      
+    payment_id = data.get("data", {}).get("id") or data.get("id")      
+      
+    if not payment_id:      
+        return jsonify({"status": "no payment"}), 200      
+      
+    info = sdk.payment().get(payment_id)      
+      
+    if info["status"] != 200:      
+        return jsonify({"status": "mp error"}), 200      
+      
+    pag = info["response"]      
+    status = pag.get("status")      
+    user_id = pag.get("external_reference")      
+      
+    pagamentos_collection.update_one(      
+        {"payment_id": str(payment_id)},      
+        {"$set": {      
+            "status": status,      
+            "user_id": user_id,      
+            "data_atualizacao": datetime.utcnow()      
+        }},      
+        upsert=False      
+    )      
+      
+    return jsonify({"status": "ok"}), 200      
 
 #------------------------------------------------
 # -COMPRA Sorteio 
