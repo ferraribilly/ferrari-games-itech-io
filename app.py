@@ -977,13 +977,19 @@ def pagamento_pix(user_id):
     )              
               
   
-
-# Renomeia a função para não conflitar
 @app.route("/payment_status/<string:user_id>")
-def payment_status_check(user_id):   # <-- mudou o nome da função
-    pag = pagamentos_collection.find_one({"user_id": user_id}, sort=[("data_atualizacao", -1)])
+def payment_status_check(user_id):  
+    pag = pagamentos_collection.find_one(
+        {"user_id": user_id}, 
+        sort=[("data_atualizacao", -1)]
+    )
+
     if not pag:
         return jsonify({"status": "pendente"})
+
+    if pag["status"] == "approved":
+        return redirect(f"/sucesso/{user_id}")
+
     return jsonify({"status": pag["status"]})
 
     
