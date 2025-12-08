@@ -221,7 +221,7 @@
                                 <span>Suporte</span>        
                             </div>        
                         </a>        
-                        <a href="/compra/recusada/{{user_id}}" target="_blank">        
+                        <a href="#" target="_blank">        
                             <div class="tag telegram">        
                                 <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290956/telegram-icon_nned8r.svg">        
                                 <span>Telegram</span>        
@@ -239,7 +239,8 @@
         
             <div class="awards"></div>        
         
-            <div class="raffle-description">        
+            <div class="raffle-description">  
+                <h4 id="data_sorteio">Data Sorteio:31/12/2025</h4>       
                 <h4>Descrição / Regulamento</h4>        
                 <p>O vencedor será definido no primeiro prêmio da loteria federal!</p>        
                 <p>O que comprar mais números leva: <b>R$ 50,00</b></p>        
@@ -368,6 +369,7 @@ document.querySelector(".purchase-submit-btn").addEventListener("click", async (
     const valorUnit = ticketValue;
 
     const body = {
+        data_sorteio: data_sorteio,
         tickets: tickets,
         valor: parseFloat(valorTotal),
         quantity: parseInt(quantity),

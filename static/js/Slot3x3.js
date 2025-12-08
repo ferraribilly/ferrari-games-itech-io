@@ -1,35 +1,40 @@
+//CONFIGURAÇAO 3X3 COM TOTAL DE 15 IMAGENS
 import Reel from "./Reel3x3.js";
 import Symbol from "./Symbol3x3.js";
 
 export default class Slot {
   constructor(domElement, config = {}) {
     Symbol.preload();
-
     this.balanceUI = document.getElementById("balance");
     this.betUI = document.getElementById("betValue");
     this.winUI = document.getElementById("win");
     this.betValue = 0.50;
 
-    this.config = Object.assign({
-      betStep: 0.50,
-      betMin: 0.50,
-      betMax: 1000000
-    }, config);
+    this.config = Object.assign(
+      {
+        betStep: 0.50,
+        betMin: 0.50,
+        betMax: 1000000
+      },
+      config
+    );
 
-    // SEM BICHOS – USANDO OS NOVOS NOMES
     this.currentSymbols = [
-      ["diamante","fogo","raio","estrela","coroa"],
-      ["dinheiro","sino","alvo","trofeu","joia"],
-      ["baralho","dados","foguete","chave","bomba"],
-      ["magia","anel","medalha","diamante_vermelho","diamante_azul"],
-      ["raio","fogo","estrela","coroa","diamante"]
+      ["avestruz","aguia","burro","borboleta","cachorro"],
+      ["cabra","carneiro","camelo","cobra","coelho"],
+      ["cavalo","elefante","galo","gato","jacare"],
+      ["leao","macaco","porco","pavao","peru"],
+      ["touro","tigre","urso","veado","vaca"]
     ];
 
     this.nextSymbols = JSON.parse(JSON.stringify(this.currentSymbols));
     this.container = domElement;
 
-    this.reels = Array.from(this.container.getElementsByClassName("reel"))
-      .map((reelContainer, idx) => new Reel(reelContainer, idx, this.currentSymbols[idx]));
+    this.reels = Array.from(
+      this.container.getElementsByClassName("reel")
+    ).map((reelContainer, idx) =>
+      new Reel(reelContainer, idx, this.currentSymbols[idx])
+    );
 
     this.spinButton = document.getElementById("spin");
     this.spinButton.addEventListener("click", () => this.spin());
@@ -41,7 +46,8 @@ export default class Slot {
       const step = parseFloat(this.config.betStep) || 0.5;
       const newBet = +(this.betValue - step).toFixed(2);
       this.betValue = Math.max(this.config.betMin, newBet);
-      if (this.balance !== undefined && this.betValue > this.balance) this.betValue = this.balance;
+      if (this.balance !== undefined && this.betValue > this.balance)
+        this.betValue = this.balance;
       this.updateUI(0);
     };
 
@@ -49,7 +55,8 @@ export default class Slot {
       const step = parseFloat(this.config.betStep) || 0.5;
       const newBet = +(this.betValue + step).toFixed(2);
       this.betValue = Math.min(this.config.betMax, newBet);
-      if (this.balance !== undefined && this.betValue > this.balance) this.betValue = this.balance;
+      if (this.balance !== undefined && this.betValue > this.balance)
+        this.betValue = this.balance;
       this.updateUI(0);
     };
   }
@@ -58,27 +65,35 @@ export default class Slot {
     try {
       const resp = await fetch(`/rodar/${window.USER_ID}`, {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({bet:0})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bet: 0 })
       });
+
       const result = await resp.json();
+
       if (result && typeof result.balance_user !== "undefined") {
         this.balance = parseFloat(result.balance_user);
       }
     } catch (err) {}
+
     this.updateUI(0);
   }
 
   updateUI(winAmount) {
     if (typeof this.balance === "undefined") return;
 
-    if (this.balanceUI) this.balanceUI.textContent = "R$ " + this.balance.toFixed(2);
-    if (this.betUI) this.betUI.textContent = "R$ " + this.betValue.toFixed(2);
+    if (this.balanceUI)
+      this.balanceUI.textContent = "R$ " + this.balance.toFixed(2);
+
+    if (this.betUI)
+      this.betUI.textContent = "R$ " + this.betValue.toFixed(2);
 
     if (winAmount > 0 && this.winUI) {
       this.winUI.textContent = "R$ " + winAmount.toFixed(2);
-      this.winUI.style.opacity = 0.50;
-      setTimeout(() => { this.winUI.style.opacity = 0; }, 5000);
+      this.winUI.style.opacity = 0.5;
+      setTimeout(() => {
+        this.winUI.style.opacity = 0;
+      }, 5000);
     }
 
     if (this.balance <= 0) this.showDepositMessage();
@@ -92,7 +107,7 @@ export default class Slot {
     msg.style.position = "absolute";
     msg.style.top = "50%";
     msg.style.left = "50%";
-    msg.style.transform = "translate(-50%,-50%)";
+    msg.style.transform = "translate(-50%, -50%)";
     msg.style.background = "#333";
     msg.style.padding = "20px";
     msg.style.color = "white";
@@ -103,9 +118,11 @@ export default class Slot {
 
     document.body.appendChild(msg);
 
-    document.getElementById("deposit-btn").addEventListener("click", () => {
-      window.location.href = `/payment/users/${window.USER_ID}`;
-    });
+    document
+      .getElementById("deposit-btn")
+      .addEventListener("click", () => {
+        window.location.href = `/acesso/users/compras/${window.USER_ID}`;
+      });
   }
 
   async spin() {
@@ -117,8 +134,8 @@ export default class Slot {
     try {
       const resp = await fetch(`/rodar/${window.USER_ID}`, {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({bet: this.betValue})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bet: this.betValue })
       });
 
       backend = await resp.json();
@@ -128,15 +145,16 @@ export default class Slot {
 
       if (backend && backend.grid)
         this.nextSymbols = backend.grid;
-
     } catch (err) {}
 
     this.onSpinStart(this.nextSymbols);
 
-    await Promise.all(this.reels.map(reel => {
-      reel.renderSymbols(this.nextSymbols[reel.idx]);
-      return reel.spin();
-    }));
+    await Promise.all(
+      this.reels.map(reel => {
+        reel.renderSymbols(this.nextSymbols[reel.idx]);
+        return reel.spin();
+      })
+    );
 
     if (backend && backend.wins)
       backend.wins.forEach(win => this.highlightWin(win.positions));
@@ -145,6 +163,7 @@ export default class Slot {
     this.updateUI(totalWin);
 
     this.onSpinEnd(backend?.wins || []);
+
     this.spinButton.disabled = false;
 
     if (this.autoPlayCheckbox && this.autoPlayCheckbox.checked)
@@ -152,8 +171,10 @@ export default class Slot {
   }
 
   highlightWin(positions) {
-    const linesLayer = document.getElementById("linesLayer") || this.createLinesLayer();
+    const linesLayer =
+      document.getElementById("linesLayer") || this.createLinesLayer();
     linesLayer.innerHTML = "";
+
     positions.forEach(([c, r]) => {
       const el = this.reels[c].symbolContainer.children[r];
       if (el) el.classList.add("win");
@@ -170,10 +191,11 @@ export default class Slot {
     layer.style.height = "100%";
     layer.style.pointerEvents = "none";
     layer.style.zIndex = "9999";
+
     this.container.appendChild(layer);
     return layer;
   }
 
-  onSpinStart(symbols) { this.config.onSpinStart?.(symbols); }
-  onSpinEnd(result) { this.config.onSpinEnd?.(result); }
+  onSpinStart(symbols) {}
+  onSpinEnd(result) {}
 }

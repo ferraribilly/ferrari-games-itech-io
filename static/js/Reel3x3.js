@@ -1,3 +1,4 @@
+//CONFIGURAÇAO PRA 3X3 COM TOTAL 15 IMAGENS 
 import Symbol from "./Symbol3x3.js";
 
 export default class Reel {
@@ -9,9 +10,25 @@ export default class Reel {
     this.symbolContainer.classList.add("icons");
     this.reelContainer.appendChild(this.symbolContainer);
 
-    initialSymbols.forEach(name => {
-      this.symbolContainer.appendChild(new Symbol(name).el);
-    });
+    this.animation = this.symbolContainer.animate(
+      [
+        { top: 0, filter: "blur(0)" },
+        { filter: "blur(2px)", offset: 0.5 },
+        {
+          top: `calc((${Math.floor(this.factor) * 15} / 3) * -100%)`,
+          filter: "blur(0)"
+        }
+      ],
+      {
+        duration: this.factor * 1000,
+        easing: "ease-in-out"
+      }
+    );
+    this.animation.cancel();
+
+    initialSymbols.forEach(symbol =>
+      this.symbolContainer.appendChild(new Symbol(symbol).img)
+    );
   }
 
   get factor() {
@@ -20,37 +37,46 @@ export default class Reel {
 
   renderSymbols(nextSymbols) {
     const fragment = document.createDocumentFragment();
-    const total = Math.floor(this.factor) * 3;
+    const total = Math.floor(this.factor) * 15;
 
     for (let i = 0; i < total; i++) {
-      const sym = new Symbol(
+      const icon = new Symbol(
         i >= total - 3 ? nextSymbols[i - (total - 3)] : Symbol.random()
       );
-      fragment.appendChild(sym.el);
+      fragment.appendChild(icon.img);
     }
 
     this.symbolContainer.appendChild(fragment);
   }
 
   spin() {
-    this.symbolContainer.style.transition = "transform 0.6s cubic-bezier(.2,.7,.3,1)";
-    this.symbolContainer.style.transform = "translateY(-300%)";
+    const animationPromise = new Promise(
+      resolve => (this.animation.onfinish = resolve)
+    );
+    const timeoutPromise = new Promise(resolve =>
+      setTimeout(resolve, this.factor * 1000)
+    );
 
-    return new Promise(resolve => {
-      setTimeout(() => {
-        this.symbolContainer.style.transition = "none";
-        this.symbolContainer.style.transform = "translateY(0)";
-        const max = this.symbolContainer.children.length - 3;
-        for (let i = 0; i < max; i++) {
-          this.symbolContainer.firstChild.remove();
-        }
-        resolve();
-      }, 600);
+    this.animation.cancel();
+    this.animation.play();
+
+    return Promise.race([animationPromise, timeoutPromise]).then(() => {
+      if (this.animation.playState !== "finished") this.animation.finish();
+
+      const max = this.symbolContainer.children.length - 3;
+
+      for (let i = 0; i < max; i++) {
+        this.symbolContainer.firstChild.remove();
+      }
     });
   }
 
-  highlightRow(row) {
-    const items = this.symbolContainer.children;
-    if (items[row]) items[row].classList.add("win");
+  highlightRow(rowIndex) {
+    Array.from(this.symbolContainer.children).forEach(c =>
+      c.classList.remove("win")
+    );
+
+    const target = this.symbolContainer.children[rowIndex];
+    if (target) target.classList.add("win");
   }
 }

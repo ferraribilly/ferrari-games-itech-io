@@ -1,252 +1,194 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html>              
+<html lang="pt-br">              
+<head>              
+    <meta charset="UTF-8">              
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">              
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">              
+    <title>SAV AWARDS | Rifa digital</title>              
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/raffle-dark.css') }}">              
+    <link rel="preconnect" href="https://fonts.googleapis.com">              
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>              
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">              
+    <script>              
+        ticketValue = 5.00              
+    </script>              
 
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pagamentos</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../static/css/admin_dashboard/payments.css">
-</head>
+    <style>         
+     .organizer-tags img {      
+        box-shadow:      
+            0 0 10px #8a2be2,       
+            0 0 40px #8a2be2,       
+            0 0 80px #8a2be2;      
+        text-shadow:      
+            0 0 5px #fff,           
+            0 0 10px #8a2be2;      
+     }      
 
-<body>
-  <div class="container">
-    <h1>Pagamentos Recebidos</h1>
+      .main-image {      
+          position: relative;      
+          display: inline-block;      
+      }      
+      .main-image .center-image {      
+          position: absolute;      
+          top: 50%;      
+          left: 50%;      
+          transform: translate(-50%, -50%);      
+          width: 200px;      
+          height: auto;      
+          pointer-events: none;      
+      }      
+      .add-tickets strong {  
+        color: gold;  
+      }  
+      .add-tickets div {  
+        color: green;  
+      }  
+      .quantity-box input {  
+        height: 50px;  
+        color: blue;  
+        font-size: 22px;  
+        font-family: monospace;	  
+      }  
+         
+      .valor-final {      
+        text-align: center;      
+        color: gold;      
+        font-size: 32px;      
+        font-family: monospace;      
+      }      
+    </style>              
+</head>              
 
-    <div class="controls">
-      <input type="text" id="searchInput" placeholder="Buscar por nome ou email">
-      <select id="statusFilter">
-        <option value="">Todos os Status</option>
-        <option value="approved">Aprovado</option>
-        <option value="pending">Pendente</option>
-        <option value="cancelled">Cancelado</option>
-      </select>
-      <select id="paymentMethodFilter">
-        <option value="">Todos os Métodos</option>
-        <option value="Pix">Pix</option>
-        <option value="Card">Cartão</option>
-        <option value="Boleto">Boleto</option>
-      </select>
-      <button class="export-btn" id="exportBtn">Exportar CSV</button>
-    </div>
+<body>              
+<div id="overlay-blur-effect"></div>              
 
-    <table id="paymentsTable">
-      <thead>
-        <tr>
-          <th>Users</th>
-          <th>Email</th>
-          <th>title</th>
-          <th>Valor</th>
-          <th>Método</th>
-          <th>Status</th>
-          <th>Data</th>
-          <th>Ação</th>
-        </tr>
-      </thead>
-      <tbody id="paymentsTableBody">
-        <!-- Os dados serão carregados dinamicamente -->
-      </tbody>
-    </table>
-  </div>
+<header>              
+    <div class="logo">              
+        <a href="#">              
+            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">              
+        </a>              
+    </div>              
+</header>              
 
-  <div class="modal" id="detailsModal">
-    <div class="modal__content">
-      <span class="modal__close" id="closeModalBtn">&times;</span>
-      <h2>Detalhes do Pagamento</h2>
-      <p><strong>Nome:</strong> <span id="modalName"></span></p>
-      <p><strong>Email:</strong> <span id="modalEmail"></span></p>
-      <p><strong>Valor:</strong> <span id="modalAmount"></span></p>
-      <p><strong>Método:</strong> <span id="modalPaymentMethod"></span></p>
-      <p><strong>Data:</strong> <span id="modalDate"></span></p>
-    </div>
-  </div>
+<main>              
+    <div class="main-container">              
+        <div class="raffle">              
+            <div class="main-image">              
+                <div class="main-statement">Deposito Minimo <b>R$5.00</b></div>              
+            </div>              
 
-  <script>
-    // Payment data storage
-    let allPayments = [];
-    let filteredPayments = [];
+            <div class="raffle-tickets">              
+                <h4>COMPRAS DE BALANCE</h4>              
+                <section class="add-tickets-container">              
+                    <div class="add-tickets-box">              
 
-    // DOM Elements
-    const elements = {
-      searchInput: document.getElementById('searchInput'),
-      statusFilter: document.getElementById('statusFilter'),
-      paymentMethodFilter: document.getElementById('paymentMethodFilter'),
-      raffleFilter: document.getElementById('raffleFilter'),
-      exportBtn: document.getElementById('exportBtn'),
-      paymentsTableBody: document.getElementById('paymentsTableBody'),
-      detailsModal: document.getElementById('detailsModal'),
-      closeModalBtn: document.getElementById('closeModalBtn'),
-      modalName: document.getElementById('modalName'),
-      modalEmail: document.getElementById('modalEmail'),
-      modalAmount: document.getElementById('modalAmount'),
-      modalPaymentMethod: document.getElementById('modalPaymentMethod'),
-      modalDate: document.getElementById('modalDate')
-    };
+                        <div class="add-tickets">              
+                            <div id="compra_balance_5_bonus_1%" class="qty-btn">R$ 5.00+<strong>(1%)</strong></div>            
+                            <div id="compra_balance_10_bonus_5%" class="qty-btn">R$ 10.00+<strong>(2%)</strong></div>            
+                            <div id="compra_balance_30_bonus_15%" class="qty-btn">R$ 30.00+<strong>(5%)</strong></div>            
+                        </div>              
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-      fetchPayments();
-      setupEventListeners();
-    });
+                        <div class="quantity-container">              
+                            <div class="quantity-box">              
+                                <input   
+                                    id="quantityValue"   
+                                    type="number"   
+                                    value="5.00"   
+                                    min="5"   
+                                    max="1000"   
+                                    step="0.01"  
+                                >              
+                            </div>              
+                            <p id="quantity-error" style="display:none;color:red;">Insira um valor entre R$5 e R$1000</p>              
+                        </div>              
 
-    // Fetch payments from backend
-    function fetchPayments() {
-      // Em um aplicativo real, isso seria um fetch() para sua API
-      const mockPayments = [
-        {
-          id: payment_id,
-          user_id: user_id,
-          email: email_user,
-          title: title,
-          amount: valor,
-          paymentMethod: 'Pix',
-          status: status,
-          data_criacao: data_criacao,
-          data_atulaizacao: none,
-          detalhes_webhook: None
-        },
-        
-        {
-          id: payment_id,
-          user_id: user_id,
-          email: email_user,
-          title: title,
-          amount: valor,
-          paymentMethod: 'card',
-          status: status,
-          data_criacao: data_criacao,
-          data_atulaizacao: none,
-          detalhes_webhook: None          
-        }
-      ];
+                        <div class="total">              
+                            <div>Valor final</div>      
+                            <div id="total-value">R$ 5,00</div>              
+                        </div>              
 
-      allPayments = mockPayments;
-      filteredPayments = [...allPayments];
-      renderPayments();
-    }
+                        <div class="purchase">              
+                            <div class="purchase-overlay" style="display:none;">              
+                                <form action="#">              
+                                    <div class="purchase-tickets-container">              
+                                        <div class="purchase-tickets-box">              
+                                            <img id="close-purchase-tickets" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/close-icon_vwjg9s.svg" alt="Fechar">              
+                                            <label>VALOR DEPOSITO</label>              
+                                            <strong class="valor-final" id="total-final">5,00</strong>              
+                                            <div class="terms">              
+                                                <input name="terms" type="checkbox" required>              
+                                                <p>Li e concordo com os <a href="#" target="_blank">Termos e Condições</a> e estou ciente que todo pagamento e seguro Mercado Pago.</p>              
+                                            </div>              
+                                            <a class="purchase-submit-btn" href="/review/compras_app/users/{{user_id}}">Reservar</a>              
+                                        </div>              
+                                    </div>              
+                                </form>              
+                            </div>              
+                            <button onclick="checkQuantity()"> Check Depositar</button>              
+                        </div>              
 
-    // Render payments to table
-    function renderPayments() {
-      elements.paymentsTableBody.innerHTML = '';
+                    </div>              
+                </section>              
+            </div>              
+        </div>              
+    </div>              
+</main>              
 
-      filteredPayments.forEach(payment => {
-        const row = document.createElement('tr');
-        row.dataset.status = payment.status;
-        row.dataset.paymentMethod = payment.paymentMethod;
-        row.dataset.raffle = payment.raffle;
+<script>  
+// BOTÕES  
+document.querySelectorAll(".qty-btn").forEach(btn => {  
+    btn.addEventListener("click", () => {  
+        let raw = btn.innerText.split("+")[0].replace("R$", "").trim();  
+        let value = parseFloat(raw);  
+  
+        const input = document.getElementById("quantityValue");  
+        input.value = value.toFixed(2);  
+  
+        atualizarValorFinal();  
+    });  
+});  
+  
+// ATUALIZA QUANDO DIGITA
+document.getElementById("quantityValue").addEventListener("input", () => {  
+    atualizarValorFinal();  
+});  
+  
+// ATUALIZA TOTAL  
+function atualizarValorFinal() {  
+    const input = document.getElementById("quantityValue");  
+    const totalLabel = document.getElementById("total-value");  
+    const totalFinal = document.getElementById("total-final");  
+  
+    let n = parseFloat(input.value);  
+    if (isNaN(n)) n = 0;  
+  
+    let formatado = n.toLocaleString("pt-BR", { minimumFractionDigits: 2 });  
+  
+    totalLabel.textContent = "R$ " + formatado;  
+    totalFinal.textContent = formatado;  
+}  
+  
+// ABRIR MODAL  
+function checkQuantity() {  
+    const input = document.getElementById("quantityValue");  
+    let n = parseFloat(input.value);  
+  
+    if (isNaN(n) || n < 5 || n > 1000) {  
+        document.getElementById("quantity-error").style.display = "block";  
+        return;  
+    }  
+  
+    document.getElementById("quantity-error").style.display = "none";  
+    atualizarValorFinal();  
+  
+    document.querySelector(".purchase-overlay").style.display = "flex";  
+}  
+  
+// FECHAR  
+document.getElementById("close-purchase-tickets").onclick = () => {  
+    document.querySelector(".purchase-overlay").style.display = "none";  
+};  
+</script>              
 
-        row.innerHTML = `
-          <td data-label="User">${payment.user}</td>
-          <td data-label="Email">${payment.email}</td>
-          <td data-label="Rifa">${payment.raffle}</td>
-          <td data-label="Valor">${payment.amount}</td>
-          <td data-label="Método">${payment.paymentMethod}</td>
-          <td data-label="Status">
-            <span class="status status--${payment.status}">
-              ${getStatusText(payment.status)}
-            </span>
-          </td>
-          <td data-label="Data">${payment.date}</td>
-          <td data-label="Ação">
-            <button class="details-btn" data-id="${payment.id}">Detalhes</button>
-          </td>
-        `;
-
-        elements.paymentsTableBody.appendChild(row);
-      });
-
-      // Add event listeners to detail buttons
-      document.querySelectorAll('.details-btn').forEach(btn => {
-        btn.addEventListener('click', () => showPaymentDetails(btn.dataset.id));
-      });
-    }
-
-    // Filter payments based on criteria
-    function filterPayments() {
-      const searchTerm = elements.searchInput.value.toLowerCase();
-      const status = elements.statusFilter.value;
-      const paymentMethod = elements.paymentMethodFilter.value;
-      const raffle = elements.raffleFilter.value;
-
-      filteredPayments = allPayments.filter(payment => {
-        const matchesSearch =
-          payment.user.toLowerCase().includes(searchTerm) ||
-          payment.email.toLowerCase().includes(searchTerm);
-
-        const matchesStatus = !status || payment.status === status;
-        const matchesPaymentMethod = !paymentMethod || payment.paymentMethod === paymentMethod;
-        const matchesRaffle = !raffle || payment.raffle === raffle;
-
-        return matchesSearch && matchesStatus && matchesPaymentMethod && matchesRaffle;
-      });
-
-      renderPayments();
-    }
-
-    // Show payment details in modal
-    function showPaymentDetails(paymentId) {
-      const payment = allPayments.find(p => p.id == paymentId);
-      if (!payment) return;
-      
-      elements.modalName.textContent = payment.user;
-      elements.modalEmail.textContent = payment.email;
-      elements.modalAmount.textContent = payment.amount;
-      elements.modalPaymentMethod.textContent = payment.paymentMethod;
-      elements.modalDate.textContent = payment.date;
-
-      elements.detailsModal.style.display = 'flex';
-    }
-
-    // Close modal
-    function closeModal() {
-      elements.detailsModal.style.display = 'none';
-    }
-
-    // Export to CSV
-    function exportToCSV() {
-      const headers = ['Users', 'Email', 'Title', 'Valor', 'Método', 'Status', 'Data'];
-      const rows = filteredPayments.map(payment => [
-        payment.user,
-        payment.email,
-        payment.raffle,
-        payment.amount,
-        payment.paymentMethod,
-        getStatusText(payment.status),
-        payment.date
-      ]);
-
-      let csv = headers.join(',') + '\n';
-      csv += rows.map(row => row.join(',')).join('\n');
-
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'pagamentos.csv';
-      link.click();
-    }
-
-    // Helper functions
-    function getStatusText(status) {
-      const statusMap = {
-        'approved': 'Aprovado',
-        'pending': 'Pendente',
-        'cancelled': 'Cancelado'
-      };
-      return statusMap[status] || status;
-    }
-
-    function setupEventListeners() {
-      elements.searchInput.addEventListener('input', filterPayments);
-      elements.statusFilter.addEventListener('change', filterPayments);
-      elements.paymentMethodFilter.addEventListener('change', filterPayments);
-      elements.raffleFilter.addEventListener('change', filterPayments);
-      elements.exportBtn.addEventListener('click', exportToCSV);
-      elements.closeModalBtn.addEventListener('click', closeModal);
-    }
-  </script>
-</body>
-
+</body>              
 </html>

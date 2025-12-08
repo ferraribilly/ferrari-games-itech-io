@@ -8,7 +8,7 @@ import qrcode
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 # from datetime import datetime
-from model import UsuarioModel, AdminModel, Compras_rfModel,SorteioModel, PagamentoModel, pagamentos_collection, criar_documento_pagamento
+from model import UsuarioModel, AdminModel, Compras_appModel,Compras_rfModel,SorteioModel,Pagamento_appModel, PagamentoModel,pagamentos_app_collection,criar_documento_app_pagamento,  pagamentos_collection, criar_documento_pagamento
 from bson.errors import InvalidId
 import os
 import re
@@ -26,9 +26,11 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*") 
 app.secret_key = 'sua_chave_secreta' 
 user_model = UsuarioModel()
-pagamento_model = PagamentoModel()
+pagamento_model = PagamentoModel()      
+pagamento_app_model = Pagamento_appModel()
 admin_model = AdminModel()
 compras_rf_model = Compras_rfModel()
+compras_app_model = Compras_appModel()
 sorteio_model = SorteioModel()
 os.makedirs('static/images', exist_ok=True)
 os.makedirs('static/upload', exist_ok=True)
@@ -37,80 +39,111 @@ CORS(app)
 
 #============================================================================================
 #============================================================================================
-# -------------------------------------------------------------------------------------------
-# MAQUINA 5x3
-# -------------------------------------------------------------------------------------------
-LEVEL_5X3 = 1
 
-SYMBOL_NAMES_5X3 = [
+
+
+#========================================================
+# -LEVEL MAQUINA 3X3
+#========================================================
+LEVEL = 1
+
+SYMBOL_NAMES = [
     "avestruz","aguia","burro","borboleta","cachorro",
-        "cabra","carneiro","camelo","cobra","coelho",
-        "galo","cavalo","elefante","gato","jacare",
-        "leao","macaco","porco","pavao","peru",
-        "tigre","touro","urso","veado","vaca"
-]
+    "cabra","carneiro","camelo","cobra","coelho",
+    "galo","cavalo","elefante","gato","jacare"
+]   # <-- 15 símbolos
 
-class Machine5x3:
+class Machine:
     def __init__(self, balance=1000.0):
         self.balance = float(balance)
 
-machine_5x3 = Machine5x3()
+machine = Machine()
 
-def random_symbol_5x3():
-    return random.choice(SYMBOL_NAMES_5X3)
+def random_symbol():
+    return random.choice(SYMBOL_NAMES)
 
-def generate_grid_5x3():
-    # grid[c][r] com c em 0..4 (5 colunas) e r em 0..2 (3 linhas)
-    cols, rows = 5, 3
-    grid = [[random_symbol_5x3() for r in range(rows)] for c in range(cols)]
+#==================================================================================
+# ---------------------------------------------------------------------------------
+# GERADOR COM VOLATILIDADE LEVEL (AGORA 3X3)
+# ---------------------------------------------------------------------------------
+def generate_grid():
+    grid = [[random_symbol() for r in range(3)] for c in range(3)]
 
-    # Aplicar facilitação similar ao LEVEL da 5x5, mas adaptada
-    if LEVEL_5X3 == 1:
-        # facilitar colunas
-        for c in range(cols):
-            sym = random_symbol_5x3()
-            for r in range(rows):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-        # facilitar linhas
-        for r in range(rows):
-            sym = random_symbol_5x3()
-            for c in range(cols):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-        # diagonais (comprimento = min(cols,rows) = 3)
-        sym = random_symbol_5x3()
-        for i in range(min(cols, rows)):
-            grid[i][i] = sym if random.randint(0,1) else grid[i][i]
-        sym = random_symbol_5x3()
-        for i in range(min(cols, rows)):
-            grid[cols - min(cols,rows) + i][i] = sym if random.randint(0,1) else grid[cols - min(cols,rows) + i][i]
-        # cruzado X (cantos + centro da área 3x3 no canto esquerdo)
-        sym = random_symbol_5x3()
-        cross_positions = [(0,0),(2,2),(0,2),(2,0),(1,1)]
-        for c,r in cross_positions:
-            if c < cols and r < rows:
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-        # borda top/bottom
-        sym = random_symbol_5x3()
-        borda_positions = [(c,0) for c in range(cols)] + [(c,rows-1) for c in range(cols)]
+    if LEVEL == 1:
+        # colunas
+        for c in range(3):
+            sym = random_symbol()
+            for r in range(3):
+                grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
+
+        # linhas
+        for r in range(3):
+            sym = random_symbol()
+            for c in range(3):
+                grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
+
+        # diagonal principal
+        sym = random_symbol()
+        for i in range(3):
+            grid[i][i] = sym if random.randint(0, 1) else grid[i][i]
+
+        # diagonal invertida
+        sym = random_symbol()
+        for i in range(3):
+            grid[i][2-i] = sym if random.randint(0, 1) else grid[i][2-i]
+
+        # cruzado / X
+        sym = random_symbol()
+        for pos in [(0,0),(2,2),(0,2),(2,0),(1,1)]:
+            c,r = pos
+            grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
+
+        # janela (4 cantos)
+        sym = random_symbol()
+        for pos in [(0,0),(2,2),(2,0),(0,2)]:
+            c,r = pos
+            grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+
+        # borda/janelao = todos menos centro
+        sym = random_symbol()
+        borda_positions = [
+            (0,0),(1,0),(2,0),
+            (0,2),(1,2),(2,2),
+            (0,1),(2,1)
+        ]
         for c,r in borda_positions:
             grid[c][r] = sym if random.randint(0,1) else grid[c][r]
 
-    elif LEVEL_5X3 == 2:
-        for c in range(cols):
-            sym = random_symbol_5x3()
-            for r in range(rows):
+        # cheio
+        sym = random_symbol()
+        for c in range(3):
+            for r in range(3):
                 grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-    elif LEVEL_5X3 == 3:
-        for c in range(cols):
-            sym = random_symbol_5x3()
-            for r in range(rows):
+
+    elif LEVEL == 2:
+        for c in range(3):
+            sym = random_symbol()
+            for r in range(3):
+                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+        for r in range(3):
+            sym = random_symbol()
+            for c in range(3):
+                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+
+    elif LEVEL == 3:
+        for c in range(3):
+            sym = random_symbol()
+            for r in range(3):
                 grid[c][r] = sym if random.randint(0,1) else grid[c][r]
 
     return grid
 
-def check_wins_5x3(grid):
+
+# -----------------------------
+# checkWins (ADAPTADO 3×3, nada removido)
+# -----------------------------
+def check_wins(grid):
     wins = []
-    cols, rows = 5, 3
 
     def addWin(type_, positions):
         multiplier = 0
@@ -118,157 +151,8 @@ def check_wins_5x3(grid):
         elif type_ == "vertical": multiplier = 8
         elif type_ in ("diagonal_principal", "diagonal_invertida"): multiplier = 12
         elif type_ == "cruzado_x": multiplier = 20
-        elif type_ == "borda": multiplier = 15
-        elif type_ == "cheio": multiplier = 50
-
-        wins.append({
-            "type": type_,
-            "positions": positions,
-            "payout": multiplier
-        })
-
-    # horizontais (cada linha tem cols símbolos iguais)
-    for r in range(rows):
-        if all(grid[c][r] == grid[0][r] for c in range(cols)):
-            addWin("horizontal", [(c,r) for c in range(cols)])
-
-    # verticais (cada coluna tem rows símbolos iguais)
-    for c in range(cols):
-        if all(grid[c][r] == grid[c][0] for r in range(rows)):
-            addWin("vertical", [(c,r) for r in range(rows)])
-
-    # diagonais (comprimento = rows = 3)
-    # diagonal principal (0,0),(1,1),(2,2)
-    diag_pr = [(i,i) for i in range(min(cols,rows))]
-    if all(grid[c][r] == grid[diag_pr[0][0]][diag_pr[0][1]] for (c,r) in diag_pr):
-        addWin("diagonal_principal", diag_pr)
-
-    # diagonal invertida: usar a faixa direita que tenha tamanho 3: (cols-3,0),(cols-2,1),(cols-1,2)
-    diag_inv = [(cols - min(cols,rows) + i, i) for i in range(min(cols,rows))]
-    if all(grid[c][r] == grid[diag_inv[0][0]][diag_inv[0][1]] for (c,r) in diag_inv):
-        addWin("diagonal_invertida", diag_inv)
-
-    # cruzado X na subárea 3x3 do canto (0..2,0..2)
-    cross_positions = [(0,0),(2,2),(0,2),(2,0),(1,1)]
-    if all(grid[c][r] == grid[cross_positions[0][0]][cross_positions[0][1]] for (c,r) in cross_positions):
-        addWin("cruzado_x", cross_positions)
-
-    # borda top+bottom
-    borda_positions = [(c,0) for c in range(cols)] + [(c,rows-1) for c in range(cols)]
-    borda_vals = [grid[c][r] for (c,r) in borda_positions]
-    if all(s == borda_vals[0] for s in borda_vals):
-        addWin("borda", borda_positions)
-
-    # cheio (todas as células iguais)
-    full_positions = [(c,r) for c in range(cols) for r in range(rows)]
-    flat = [grid[c][r] for (c,r) in full_positions]
-    if all(s == flat[0] for s in flat):
-        addWin("cheio", full_positions)
-
-    return wins
-
-@app.route("/rodar_5x3/<string:user_id>", methods=["POST"])
-def rodar_5x3(user_id):
-    user = user_model.get_user_by_id(user_id)
-    if not user:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-
-    user_balance = float(user.get("balance", 0.0))
-    bet_raw = request.json.get("bet") if request.json else 0.5
-    try:
-        bet = max(0.01, float(bet_raw))
-    except:
-        bet = 0.5
-
-    if user_balance < bet:
-        return jsonify({"error": "Saldo insuficiente"}), 400
-
-    grid = generate_grid_5x3()
-    wins = check_wins_5x3(grid)
-    total_win = bet * len(wins) * 10.0 if wins else 0.0
-
-    if total_win > 0:
-        new_balance = user_balance + total_win
-        machine_5x3.balance -= total_win
-    else:
-        new_balance = user_balance - bet
-        machine_5x3.balance += bet
-
-    user_model.update_user(user_id, {"balance": float(new_balance)})
-
-    return jsonify({
-        "grid": grid,
-        "win": round(total_win, 2),
-        "balance_user": round(new_balance, 2),
-        "balance_machine": round(machine_5x3.balance, 2),
-        "wins": wins,
-        "level": LEVEL_5X3
-    })
-
-# -------------------------------------------------------------------------------------------------
-# MAQUINA 3x3 (SEM BICHOS / COMPATIVEL COM FRONT 5x3)
-# ------------------------------------------------------------------------------------------------
-import random
-from flask import request, jsonify
-
-LEVEL_3X3 = 1
-
-SYMBOL_NAMES_3X3 = [
-    "avestruz","aguia","burro","borboleta","cachorro",
-        "cabra","carneiro","camelo","cobra","coelho",
-        "galo","cavalo","elefante","gato","jacare",
-        "leao","macaco","porco","pavao","peru",
-        "tigre","touro","urso","veado","vaca"
-]
-
-class Machine3x3:
-    def __init__(self, balance=300.0):
-        self.balance = float(balance)
-
-machine_3x3 = Machine3x3()
-
-def random_symbol_3x3():
-    return random.choice(SYMBOL_NAMES_3X3)
-
-def generate_grid_3x3():
-    cols, rows = 3, 3
-    grid = [[random_symbol_3x3() for _ in range(rows)] for _ in range(cols)]
-
-    if LEVEL_3X3 == 1:
-        for c in range(cols):
-            sym = random_symbol_3x3()
-            for r in range(rows):
-                if random.randint(0, 1):
-                    grid[c][r] = sym
-
-        for r in range(rows):
-            sym = random_symbol_3x3()
-            for c in range(cols):
-                if random.randint(0, 1):
-                    grid[c][r] = sym
-
-        sym = random_symbol_3x3()
-        for i in range(rows):
-            if random.randint(0, 1):
-                grid[i][i] = sym
-
-        sym = random_symbol_3x3()
-        for i in range(rows):
-            if random.randint(0, 1):
-                grid[cols - 1 - i][i] = sym
-
-    return grid
-
-def check_wins_3x3(grid):
-    wins = []
-    cols, rows = 3, 3
-
-    def addWin(type_, positions):
-        multiplier = 0
-        if type_ == "horizontal": multiplier = 5
-        elif type_ == "vertical": multiplier = 8
-        elif type_ in ("diagonal_principal", "diagonal_invertida"): multiplier = 12
-        elif type_ == "cruzado_x": multiplier = 20
+        elif type_ == "janela": multiplier = 15
+        elif type_ == "janelao": multiplier = 30
         elif type_ == "cheio": multiplier = 50
 
         wins.append({
@@ -278,47 +162,73 @@ def check_wins_3x3(grid):
         })
 
     # horizontais
-    for r in range(rows):
-        if all(grid[c][r] == grid[0][r] for c in range(cols)):
-            addWin("horizontal", [(c, r) for c in range(cols)])
+    for r in range(3):
+        if all(grid[c][r] == grid[0][r] for c in range(3)):
+            addWin("horizontal", [(c, r) for c in range(3)])
 
     # verticais
-    for c in range(cols):
-        if all(grid[c][r] == grid[c][0] for r in range(rows)):
-            addWin("vertical", [(c, r) for r in range(rows)])
+    for c in range(3):
+        if all(grid[c][r] == grid[c][0] for r in range(3)):
+            addWin("vertical", [(c, r) for r in range(3)])
 
     # diagonal principal
-    diag_pr = [(i, i) for i in range(rows)]
-    if all(grid[c][r] == grid[0][0] for (c, r) in diag_pr):
-        addWin("diagonal_principal", diag_pr)
+    if all(grid[i][i] == grid[0][0] for i in range(3)):
+        addWin("diagonal_principal", [(i, i) for i in range(3)])
 
     # diagonal invertida
-    diag_inv = [(cols - 1 - i, i) for i in range(rows)]
-    if all(grid[c][r] == grid[cols - 1][0] for (c, r) in diag_inv):
-        addWin("diagonal_invertida", diag_inv)
+    if all(grid[i][2-i] == grid[0][2] for i in range(3)):
+        addWin("diagonal_invertida", [(i, 2 - i) for i in range(3)])
 
     # cruzado X
-    cross_positions = [(0,0), (2,2), (0,2), (2,0), (1,1)]
-    if all(grid[c][r] == grid[1][1] for (c, r) in cross_positions):
-        addWin("cruzado_x", cross_positions)
+    if (
+        grid[0][0] == grid[2][2] and
+        grid[0][2] == grid[2][0] and
+        grid[0][0] == grid[1][1] and
+        grid[0][0] == grid[0][2]
+    ):
+        addWin("cruzado_x", [(0,0),(2,2),(0,2),(2,0),(1,1)])
+
+    # janela
+    if (
+        grid[0][0] == grid[2][2] and
+        grid[2][0] == grid[0][2] and
+        grid[0][0] == grid[2][0]
+    ):
+        addWin("janela", [(0,0),(2,2),(2,0),(0,2)])
+
+    # borda / janelao 3×3
+    borda_positions = [
+        (0,0),(1,0),(2,0),
+        (0,2),(1,2),(2,2),
+        (0,1),(2,1)
+    ]
+    borda = [grid[c][r] for (c,r) in borda_positions]
+    if all(s == borda[0] for s in borda):
+        addWin("janelao", borda_positions)
 
     # cheio
-    full_positions = [(c, r) for c in range(cols) for r in range(rows)]
-    flat = [grid[c][r] for (c, r) in full_positions]
+    full_positions = [(c,r) for c in range(3) for r in range(3)]
+    flat = [grid[c][r] for (c,r) in full_positions]
     if all(s == flat[0] for s in flat):
         addWin("cheio", full_positions)
 
     return wins
 
-@app.route("/rodar_3x3/<string:user_id>", methods=["POST"])
-def rodar_3x3(user_id):
+
+# Helper
+def only_digits(s):
+    return re.sub(r'\D', '', s or "")
+
+@app.route("/rodar3x3/<string:user_id>", methods=["POST"])
+def rodar3x3(user_id):
     user = user_model.get_user_by_id(user_id)
+        
     if not user:
         return jsonify({"error": "Usuário não encontrado"}), 404
 
     user_balance = float(user.get("balance", 0.0))
-    bet_raw = request.json.get("bet") if request.json else 0.5
 
+    bet_raw = request.json.get("bet") if request.json else 0.5
     try:
         bet = max(0.01, float(bet_raw))
     except:
@@ -327,20 +237,16 @@ def rodar_3x3(user_id):
     if user_balance < bet:
         return jsonify({"error": "Saldo insuficiente"}), 400
 
-    grid = generate_grid_3x3()
-    wins = check_wins_3x3(grid)
-
-    # PAGAMENTO USANDO MULTIPLICADOR REAL
-    total_win = 0.0
-    for w in wins:
-        total_win += bet * w["payout"]
+    grid = generate_grid()
+    wins = check_wins(grid)
+    total_win = bet * len(wins) * 10.0 if wins else 0.0
 
     if total_win > 0:
         new_balance = user_balance + total_win
-        machine_3x3.balance -= total_win
+        machine.balance -= total_win
     else:
         new_balance = user_balance - bet
-        machine_3x3.balance += bet
+        machine.balance += bet
 
     user_model.update_user(user_id, {"balance": float(new_balance)})
 
@@ -348,10 +254,321 @@ def rodar_3x3(user_id):
         "grid": grid,
         "win": round(total_win, 2),
         "balance_user": round(new_balance, 2),
-        "balance_machine": round(machine_3x3.balance, 2),
+        "balance_machine": round(machine.balance, 2),
         "wins": wins,
-        "level": LEVEL_3X3
+        "level": LEVEL
     })
+
+
+
+
+
+
+
+@app.route("/users/produto/compras/<string:user_id>")
+def compras_aplicativo(user_id):
+    return render_template("payments.html", user_id=user_id)
+#======================================================================================
+# -COMPRAS DE BALANCE
+#======================================================================================
+@app.route("/compras_app/<string:user_id>", methods=["POST"])
+def compras_app_user(user_id):
+    data = request.get_json()
+
+    # validação (NÃO inclui data_sorteio)
+    required_fields = [ "valor", "quantity", "valor_unit"]
+    for field in required_fields:
+        if field not in data or not data[field]:
+            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
+
+    # pega dados do usuário
+    user = user_model.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+
+    cpf = user.get("cpf")
+    email_user = user.get("email")
+
+    
+
+    # registro
+    new_compras_app = {
+        "user_id": user_id,
+        "cpf": cpf,
+        "email_user": email_user,
+        "pagamento_aprovado": "pendente",
+        "valor": data["valor"],
+        "quantity": data["quantity"],
+        "valor_unit": data["valor_unit"],
+        "created_at": datetime.now()
+    }
+
+    compras_app_id = compras_app_model.create_compras_app(new_compras_app)
+
+    return jsonify({"id": compras_app_id}), 201
+
+
+#======================================================
+# REVIEW COMPRA APLICATIVO "CARRINHO"
+#======================================================
+@app.route("/review/compras_app/users/<string:user_id>")
+def review_compra_app(user_id):
+
+    # Buscar a última compra desse usuário
+    compra_app = compras_app_model.collection.find_one(
+        {"user_id": user_id},
+        sort=[("_id", -1)]
+    )
+
+    user = user_model.get_user_by_id(user_id)
+
+    nome_value = user.get('nome') if user else ""
+    cpf_value = user.get('cpf') if user else ""
+    email_value = user.get('email') if user else ""
+
+    # Se não existir compra ainda
+    if not compra_app:
+        return render_template(
+            "carrinho.html",
+            user_id=user_id,
+            nome=nome_value,
+            cpf=cpf_value,
+            email=email_value,
+            valor=0,
+            valor_final=0,
+            quantity=0,
+           
+        )
+
+    return render_template(
+        "carrinho.html",
+        user_id=user_id,
+        nome=nome_value,
+        cpf=cpf_value,
+        email=email_value,
+        valor=compra_app.get("valor_unit"),
+        valor_final=compra_app.get("valor"),
+        quantity=compra_app.get("quantity"),
+    
+    )
+                   
+#===========================================================
+# -PAGAMENTO VIA SOMENTE PIX PREFERENCE MERCADO´PAGO 
+#===========================================================
+@app.route("/compra_app/preference/pagamento_pix/<string:user_id>")
+def pagamento_preference_app(user_id):
+    nome = request.args.get("nome") or ""
+    email = request.args.get("email") or ""
+    cpf = request.args.get("cpf") or ""
+    qtd = int(request.args.get("qtd") or 0)
+
+    valor_total = qtd * 0.05
+
+    # preference IGUAL ao gerar_link_pagamento()
+    payment_data = {
+        "items": [
+            {
+                "id": user_id,
+                "title": "Balance",
+                "quantity": 1,
+                "currency_id": "BRL",
+                "unit_price": valor_total
+            }
+        ],
+        "payer": {
+            "email": email,
+            "first_name": nome,
+            "identification": {
+                "type": "CPF",
+                "number": cpf
+            }
+        },
+        "external_reference": user_id,
+
+        "back_urls": {
+            "success": "https://ferrari-games-itech-io.onrender.com/compra_app/sucesso",
+            "failure": "https://ferrari-games-itech-io.onrender.com/compra_app/recusada",
+        },
+
+        "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes",
+        "payment_methods": {
+            "excluded_payment_types": [
+                {"id": "credit_card"}
+            ]
+        }
+    }
+
+    result = sdk.preference().create(payment_data)
+    mp = result.get("response", {})
+
+    if "id" not in mp:
+        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
+
+    payment_id = mp["id"]
+    status = "pending"
+
+    documento = criar_documento_pagamento_app(
+        payment_id=str(payment_id),
+        status=status,
+        valor=valor_total,
+        user_id=user_id,
+        email_user=email
+    )
+
+    Pagamento_appModel().create_pagamento_app(documento)
+
+    # IGUAL seu exemplo → só retorna o link
+    link_pagamento = mp.get("init_point", "")
+    return link_pagamento
+
+
+
+
+
+
+        
+        
+#===========================================================              
+# -PAGAMENTO VIA SOMENTE PIX QRCODE               
+#===========================================================              
+MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN")              
+sdk = mercadopago.SDK(MP_ACCESS_TOKEN)              
+              
+# ===========================================
+# GERAR QR CODE PIX
+# ===========================================
+@app.route("/payment_qrcode_pix/compra_app/<string:user_id>")
+def pagamento_app(user_id):
+
+    nome = request.args.get("nome") or ""
+    email = request.args.get("email") or ""
+    cpf = request.args.get("cpf") or ""
+    telefone = request.args.get("telefone") or ""
+    qtd = int(request.args.get("qtd") or 0)
+
+    valor_total = qtd * 0.05
+
+    payment_data = {
+        "transaction_amount": valor_total,
+        "description": "Balance",
+        "payment_method_id": "pix",
+        "payer": {
+            "email": email,
+            "first_name": nome,
+            "identification": {
+                "type": "CPF",
+                "number": cpf
+            }
+        },
+        "external_reference": user_id,
+        "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"
+    }
+
+    response = sdk.payment().create(payment_data)
+    mp = response.get("response", {})
+
+    if "id" not in mp:
+        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
+
+    payment_id = str(mp["id"])
+    status = mp.get("status", "pending")
+
+    documento = criar_documento_pagamento_app(
+        payment_id=payment_id,
+        status=status,
+        valor=valor_total,
+        user_id=user_id,
+        email_user=email
+    )
+
+    Pagamento_appModel().create_pagamento_app(documento)
+
+    tx = mp["point_of_interaction"]["transaction_data"]
+
+    return render_template(
+        "/transaction_pix.html",
+        qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
+        valor=f"R$ {valor_total:.2f}",
+        description="Manually Card",
+        qr_code_cola=tx["qr_code"],
+        status=status,
+        payment_id=payment_id,
+        user_id=user_id
+    )
+
+# ===========================================
+# SOCKET.IO - SALA POR PAGAMENTO
+# ===========================================
+@socketio.on("join_payment")
+def join_payment_room(data):
+    room = data["payment_id"]
+    join_room(room)
+
+# ===========================================
+# WEBHOOK MERCADO PAGO
+# ===========================================
+@app.route("/notificacoes", methods=["POST"])
+def handles_webhook():
+
+    data = request.json
+
+    if not data:
+        return "", 204
+
+    if data.get("type") == "payment":
+
+        payment_id = data["data"]["id"]
+        payment_details = get_payment_details(payment_id)
+
+        if not payment_details:
+            return "", 204
+
+        status = payment_details.get("status")
+
+        if status == "approved":
+            msg = "Pagamento aprovado"
+        else:
+            msg = f"Status atualizado: {status}"
+
+        socketio.emit(
+            "payment_update",
+            {
+                "status": status,
+                "message": msg,
+                "payment_id": payment_id
+            },
+            room=payment_id
+        )
+
+        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
+
+    return "", 204
+
+# ===========================================
+# CONSULTA STATUS MERCADO PAGO
+# ===========================================
+def get_payment_details(payment_id):
+
+    url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
+
+    headers = {
+        "Authorization": f"Bearer {MP_ACCESS_TOKEN}"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return response.json()
+
+    return None
+
+
+
+
+
+
+
+
 #========================================================
 # -LEVEL MAQUINA 5X5
 #========================================================
@@ -660,27 +877,7 @@ def acesso_users_machine(user_id):
     else:
         return "Usuário não encontrado"
 
-#==========================================================
-# -ROTA MAQUINA 5x4
-#==========================================================
-@app.route("/acesso/users/5x3/<string:user_id>")
-def acesso_users_machine_5x4(user_id):
-    user = user_model.get_user_by_id(user_id)
-
-    if user:
-        # Pega o balance do banco
-        balance_value = user.get('balance')
-
-        # Se for None ou inválido, não mostra 0, pode mostrar vazio ou "-"
-        if balance_value is None:
-            balance_value = ""  # ou "-" se quiser
-        else:
-            # Formata com duas casas decimais
-            balance_value = f"{balance_value:.2f}"
-
-        return render_template("slotmachine5x3.html", user_id=user_id, balance=balance_value)
-    else:
-        return "Usuário não encontrado"       
+      
 
 #==========================================================
 # -ROTA MAQUINA 5x3
@@ -710,6 +907,7 @@ def acesso_users_machine3x3(user_id):
 def acesso_users_movimentacoes(user_id):
     # Busca o usuário pelo ID
     user = user_model.get_user_by_id(user_id)
+    
 
     if user:
         nome_value = user.get('nome')
@@ -732,20 +930,23 @@ def acesso_users_movimentacoes(user_id):
 
 
 
+
+
+
 #====================================================================================================
 # -PLATAFORMA RAFFLES ACESSADO POR TODOS USERS
-#=====================================================================================================
+#====================================================================================================
 @app.route("/compras_rf/<string:user_id>", methods=["POST"])
 def compras_rf_user(user_id):
     data = request.get_json()
 
-    # validação
+    # validação (NÃO inclui data_sorteio)
     required_fields = ["tickets", "valor", "quantity", "valor_unit"]
     for field in required_fields:
         if field not in data or not data[field]:
             return jsonify({"error": f"Campo obrigatório: {field}"}), 400
 
-    # pega dados do usuário na collection users
+    # pega dados do usuário
     user = user_model.get_user_by_id(user_id)
     if not user:
         return jsonify({"error": "Usuário não encontrado"}), 404
@@ -753,15 +954,20 @@ def compras_rf_user(user_id):
     cpf = user.get("cpf")
     email_user = user.get("email")
 
-    # monta o registro que vai pro banco
+    # pega data do h4 id="data_sorteio" que veio do frontend
+    data_sorteio = data.get("data_sorteio")
+
+    # registro
     new_compras_rf = {
         "user_id": user_id,
         "cpf": cpf,
         "email_user": email_user,
-        "tickets": data["tickets"],      # vem do frontend
-        "valor": data["valor"],          # vem do frontend
-        "quantity": data["quantity"],    # vem do frontend
-        "valor_unit": data["valor_unit"],# vem do frontend
+        "data_sorteio": data_sorteio,
+        "tickets": data["tickets"],
+        "pagamento_aprovado": "pendente",
+        "valor": data["valor"],
+        "quantity": data["quantity"],
+        "valor_unit": data["valor_unit"],
         "created_at": datetime.now()
     }
 

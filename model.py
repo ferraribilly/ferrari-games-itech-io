@@ -13,8 +13,10 @@ MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
 USERS_COLLECTION_NAME = "users"
 PAGAMENTOS_COLLECTION_NAME = "pagamentos"
+PAGAMENTOS_APP_COLLECTION_NAME = "pagamentos_app"
 ADMINS_COLLECTION_NAME = "admins"
-COMPRAS_RF_COLLECTION_NAME = "compras_rf"
+COMPRAS_RF_COLLECTION_NAME = "compras_rf" 
+COMPRAS_APP_COLLECTION_NAME = "compras_app"
 SORTEIO_COLLECTION_NAME = "sorteio"
 
 
@@ -81,12 +83,10 @@ class PagamentoModel:
     def delete_pagamento(self, pagamento_id):
         result = self.collection.delete_one({"_id": str(pagamento_id)})
         return result.deleted_count
-#==================================================================================================
-#==================================================================================================
 
-#-------------------------------------------------------------------------
-# -COMPRAS
-#-------------------------------------------------------------------------
+#======================================================
+# COMPRAS RF
+#=====================================================
 compras_rf_collection = db[COMPRAS_RF_COLLECTION_NAME]
 class Compras_rfModel:
     def __init__(self):
@@ -120,6 +120,107 @@ class Compras_rfModel:
 
     def delete_compras_rf(self, compras_rf_id):
         result = self.collection.delete_one({"_id": str(compras_rf_id)})
+        return result.deleted_count
+#===================================================================================================
+#===================================================================================================
+
+        
+#==================================================================================================
+#==================================================================================================
+#--------------------------------------------------------------------
+# -PAGAMENTOS_APP
+#--------------------------------------------------------------------
+pagamentos_app_collection = db[PAGAMENTOS_APP_COLLECTION_NAME]
+
+def criar_documento_app_pagamento(payment_id, status, valor, user_id, email_user, data_criacao=None):
+    if data_criacao is None:
+        
+        data_criacao = datetime.now(timezone.utc)
+
+    return {
+        "_id": str(payment_id),
+        "status": status,
+        "valor": valor,
+        "user_id": user_id,
+        "email_user": email_user,
+        "data_criacao": data_criacao,
+        "data_atualizacao": None,
+        "detalhes_webhook": None
+    }
+
+
+class Pagamento_appModel:
+    def __init__(self):
+        self.collection = pagamentos_app_collection
+
+    def create_pagamento_app(self, data):
+        result = self.collection.insert_one(data)
+        return str(result.inserted_id)
+
+    # existing method renamed/kept for backward compat
+    def get_pagamento_app(self, pagamento_app_id):
+        doc = self.collection.find_one({"_id": str(pagamento_app_id)})
+        if doc:
+            doc["_id"] = str(doc.get("_id"))
+        return doc
+
+    # alias esperado pela rota — evita AttributeError
+    def get_pagamento_app_by_id(self, pagamento_app_id):
+        return self.get_pagamento_app(pagamento_app_id)
+
+    # garantir que todos os _id venham como string
+    def get_all_pagamentos_app(self):
+        docs = list(self.collection.find())
+        for d in docs:
+            d["_id"] = str(d.get("_id"))
+        return docs
+
+    def update_pagamento_app(self, pagamento_app_id, new_data):
+        result = self.collection.update_one(
+            {"_id": str(pagamento_app_id)},
+            {"$set": new_data}
+        )
+        return result.modified_count
+
+    def delete_pagamento_app(self, pagamento_app_id):
+        result = self.collection.delete_one({"_id": str(pagamento_app_id)})
+        return result.deleted_count
+#-------------------------------------------------------------------------
+# -COMPRAS_APP
+#-------------------------------------------------------------------------
+compras_app_collection = db[COMPRAS_APP_COLLECTION_NAME]
+class Compras_appModel:
+    def __init__(self):
+        self.collection = compras_app_collection
+
+    def create_compras_app(self, data):
+        result = self.collection.insert_one(data)
+        return str(result.inserted_id)
+
+    def get_compras_app(self, compras_app_id):
+        doc = self.collection.find_one({"_id": str(compras_app_id)})
+        if doc:
+            doc["_id"] = str(doc.get("_id"))
+        return doc
+
+    def get_compras_app_by_id(self, compras_app_id):
+        return self.get_compras_app(compras_app_id)
+
+    def get_all_compras_app(self):
+        docs = list(self.collection.find())
+        for d in docs:
+            d["_id"] = str(d.get("_id"))
+        return docs
+
+    def update_compras_app(self, compras_app_id, new_data):
+        result = self.collection.update_one(
+            {"_id": str(compras_app_id)},
+            {"$set": new_data}
+        )
+        return result.modified_count
+
+    def delete_compras_app(self, compras_app_id):
+        result = self.collection.delete_one({"_id": str(compras_app_id)})
         return result.deleted_count
 #===================================================================================================
 #===================================================================================================
