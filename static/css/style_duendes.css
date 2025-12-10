@@ -1,0 +1,381 @@
+
+/* RESET */
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+/* BODY */
+body{
+  width:100vw;
+  height:100vh;
+  background-image:url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRslG-cmNm7RJagayslAc7AvgY89ssPdMypqsgorgyPlQ&s=10
+  ");
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-color:#000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  font-family:monospace;
+  overflow:hidden;
+  touch-action:none;
+  padding-top:70px;
+}
+
+/* MENU */
+.hamburguer{
+  position:relative;
+  display:block;
+  width:60px;
+  height:6px;
+  background:#fff;
+  transition:.3s;
+  border-radius:10px;
+  margin-top:50px;
+  z-index:9999;
+}
+.hamburguer::before,
+.hamburguer::after{
+  content:'';
+  position:absolute;
+  width:100%;
+  height:3px;
+  background:#fff;
+  transition:.3s;
+}
+.hamburguer::before{top:-10px;}
+.hamburguer::after{bottom:-10px;}
+
+nav{
+  display:none;
+  position:fixed;
+  top:0;
+  right:0;
+  width:500px;
+  height:100vh;
+  background:#111;
+  padding-top:100px;
+  z-index:9999;
+}
+#menu-toggle:checked ~ nav{display:block;}
+
+nav ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+nav ul li{
+  padding:20px;
+  text-align:center;
+}
+nav ul li a{
+  color:#fff;
+  text-decoration:none;
+  font-size:26px;
+}
+
+/* SLOT CANVAS */
+#slotCanvas{
+  animation:none;
+  width:95vw;
+  max-width:900px;
+  aspect-ratio:3 / 3;
+  height:90%;
+  max-height:80vh;
+  min-height:360px;
+  background:transparent;
+  /* border:8px solid purple; */
+  border-radius:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:10px;
+  box-shadow:0 0 10px #fff,0 0 30px #0ff,0 0 50px #0ff;
+}
+
+/* ÁREA DOS REELS */
+#reels{
+  animation:none;
+  display:flex;
+  width:100%;
+  height:100%;
+  aspect-ratio:3 / 3;
+  max-height:60vh;
+  /* border:8px solid purple; */
+  background-image:url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765203729/pngwing.com_7_jeodlf.png');
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  box-shadow:0 0 10px #fff,0 0 20px #0ff,0 0 40px #0ff;
+  gap:6px;
+}
+
+/* COLUNA */
+.reel{
+  flex:1;
+  height:100%;
+  overflow:hidden;
+  position:relative;
+  border:2px solid orange;
+  border-radius:12px;
+  background:rgba(0,0,0,0.2);
+}
+
+/* PILHA */
+.reel .icons{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  gap:0;
+  position:relative;
+  will-change:transform;
+  transform:translateY(0);
+  
+}
+
+/* CÉLULA */
+.reel .icons .symbol,
+.reel .icons img,
+.reel .icons .emoji-symbol{
+  flex:0 0 calc(100% / 3);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:calc(100% / 3);
+  box-sizing:border-box;
+  user-select:none;
+  -webkit-user-drag:none;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  object-fit:contain;
+  pointer-events:none;
+  
+}
+
+/* ÚLTIMA LINHA */
+.reel .icons .symbol:last-child,
+.reel .icons img:last-child,
+.reel .icons .emoji-symbol:last-child{
+  border-bottom:none;
+}
+
+/* WIN */
+.reel .icons .symbol.win,
+.reel .icons img.win,
+.reel .icons .emoji-symbol.win{
+  outline:4px solid gold;
+  transform:scale(1.03);
+  animation:pulse-glow 1s infinite;
+  z-index:2;
+}
+
+/* CONTROLS */
+#controls{
+  width:95vw;
+  max-width:900px;
+  background:trasparent;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-radius:20px;
+  margin-top:10px;
+  height:10%;
+}
+
+/* INFO */
+.secao-saldo,
+.secao-ganhos,
+.secao-apostas{
+  flex:1;
+  padding:10px;
+  text-align:center;
+  border-radius:12px;
+  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763614144/Pngtree_button_button_colorful__3911001_xudrfv.png");
+  
+  background-size:cover;
+  background-position:center;
+  font-weight:bold;
+  height:100px;
+}
+.secao-saldo{color:#00ff00;}
+.secao-ganhos{color:#ffd700;}
+.secao-apostas{color:#ff4444;}
+
+.titulo-saldo,
+.titulo-ganhos,
+.titulo-apostas{
+  font-size:22px;
+  opacity:.8;
+}
+.valor-saldo,
+.valor-ganhos,
+.valor-apostas{
+  font-size:32px;
+}
+
+/* SPIN CONTROL */
+#spin-control{
+  width:95vw;
+  max-width:900px;
+  display:flex;
+  justify-content:space-between; /* espalha tudo */
+  align-items:center;
+  padding:20px 25px; /* aumenta o espaço lateral */
+  margin-top:15px;
+  border-radius:20px;
+  gap:0; /* distância controlada manualmente */
+}
+
+/* GRUPO BET */
+.bet-group{
+  display:flex;
+  align-items:center;
+  z-index:99999;
+  gap:35px; /* afasta - e + */
+}
+
+/* GRUPO AUTO/TURBO */
+.auto-turbo{
+  display:flex;
+  align-items:center;
+  gap:35px; /* afasta auto e turbo do bet */
+}
+
+/* BOTÕES */
+.betminus,.betplus,.auto,.turbo{
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  background-size:cover;
+  border:none;
+  opacity:.8;
+  cursor:pointer;
+  box-shadow:0 0 10px #fff,0 0 30px #0ff;
+ 
+}
+
+.betminus{background-image:url("https://w7.pngwing.com/pngs/524/376/png-transparent-icon-negative-decrease-volume-button-subtract-symbol-thumbnail.png");}
+.betplus{background-image:url("https://w7.pngwing.com/pngs/131/150/png-transparent-icon-plus-increase-volume-button-add-symbol-thumbnail.png");}
+.turbo{background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1765216932/pngwing.com_x7b7mf.png");}
+
+/* SPIN (NÃO MEXI) */
+#spin{
+  width:180px;
+  height:180px;
+  border-radius:50%;
+  background:transparent;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  animation: spin-rotate 2.5s linear infinite;
+  transform-origin: center;
+  box-shadow:0 0 10px #fff,0 0 30px #0ff;
+}
+
+@keyframes spin-rotate{
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+/* LINHAS */
+/* #linesLayer{ */
+/*   position:absolute; */
+/*   inset:0; */
+/*   pointer-events:none; */
+/*   z-index:999; */
+/* } */
+
+        
+#linesLayer {                            
+  position: absolute;                            
+  top: 0;                            
+  left: 0;                            
+  width: 100%;                            
+  height: 100%;                            
+  pointer-events:none ;                            
+  z-index: 9999;                            
+}                            
+        
+.line-win {                            
+  position: absolute;                            
+  height: 6px;                            
+  background: rgba(255,255,0,0.9);                            
+  box-shadow: 0 0 10px gold;                            
+  border-radius: 3px;                            
+}                            
+        
+.line-vertical {                            
+  width: 6px;                            
+  height: 100%;                            
+  background: rgba(255,255,0,0.9);                            
+  position: absolute;                            
+  box-shadow: 0 0 10px gold;                            
+  border-radius: 3px;                            
+}                            
+        
+.line-diagonal {                            
+  width: calc(100% + 40px);                            
+  height: 6px;                            
+  background: rgba(255,255,0,0.9);                            
+  box-shadow: 0 0 10px gold;                            
+  border-radius: 3px;                            
+  position: absolute;                            
+  transform-origin: left center;                            
+}                            
+        
+.line-window {                            
+  position: absolute;                            
+  border: 6px solid rgba(255,255,0,0.9);                            
+  border-radius: 10px;                            
+  width: 100%;                            
+  height: 100%;                            
+  box-shadow: 0 0 10px gold;                            
+}                            
+        
+.line-window-big {                            
+  position: absolute;                            
+  border: 10px solid rgba(255,215,0,0.9);                            
+  border-radius: 10px;                            
+  width: 100%;                            
+  height: 100%;                            
+  box-shadow: 0 0 15px gold;                            
+}                            
+        
+.line-full {                            
+  position: absolute;                            
+  width: 100%;                            
+  height: 100%;                            
+  background: rgba(255,255,0,0.15);                            
+  border-radius: 10px;                            
+  box-shadow: inset 0 0 20px gold;                            
+} 
+/* ANIMAÇÕES */
+@keyframes pulse-glow{
+  0%{filter:brightness(100%);}
+  50%{filter:brightness(150%);}
+  100%{filter:brightness(100%);}
+}
+
+/* RESPONSIVO */
+@media(max-width:768px){
+  #reels{max-height:45vh;}
+  #spin{width:130px;height:130px;}
+  .betminus,.betplus,.auto,.turbo{
+    width:65px;
+    height:65px;
+  }
+}

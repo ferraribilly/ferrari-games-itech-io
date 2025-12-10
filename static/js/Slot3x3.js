@@ -8,6 +8,23 @@ export default class Slot {
     this.balanceUI = document.getElementById("balance");
     this.betUI = document.getElementById("betValue");
     this.winUI = document.getElementById("win");
+
+    this.espehoWinUI = document.getElementById("espeho_win");
+
+    // >>> AUDIOS <<<
+    this.spinSound = document.getElementById("spinSound");
+    this.stopSpinSound = document.getElementById("stopSpinSound");
+    this.winSound = document.getElementById("winSound");
+
+    // >>> AMBIENTE <<<
+    this.ambienteSound = document.getElementById("ambienteSound");
+
+    if (this.ambienteSound) {
+      this.ambienteSound.volume = 0.35;
+      this.ambienteSound.loop = true;
+      this.ambienteSound.play().catch(() => {});
+    }
+
     this.betValue = 0.50;
 
     this.config = Object.assign(
@@ -20,11 +37,11 @@ export default class Slot {
     );
 
     this.currentSymbols = [
-      ["avestruz","aguia","burro","borboleta","cachorro"],
-      ["cabra","carneiro","camelo","cobra","coelho"],
-      ["cavalo","elefante","galo","gato","jacare"],
-      ["leao","macaco","porco","pavao","peru"],
-      ["touro","tigre","urso","veado","vaca"]
+      ["1","2","3"],
+      ["4","5","6"],
+      ["7","8","9"],
+      ["10","11","12"],
+      ["13","15","15"]
     ];
 
     this.nextSymbols = JSON.parse(JSON.stringify(this.currentSymbols));
@@ -38,9 +55,44 @@ export default class Slot {
 
     this.spinButton = document.getElementById("spin");
     this.spinButton.addEventListener("click", () => this.spin());
-    this.autoPlayCheckbox = document.getElementById("autoplay");
 
-    window.slot = this;
+    
+        // ============================
+        // AUTOPLAY — BOTÃO + BOX
+        // ============================
+        this.autoPlayButton = document.getElementById("autoplayBtn");
+        this.autoPlayBox = document.getElementById("autoplayBox");
+        this.autoPlayBox.style.display = "none";
+        this.autoPlaysLeft = 0;
+        this.selectedAutoBtn = null;
+    
+        // Toggle box
+        this.autoPlayButton.addEventListener("click", () => {
+          this.autoPlayBox.style.display =
+            this.autoPlayBox.style.display === "none" ? "block" : "none";
+        });
+    
+        // Seleciona número de voltas (não dispara spin)
+        document.querySelectorAll(".autoOption").forEach(btn => {
+          btn.addEventListener("click", () => {
+            this.autoPlaysLeft = parseInt(btn.dataset.v);
+    
+            // Marcar botão selecionado
+            if (this.selectedAutoBtn) this.selectedAutoBtn.style.background = "#222";
+            btn.style.background = "#555";
+            this.selectedAutoBtn = btn;
+          });
+        });
+    
+        // Botão Iniciar autoplay
+        document.getElementById("startBtn").addEventListener("click", () => {
+          if (this.autoPlaysLeft > 0) {
+            this.autoPlayBox.style.display = "none";
+            this.spin();
+          }
+        });
+    
+        window.slot = this;
 
     window.betMinus = () => {
       const step = parseFloat(this.config.betStep) || 0.5;
@@ -96,6 +148,19 @@ export default class Slot {
       }, 5000);
     }
 
+    if (winAmount > 0 && this.espehoWinUI) {
+      this.espehoWinUI.textContent = "R$ " + winAmount.toFixed(2);
+      this.espehoWinUI.style.opacity = 0.5;
+      setTimeout(() => {
+        this.espehoWinUI.style.opacity = 0;
+      }, 5000);
+    }
+
+    if (winAmount > 0 && this.winSound) {
+      this.winSound.currentTime = 0;
+      this.winSound.play().catch(()=>{});
+    }
+
     if (this.balance <= 0) this.showDepositMessage();
   }
 
@@ -121,7 +186,7 @@ export default class Slot {
     document
       .getElementById("deposit-btn")
       .addEventListener("click", () => {
-        window.location.href = `/acesso/users/compras/${window.USER_ID}`;
+        window.location.href = `/acesso/users/compras_app/${window.USER_ID}`;
       });
   }
 
@@ -129,6 +194,7 @@ export default class Slot {
     if (this.balance < this.betValue) return;
 
     this.spinButton.disabled = true;
+
     let backend = null;
 
     try {
@@ -149,6 +215,11 @@ export default class Slot {
 
     this.onSpinStart(this.nextSymbols);
 
+    if (this.spinSound) {
+      this.spinSound.currentTime = 0;
+      this.spinSound.play().catch(()=>{});
+    }
+
     await Promise.all(
       this.reels.map(reel => {
         reel.renderSymbols(this.nextSymbols[reel.idx]);
@@ -156,18 +227,34 @@ export default class Slot {
       })
     );
 
+    if (this.spinSound) {
+      this.spinSound.pause();
+      this.spinSound.currentTime = 0;
+    }
+
+    if (this.stopSpinSound) {
+      this.stopSpinSound.currentTime = 0;
+      this.stopSpinSound.play().catch(()=>{});
+    }
+
     if (backend && backend.wins)
       backend.wins.forEach(win => this.highlightWin(win.positions));
 
     const totalWin = backend?.win ? parseFloat(backend.win) : 0;
+
     this.updateUI(totalWin);
 
     this.onSpinEnd(backend?.wins || []);
 
     this.spinButton.disabled = false;
 
-    if (this.autoPlayCheckbox && this.autoPlayCheckbox.checked)
+    // ============================
+    // AUTOPLAY (voltas restantes)
+    // ============================
+    if (this.autoPlaysLeft > 0) {
+      this.autoPlaysLeft--;
       setTimeout(() => this.spin(), 200);
+    }
   }
 
   highlightWin(positions) {
@@ -179,21 +266,6 @@ export default class Slot {
       const el = this.reels[c].symbolContainer.children[r];
       if (el) el.classList.add("win");
     });
-  }
-
-  createLinesLayer() {
-    const layer = document.createElement("div");
-    layer.id = "linesLayer";
-    layer.style.position = "absolute";
-    layer.style.top = "0";
-    layer.style.left = "0";
-    layer.style.width = "100%";
-    layer.style.height = "100%";
-    layer.style.pointerEvents = "none";
-    layer.style.zIndex = "9999";
-
-    this.container.appendChild(layer);
-    return layer;
   }
 
   onSpinStart(symbols) {}

@@ -14,7 +14,7 @@ export default class Reel {
         { top: 0, filter: "blur(0)" },
         { filter: "blur(2px)", offset: 0.5 },
         {
-          top: `calc((${Math.floor(this.factor) * 25} / 5) * -100%)`,
+          top: `calc((${Math.floor(this.factor) * 9} / 3) * -100%)`,
           filter: "blur(0)",
         },
       ],
@@ -36,11 +36,11 @@ export default class Reel {
 
   renderSymbols(nextSymbols) {
     const fragment = document.createDocumentFragment();
-    const total = Math.floor(this.factor) * 25;
+    const total = Math.floor(this.factor) * 9;
 
     for (let i = 0; i < total; i++) {
       const icon = new Symbol(
-        i >= total - 5 ? nextSymbols[i - (total - 5)] : Symbol.random()
+        i >= total - 3 ? nextSymbols[i - (total - 3)] : Symbol.random()
       );
       fragment.appendChild(icon.img);
     }
@@ -62,7 +62,7 @@ export default class Reel {
     return Promise.race([animationPromise, timeoutPromise]).then(() => {
       if (this.animation.playState !== "finished") this.animation.finish();
 
-      const max = this.symbolContainer.children.length - 5;
+      const max = this.symbolContainer.children.length - 3;
 
       for (let i = 0; i < max; i++) {
         this.symbolContainer.firstChild.remove();

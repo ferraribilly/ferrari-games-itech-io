@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ferrari Games itech.io Fotune Slot 5x3</title>
+  <title>Fortune Era Egpcia </title>
   <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
   <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.2.3/dist/css/bootstrap-reboot.min.css"/>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style5x3.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style3x3.css') }}">
 </head>
 
 <body>
@@ -20,14 +20,17 @@
     <li><a href="/acesso/users/painel/{{ user_id }}">Home</a></li>
     <li><a href="/acesso/users/pagamentos/{{ user_id }}">Movimentações</a></li>
     <li><a href="#">Informaçoes Jogo</a></li>
+    <li><a href="/users/produto/compras/{{ user_id }}">Depositar</a></li>
+    <li><a href="/users/saques/ganhos/">Sacar Ganhos</a></li>
+    <li><a href="#">Ajuda</a></li>
+    <li><a href="#">Compartilhar e ganhe mesmo valor depositado</a></li>
   </ul>
 </nav>
 
 <div id="slotCanvas">
 
   <div id="jackpot">
-    <h1 class="slogan">{{user_id}}</h1>
-   
+    <h1 class="slogan"></h1>
   </div>
 
   <div id="linesLayer"></div>
@@ -42,18 +45,18 @@
 
   <div id="controls">
     <div class="secao-saldo">
-      <span class="titulo-saldo">SALDO</span>
+      <span class="titulo-saldo"></span>
       <span class="valor-saldo" id="balance">{{ balance }} </span>
     </div>
 
     <div class="secao-apostas">
-      <span class="titulo-apostas">APOSTAS</span>
-      <span class="valor-apostas" id="betValue"> 0.50 </span>
+      <span class="titulo-apostas"></span>
+      <span class="valor-apostas" id="betValue">0.50</span>
     </div>
 
     <div class="secao-ganhos">
-      <span class="titulo-ganhos">GANHOS🪙</span>
-      <span class="valor-ganhos" id="win">---- </span>
+      <span class="titulo-ganhos"></span>
+      <span class="valor-ganhos" id="win">0.00</span>
     </div>
   </div>
 
@@ -63,17 +66,22 @@
     </div>
 
     <div class="betminus">
-      <button onclick="betMinus()"></button>
+      <button onclick="betMinus()">
+      </button>
     </div>
 
-    <button type="button" id="spin">SPIN</button>
+    <img id="spin" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765213395/button_besouro_spin_wgir8u.png" alt="spin image">
 
-    <div class="betplus">
-      <button onclick="betPlus()"></button>
-    </div>
+   <div class="betplus">
+       <button onclick="betPlus()">
+      
+       </button>
+   </div>
 
     <div class="auto">
-      <button onclick="autoplay()"></button>
+      <button onclick="autoplay()">
+     
+      </button>
     </div>
 
   </div>
@@ -82,9 +90,9 @@
 
 <!-- Usando módulos ES6 -->
 <script type="module">
-  import Slot from "{{ url_for('static', filename='js/Slot5x3.js') }}";
-  import Reel from "{{ url_for('static', filename='js/Reel5x3.js') }}";
-  import Symbol from "{{ url_for('static', filename='js/Symbol5x3.js') }}";
+  import Slot from "{{ url_for('static', filename='js/Slot_duendes') }}";
+  import Reel from "{{ url_for('static', filename='js/Reel_duendes.js') }}";
+  import Symbol from "{{ url_for('static', filename='js/Symbol_duendes.js') }}";
 
   const config = {
     inverted: false,

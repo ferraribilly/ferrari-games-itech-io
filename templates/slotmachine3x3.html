@@ -1,89 +1,325 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ferrari Games Itech.io fortune 3x3 </title>
+  <title>Fortune Era Egpcia</title>
   <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
   <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.2.3/dist/css/bootstrap-reboot.min.css"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style3x3.css') }}">
+  <link rell="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <style>
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 99999;
+      background: trasnparent;
+      background-size: cover;
+      background-repeat: no-repeat;
+      padding: 15px 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      height: 90px;
+      border-radius:15px;
+    }
+    .logo {
+      text-align:center;
+      font-size:40px;
+      font-family:monospace;
+      color:gold;
+      background:#000;
+      border-radius:10px;
+    }
+    .hamburguer{
+      position:relative;
+      display:block;
+      width:100px;
+      height:22px;
+      background:#fff;
+      transition:.3s;
+      border-radius:10px;
+      margin-top:90px;
+      z-index:9999;
+    }
+    .hamburguer::before,
+    .hamburguer::after{
+      content:'';
+      position:absolute;
+      width:100%;
+      height:8px;
+      background:#fff;
+      transition:.3s;
+    }
+    .hamburguer::before{top:-10px;}
+    .hamburguer::after{bottom:-10px;}
+    label[for="menu-toggle"] {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 99999;
+    }
+    strong {
+      color: #000;
+      font-size:32px;
+      z-index:99999;
+    }
+    nav {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100vh;
+      background: #111;
+      padding-top: 100px;
+      z-index: 9999;
+    }
+    #menu-toggle:checked ~ nav {
+      display: block;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    nav ul li {
+      padding: 20px;
+      text-align: center;
+    }
+    nav ul li a {
+      color: #fff;
+      font-size: 22px;
+      text-decoration: none;
+    }
+    .meu-novo-footer {
+      background-color: #333;
+      color: #fff;
+      padding: 20px 0;
+      text-align: center;
+      width: 100%;
+      opacity:50%;
+    }
+    .meu-novo-footer a {
+      color: #4CAF50;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .meu-novo-footer a:hover {
+      text-decoration: underline;
+    }
+    .msg {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      z-index: 9999;
+      background-image: url("https://res.cloudinary.com/dptprh0xk/image/upload/v1765234429/pngwing.com_1_pgr4aj.png");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+      font-size: 100px;
+      font-weight: bold;
+      color: #000;
+      text-shadow:
+          0 0 10px #39ff14,
+          0 0 20px #39ff14,
+          0 0 30px #39ff14,
+          0 0 40px #1a8f03;
+      animation: flicker 1.5s infinite alternate;
+    }
+    @keyframes flicker {
+      0%, 18%, 22%, 25%, 53%, 57%, 100% {
+        text-shadow:
+          0 0 4px #39ff14,
+          0 0 11px #39ff14,
+          0 0 19px #39ff14,
+          0 0 40px #1a8f03;
+      }
+      20%, 24%, 55% {
+        text-shadow: none;
+      }
+    }
+    
+    #notification-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 99999;
+    }
+    .notification-card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      width: 600px;
+      transition: opacity 0.3s ease;
+    }
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+      border-radius: 50%;
+    }
+    .notification-content h3 {
+      font-size: 16px;
+      margin: 0 0 5px 0;
+    }
+    .notification-content p {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+    #autoplayBox {
+      display:;
+      height:480px;
+      position:fixed;
+      right:30px;
+      background:#111;
+      padding:20px;
+      border-radius:10px;
+      z-index:99999;
+      bottom:500px;
+      align-items:center;
+      justify-content:colunm;
+    }
+    #autoplayBox h3 {
+      color:white;
+      text-align:center;
+      margin:0 0 10px 0;
+    }
+    #autoplayBox .autoOption {
+      padding:10px;
+      height:100px;
+      background:#222;
+      color:white;
+      border:none;
+      border-radius:5px;
+      cursor:pointer;
+      gap:20px;
+      
+    }
+    #autoplayBox .autoOption:hover {
+      background:#444;
+    }
+    .clock {
+        top:0;
+        aling-items:center;
+        justify-content:center;
+        font-size: 3rem;
+        font-family: monospace;
+        color: #fff;
+        text-align:center;
+        padding: 10px 20px;
+        border: 2px solid #333;
+        border-radius: 10px;
+    }
+    
+
+      </style>
 </head>
 
 <body>
 
-<input type="checkbox" id="menu-toggle">
-<label for="menu-toggle" style="position:fixed;top:20px;left:20px;z-index:999999;">
-  <div class="hamburguer"></div>
-</label>
-
-<nav>
-  <ul id="menu-list">
-    <li><a href="/acesso/users/painel/{{ user_id }}">Home</a></li>
-    <li><a href="/acesso/users/pagamentos/{{ user_id }}">Movimentações</a></li>
-    <li><a href="#">Informaçoes Jogo</a></li>
-    <li><a href="/users/produto/compras/{{ user_id }}">Depositar</a></li>
-    <li><a href="/users/saques/ganhos/">Sacar Ganhos</a></li>
-    <li><a href="#">Ajuda</a></li>
-    <li><a href="#">Compartilhar e ganhe mesmo valor depositado</a></li>
-  </ul>
-</nav>
+<header>
+  <!-- <div id="notification-container"> -->
+  <!--   <div class="notification-card"> -->
+  <!--     <img src="icon.png" alt="Ícone" class="notification-icon"> -->
+  <!--     <div class="notification-content"> -->
+  <!--       <h3 class="notification-title">Novo user conectado!</h3> -->
+  <!--       <p class="notification-body">Você tem uma nova notificação para ver.</p> -->
+  <!--     </div> -->
+  <!--   </div> -->
+  </div>
+  <input type="checkbox" id="menu-toggle">
+  <label for="menu-toggle">
+    <div class="hamburguer"></div>
+  </label>
+  <div class="clock" id="clock"></div>
+  <nav>
+    <ul id="menu-list">
+      <li><a href="/acesso/users/painel/{{ user_id }}">Home</a></li>
+      <li><a href="/acesso/users/pagamentos/{{ user_id }}">Movimentações</a></li>
+      <li><a href="#">Informaçoes Jogo</a></li>
+      <li><a href="/users/produto/compras/{{ user_id }}">Depositar</a></li>
+      <li><a href="/users/saques/ganhos/">Sacar Ganhos</a></li>
+      <li><a href="#">Ajuda</a></li>
+      <li><a href="#">Compartilhar e ganhe mesmo valor depositado</a></li>
+    </ul>
+  </nav>
+</header>
 
 <div id="slotCanvas">
-
-  <div id="jackpot">
-    <h1 class="slogan"></h1>
-  </div>
-
+  <div id="jackpot"><h1 class="slogan"></h1></div>
   <div id="linesLayer"></div>
-
+  <audio id="spinSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765318329/reelSpin_sea06g.mp3"></audio>
+  <audio id="winSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765318888/slotWin_ivooyw.mp3"></audio>
+  <audio id="stopSpinSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765319672/reelStop_znsv9k.mp3"></audio>
+  <audio id="ambienteSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765320627/cinematic-egypt-music-387089_yjnfna.mp3" loop autoplay></audio>
+  
   <div id="reels">
     <div class="reel"></div>
     <div class="reel"></div>
     <div class="reel"></div>
-    <!-- <div class="reel"></div> -->
-    <!-- <div class="reel"></div> -->
   </div>
+  <div class="msg" id="win"></div>
 
   <div id="controls">
     <div class="secao-saldo">
-      <span class="titulo-saldo">Saldo</span>
-      <span class="valor-saldo" id="balance">{{ balance }} </span>
+      <span class="titulo-saldo">balance</span>
+      <span class="valor-saldo" id="balance">{{ balance }}</span>
     </div>
-
     <div class="secao-apostas">
-      <span class="titulo-apostas">Apostas</span>
-      <span class="valor-apostas" id="betValue">---- </span>
+      <span class="titulo-apostas">bet</span>
+      <span class="valor-apostas" id="betValue">0.50</span>
     </div>
-
     <div class="secao-ganhos">
-      <span class="titulo-ganhos">Ganhos🪙</span>
-      <span class="valor-ganhos" id="win">---- </span>
+      <span class="titulo-ganhos">win</span>
+      <span class="valor-ganhos" id="espeho_win">0.00</span>
     </div>
   </div>
 
   <div id="spin-control">
-    <div class="turbo">
-      <button onclick="toggleGrid()"></button>
-    </div>
-
-    <div class="betminus">
-      <button onclick="betMinus()"></button>
-    </div>
-
-    <button type="button" id="spin">SPIN</button>
-
-    <div class="betplus">
-      <button onclick="betPlus()"></button>
-    </div>
-
-    <div class="auto">
-      <button onclick="autoplay()"></button>
-    </div>
-
+    <div class="turbo"><button onclick="toggleGrid()"></button></div>
+    <img id="betMinus)" src="" alt="betMinus image">
+    <!-- <div class="betminus"><button onclick="betMinus()">-</button></div> -->
+    <img id="spin" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765213395/button_besouro_spin_wgir8u.png" alt="spin image">
+    <img id="betPlus()" src="" alt="betPlus image">
+    <!-- <div class="betplus"><button onclick="betPlus()">+</button></div> -->
+        <!-- <div class="auto"><button id="autoplayBtn">  -->
+        <img id="autoplayBtn" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1763946973/Pngtree_vector_play_button_icon_4239632_djasvt.png" alt="auto image">
+        <!-- </button></div> -->
   </div>
-
 </div>
 
-<!-- Usando módulos ES6 -->
+<div id="autoplayBox">
+  <h3>Auto Play</h3>
+  <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:10px;">
+    <button class="autoOption" data-v="1">2=volta</button>
+    <button class="autoOption" data-v="2">3=volta</button>
+    <button class="autoOption" data-v="3">4=volta</button>
+    <button class="autoOption" data-v="4">5=volta</button>
+    <button class="autoOption" data-v="5">6=volta</button>
+    <button class="autoOption" data-v="6">7=volta</button>
+    <button class="autoOption" data-v="7">8=volta</button>
+    <button class="autoOption" data-v="8">9=volta</button>
+    <button class="autoOption" data-v="9">10=volta</button>
+    <button class="autoOption" data-v="10">11=volta</button>
+  </div>
+  <button id="startBtn" style="width:100%; margin-top:10px; padding:15px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer;">Iniciar</button>
+</div>
+
+<footer class="meu-novo-footer">
+  <p>&copy; 2025 Ferrari Games Itech-io Todos os direitos reservados.</p>
+  <div><a href="#">Compartilhe</a> | <a href="#">Suporte</a></div>
+</footer>
+
 <script type="module">
   import Slot from "{{ url_for('static', filename='js/Slot3x3.js') }}";
   import Reel from "{{ url_for('static', filename='js/Reel3x3.js') }}";
@@ -97,7 +333,31 @@
 
   const slotCanvas = new Slot(document.getElementById("slotCanvas"), config);
   window.USER_ID = "{{ user_id }}";
-</script>
+  slotCanvas.init();
 
+ function updateClock() {
+     // Cria um novo objeto Date para obter a hora atual
+     const now = new Date();
+     
+     // Formata a hora, minuto e segundo para terem sempre dois dígitos
+     // Exemplo: 08:05:01
+     const hours = String(now.getHours()).padStart(2, '0');
+     const minutes = String(now.getMinutes()).padStart(2, '0');
+     const seconds = String(now.getSeconds()).padStart(2, '0');
+     
+     // Combina as partes da hora em uma string formatada
+     const timeString = `${hours}:${minutes}:${seconds}`;
+     
+     // Encontra o elemento HTML e atualiza seu conteúdo de texto
+     document.getElementById('clock').textContent = timeString;
+ }
+ 
+ // Chama a função updateClock() uma vez imediatamente para evitar um atraso inicial
+ updateClock();
+ 
+ // Atualiza o relógio a cada segundo (1000ms)
+ setInterval(updateClock, 1000);
+ 
+</script>
 </body>
 </html>

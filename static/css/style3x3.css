@@ -9,7 +9,7 @@
 body{
   width:100vw;
   height:100vh;
-  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1762733060/estilo-de-vida-fotorrealista-cassino_hny2za.jpg");
+  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1765234639/hieroglifos-egipcios-na-parede_ny5mxy.jpg");
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -25,60 +25,11 @@ body{
   padding-top:70px;
 }
 
-/* MENU */
-.hamburguer{
-  position:relative;
-  display:block;
-  width:60px;
-  height:6px;
-  background:#fff;
-  transition:.3s;
-  border-radius:10px;
-  margin-top:50px;
-}
-.hamburguer::before,
-.hamburguer::after{
-  content:'';
-  position:absolute;
-  width:100%;
-  height:3px;
-  background:#fff;
-  transition:.3s;
-}
-.hamburguer::before{top:-10px;}
-.hamburguer::after{bottom:-10px;}
 
-nav{
-  display:none;
-  position:fixed;
-  top:0;
-  right:0;
-  width:500px;
-  height:100vh;
-  background:#111;
-  padding-top:100px;
-  z-index:9999;
-}
-#menu-toggle:checked ~ nav{display:block;}
-
-nav ul{
-  list-style:none;
-  padding:0;
-  margin:0;
-}
-nav ul li{
-  padding:20px;
-  text-align:center;
-}
-nav ul li a{
-  color:#fff;
-  text-decoration:none;
-  font-size:26px;
-}
 
 /* SLOT CANVAS */
 #slotCanvas{
-  animation:none;
+  animation: piscar_slotCanvas  1s infinite alternate;  
   width:95vw;
   max-width:900px;
   aspect-ratio:3 / 3;
@@ -93,22 +44,50 @@ nav ul li a{
   align-items:center;
   justify-content:center;
   padding:10px;
-  box-shadow:0 0 10px #fff,0 0 30px #0ff,0 0 50px #0ff;
+  box-shadow:
+  0 0 10px #fff, /* Sombra branca básica */
+  0 0 20px gold, /* Sombra de brilho ciano */
+  0 0 30px gold, /* Sombra de brilho ciano mais espalhada */
+  0 0 40px #0ff, /* Sombra de brilho ciano ainda mais espalhada */
+  0 0 50px #0ff;  /* Sombra de brilho ciano com maior alcance */
 }
+
+@keyframes piscar_slotCanvas {                                
+  0% { border-color: gold; }                                
+  100% { border-color: gold; }                                
+}      
+
+
+/* #slotCanvas.inverted .reel {                                   */
+/*   transform: scaleY(-1);                                 */
+/*   border: 10px solid blue;                               */
+/* }                                 */
+/*          */
+/* #slotCanvas.inverted .reel > .icons > img {                                   */
+/*   transform: scaleY(-1);                               */
+/*   border: 10px solid blue;                                 */
+/* }   */
 
 /* ÁREA DOS REELS */
 #reels{
-  animation:none;
+  animation: piscar 1s infinite alternate;     
   display:flex;
   width:100%;
   height:100%;
   aspect-ratio:3 / 3;
   max-height:60vh;
-  /* border:8px solid purple; */
-  background:transparent;
-  box-shadow:0 0 10px #fff,0 0 20px #0ff,0 0 40px #0ff;
+  /* background-image:url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765203729/pngwing.com_7_jeodlf.png'); */
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  box-shadow:0 0 10px orange,0 0 20px #0ff,0 0 40px #0ff;
   gap:6px;
 }
+
+@keyframes piscar {                                
+  0% { border-color: green }                                
+  100% { border-color: orange; }                                
+}      
 
 /* COLUNA */
 .reel{
@@ -116,7 +95,7 @@ nav ul li a{
   height:100%;
   overflow:hidden;
   position:relative;
-  border:2px solid orange;
+  /* border:2px solid orange; */
   border-radius:12px;
   background:rgba(0,0,0,0.2);
 }
@@ -165,18 +144,31 @@ nav ul li a{
 /* WIN */
 .reel .icons .symbol.win,
 .reel .icons img.win,
-.reel .icons .emoji-symbol.win{
-  outline:4px solid gold;
-  transform:scale(1.03);
-  animation:pulse-glow 1s infinite;
-  z-index:2;
+.reel .icons .emoji-symbol.win {
+  transform: scale(1.15);
+  z-index: 2;
+  animation: 
+    pulse-glow 1s infinite,
+    changeBackgroundColor 1s infinite;
 }
 
+/* brilho */
+@keyframes pulse-glow {          
+  0% { filter: brightness(100%); }          
+  50% { filter: brightness(150%); }          
+  100% { filter: brightness(100%); }          
+}
+
+/* fundo dourado */
+@keyframes changeBackgroundColor {          
+  from { background-color: gold; opacity: 50%; border-radius: 20px; }          
+  to   { background-color: gold; opacity: 50%; border-radius: 20px; }          
+}
 /* CONTROLS */
 #controls{
   width:95vw;
-  max-width:900px;
-  background:trasparent;
+  max-width:850px;
+  background:#fff;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -185,6 +177,10 @@ nav ul li a{
   border-radius:20px;
   margin-top:10px;
   height:10%;
+  opacity:60%
+
+  /* box-shadow:0 0 10px #fff,0 0 30px #0ff; */
+  
 }
 
 /* INFO */
@@ -192,14 +188,17 @@ nav ul li a{
 .secao-ganhos,
 .secao-apostas{
   flex:1;
-  padding:10px;
+  padding:20px;
   text-align:center;
   border-radius:12px;
-  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763614144/Pngtree_button_button_colorful__3911001_xudrfv.png");
+  /* background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763614144/Pngtree_button_button_colorful__3911001_xudrfv.png"); */
+  background:#000;
   background-size:cover;
   background-position:center;
   font-weight:bold;
-  height:90px;
+  height:100px;
+  opacity:90%;
+   
 }
 .secao-saldo{color:#00ff00;}
 .secao-ganhos{color:#ffd700;}
@@ -208,13 +207,20 @@ nav ul li a{
 .titulo-saldo,
 .titulo-ganhos,
 .titulo-apostas{
-  font-size:14px;
+  font-size:22px;
   opacity:.8;
-}
+  font-family:monospace;
+  font-weight: bold;                            
+
+  }
 .valor-saldo,
 .valor-ganhos,
 .valor-apostas{
-  font-size:22px;
+  font-size:32px;
+  font-family:monospace;
+  font-weight: bold;    
+  display:block;                        
+
 }
 
 /* SPIN CONTROL */
@@ -222,61 +228,99 @@ nav ul li a{
   width:95vw;
   max-width:900px;
   display:flex;
-  justify-content:center;
+  justify-content:space-between; /* espalha tudo */
   align-items:center;
-  gap:20px;
-  padding:15px;
+  padding:20px 25px; /* aumenta o espaço lateral */
   margin-top:15px;
   border-radius:20px;
-  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763920652/Screenshot_20251122-145213_Firefox_djs5yh.jpg");
-  background-size:cover;
+  gap:0; /* distância controlada manualmente */
+}
+
+/* GRUPO BET */
+.bet-group{
+  display:flex;
+  align-items:center;
+  z-index:99999;
+  gap:35px; /* afasta - e + */
+}
+
+/* GRUPO AUTO/TURBO */
+.auto-turbo{
+  display:flex;
+  align-items:center;
+  gap:35px; /* afasta auto e turbo do bet */
 }
 
 /* BOTÕES */
 .betminus,.betplus,.auto,.turbo{
-  width:80px;
-  height:80px;
+  width:110px;
+  height:110px;
   border-radius:50%;
+  background-color: blue;
   background-size:cover;
   border:none;
+  text-align:center;
+  font-size:32px;
   opacity:.8;
   cursor:pointer;
   box-shadow:0 0 10px #fff,0 0 30px #0ff;
+   /* Centraliza o texto horizontal e verticalmente */
+  display: flex; /* */
+  justify-content: center; /* Alinhamento horizontal */
+  align-items: center; /* Alinhamento vertical */
+  transition: background-color 0.3s;   
 }
-.betminus{background-image:url("https://w7.pngwing.com/pngs/524/376/png-transparent-icon-negative-decrease-volume-button-subtract-symbol-thumbnail.png");}
-.betplus{background-image:url("https://w7.pngwing.com/pngs/131/150/png-transparent-icon-plus-increase-volume-button-add-symbol-thumbnail.png");}
-.auto{background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763946973/Pngtree_vector_play_button_icon_4239632_djasvt.png");}
-.turbo{background-image:url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1_B6F3FI2rzH4_EzrDzeGI7p02YL8BkcPDg&s");}
 
-/* SPIN */
+#autoplayBtn {
+    width:110px;
+    height:110px;
+    border-radius:50%;
+	background:trasnparent;
+    background-size: cover; /* Faz a imagem cobrir toda a área do botão, cortando as bordas se necessário */
+    background-position: center; /* Centraliza a imagem dentro do botão */
+    background-repeat: no-repeat; /* Evita que a imagem se repita */
+    box-shadow:0 0 10px #fff,0 0 30px #0ff;
+
+}
+
+
+
+
+
+/* SPIN (NÃO MEXER) */
 #spin{
-  width:160px;
-  height:160px;
+  width:180px;
+  height:180px;
   border-radius:50%;
-  background:#4b0082;
-  border:2px solid #8a2be2;
+  background:transparent;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
   display:flex;
   align-items:center;
   justify-content:center;
   cursor:pointer;
-  box-shadow:0 0 10px #8a2be2,0 0 40px #8a2be2,0 0 80px #8a2be2;
-  animation:none;
+  animation: spin-rotate 2.5s linear infinite,pulse-glow-spin 1s infinite;
+  transform-origin: center;
+  box-shadow:0 0 10px #fff,0 0 30px #0ff;
+  
 }
 
-/* LINHAS */
-#linesLayer{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:999;
+@keyframes pulse-glow-spin {          
+  0% { filter: brightness(100%); }          
+  50% { filter: brightness(150%); }          
+  100% { filter: brightness(100%); }          
+}        
+@keyframes spin-rotate{
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* ANIMAÇÕES */
-@keyframes pulse-glow{
-  0%{filter:brightness(100%);}
-  50%{filter:brightness(150%);}
-  100%{filter:brightness(100%);}
-}
+
+
+
+
+
 
 /* RESPONSIVO */
 @media(max-width:768px){
