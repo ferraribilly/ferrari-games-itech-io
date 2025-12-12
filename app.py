@@ -8,7 +8,7 @@ import qrcode
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 # from datetime import datetime
-from model import UsuarioModel, AdminModel, Compras_appModel,Compras_rfModel,SorteioModel,Pagamento_appModel, PagamentoModel,pagamentos_app_collection,criar_documento_app_pagamento,  pagamentos_collection, criar_documento_pagamento
+from model import UsuarioModel, AdminModel, Compras_appModel,Compras_rfModel,SorteioModel,Pagamento_appModel, PagamentoModel,pagamentos_app_collection, criar_documento_pagamento_app,  pagamentos_collection, criar_documento_pagamento
 from bson.errors import InvalidId
 import os
 import re
@@ -42,9 +42,14 @@ CORS(app)
 
 
 
-#========================================================
-# -LEVEL MAQUINA 3X3
-#========================================================
+#=========================================================
+# -LEVEL MAQUINA 3X3 ADCIONAR SOCKET POIS SERA TEMPO REAL.
+#=========================================================
+# LEVEL SERA CONTROLADO POR HORARIOS PAGANTES E COMPORTAMENTO
+# CADA -USERS COMPRAS APP TEMPO JOGO
+# COMPRA VALOR 5 LEVEL=1 AO SAIR 1 WIN LEVEL SOBE PARA O LEVEL=3  RESTANTE DOS GIROS 
+# COMPRAS VALOR 10 LEVEL1 AO SAIR 2 WIN SOBE LEVEL PARA O LEVEL=4 RESTANTE DOS GIROS
+# COMPRAS VALOR 30 LEVEL=1 AO SAIR 4 WINS SOBE LEVEL PARA O LEVEL=6 RESTANTE DOS GIROS
 LEVEL = 1
 
 SYMBOL_NAMES = [
@@ -54,6 +59,7 @@ SYMBOL_NAMES = [
       # '10', '11', '12',
       # '13', '14', '15',
 ]   # <-- 15 símbolos
+# AQUI VAI TER OS VALORES DE CADA SYMBOLS_VALUE
 
 class Machine:
     def __init__(self, balance=1000.0):
@@ -66,8 +72,9 @@ def random_symbol():
 
 #==================================================================================
 # ---------------------------------------------------------------------------------
-# GERADOR COM VOLATILIDADE LEVEL (AGORA 3X3)
+# GERADOR COM VOLATILIDADE LEVEL ( 3X3)
 # ---------------------------------------------------------------------------------
+#LEVEL 1 SERA SYMBOLS MAOIRES VALORES 
 def generate_grid():
     grid = [[random_symbol() for r in range(3)] for c in range(3)]
 
@@ -261,62 +268,44 @@ def rodar_machine(user_id):
         "level": LEVEL
     })
 
-
-
-
-
-
-
-@app.route("/users/produto/compras/<string:user_id>")
-def compras_aplicativo(user_id):
-    return render_template("payments.html", user_id=user_id)
 #======================================================================================
-# -COMPRAS DE BALANCE
+# -COMPRAS APLICATIVO  (RECEBE SÓ VALOR)
 #======================================================================================
 @app.route("/compras_app/<string:user_id>", methods=["POST"])
 def compras_app_user(user_id):
     data = request.get_json()
 
-    # validação (NÃO inclui data_sorteio)
-    required_fields = [ "valor", "quantity", "valor_unit"]
-    for field in required_fields:
-        if field not in data or not data[field]:
-            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
+    # validação correta → só existe "valor"
+    if "total" not in data or not data["total"]:
+        return jsonify({"error": "Campo obrigatório: valor"}), 400
 
-    # pega dados do usuário
+    # pega usuário
     user = user_model.get_user_by_id(user_id)
     if not user:
         return jsonify({"error": "Usuário não encontrado"}), 404
 
     cpf = user.get("cpf")
-    email_user = user.get("email")
+    email = user.get("email")
 
-    
-
-    # registro
     new_compras_app = {
         "user_id": user_id,
         "cpf": cpf,
-        "email_user": email_user,
+        "email_user": email,
         "pagamento_aprovado": "pendente",
-        "valor": data["valor"],
-        "quantity": data["quantity"],
-        "valor_unit": data["valor_unit"],
+        "total": float(data["total"]),
         "created_at": datetime.now()
     }
 
     compras_app_id = compras_app_model.create_compras_app(new_compras_app)
-
     return jsonify({"id": compras_app_id}), 201
 
 
-#======================================================
-# REVIEW COMPRA APLICATIVO "CARRINHO"
-#======================================================
-@app.route("/review/compras_app/users/<string:user_id>")
-def review_compra_app(user_id):
 
-    # Buscar a última compra desse usuário
+#======================================================
+#  COMPRA APLICATIVO - renderiza frontend
+#======================================================
+@app.route("/users/loja/virtual/compras/<string:user_id>")
+def compra_app(user_id):
     compra_app = compras_app_model.collection.find_one(
         {"user_id": user_id},
         sort=[("_id", -1)]
@@ -328,53 +317,47 @@ def review_compra_app(user_id):
     cpf_value = user.get('cpf') if user else ""
     email_value = user.get('email') if user else ""
 
-    # Se não existir compra ainda
     if not compra_app:
         return render_template(
-            "carrinho.html",
+            "payments.html",
             user_id=user_id,
             nome=nome_value,
             cpf=cpf_value,
             email=email_value,
-            valor=0,
-            valor_final=0,
-            quantity=0,
-           
+            total=0,
         )
 
     return render_template(
-        "carrinho.html",
+        "payments.html",
         user_id=user_id,
         nome=nome_value,
         cpf=cpf_value,
         email=email_value,
-        valor=compra_app.get("valor_unit"),
-        valor_final=compra_app.get("valor"),
-        quantity=compra_app.get("quantity"),
-    
+        total=compra_app.get("total"),
     )
-                   
+
+
+
 #===========================================================
-# -PAGAMENTO VIA SOMENTE PIX PREFERENCE MERCADO´PAGO 
+# PAGAMENTO VIA PREFERENCE PIX — SOMENTE VALOR
 #===========================================================
 @app.route("/compra_app/preference/pagamento_pix/<string:user_id>")
 def pagamento_preference_app(user_id):
+
     nome = request.args.get("nome") or ""
     email = request.args.get("email") or ""
     cpf = request.args.get("cpf") or ""
-    qtd = int(request.args.get("qtd") or 0)
+    total = float(request.args.get("total") or 0)
 
-    valor_total = qtd * 0.05
-
-    # preference IGUAL ao gerar_link_pagamento()
     payment_data = {
         "items": [
             {
                 "id": user_id,
-                "title": "Balance",
+                "title": "Product Pen",
                 "quantity": 1,
+                "description": "caneta",
                 "currency_id": "BRL",
-                "unit_price": valor_total
+                "unit_price": total
             }
         ],
         "payer": {
@@ -386,17 +369,13 @@ def pagamento_preference_app(user_id):
             }
         },
         "external_reference": user_id,
-
         "back_urls": {
             "success": "https://ferrari-games-itech-io.onrender.com/compra_app/sucesso",
-            "failure": "https://ferrari-games-itech-io.onrender.com/compra_app/recusada",
+            "failure": "https://ferrari-games-itech-io.onrender.com/compra_app/recusada"
         },
-
         "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes",
         "payment_methods": {
-            "excluded_payment_types": [
-                {"id": "credit_card"}
-            ]
+            "excluded_payment_types": [{"id": "credit_card"}]
         }
     }
 
@@ -404,7 +383,7 @@ def pagamento_preference_app(user_id):
     mp = result.get("response", {})
 
     if "id" not in mp:
-        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
+        return jsonify({"error": mp}), 400   
 
     payment_id = mp["id"]
     status = "pending"
@@ -412,33 +391,20 @@ def pagamento_preference_app(user_id):
     documento = criar_documento_pagamento_app(
         payment_id=str(payment_id),
         status=status,
-        valor=valor_total,
+        total=total,
         user_id=user_id,
         email_user=email
     )
 
     Pagamento_appModel().create_pagamento_app(documento)
 
-    # IGUAL seu exemplo → só retorna o link
-    link_pagamento = mp.get("init_point", "")
-    return link_pagamento
+    return jsonify({"init_point": mp.get("init_point", "")}), 200
 
 
 
-
-
-
-        
-        
-#===========================================================              
-# -PAGAMENTO VIA SOMENTE PIX QRCODE               
-#===========================================================              
-MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN")              
-sdk = mercadopago.SDK(MP_ACCESS_TOKEN)              
-              
-# ===========================================
-# GERAR QR CODE PIX
-# ===========================================
+#===========================================================
+# PAGAMENTO PIX QR CODE — SOMENTE VALOR
+#===========================================================
 @app.route("/payment_qrcode_pix/compra_app/<string:user_id>")
 def pagamento_app(user_id):
 
@@ -446,13 +412,11 @@ def pagamento_app(user_id):
     email = request.args.get("email") or ""
     cpf = request.args.get("cpf") or ""
     telefone = request.args.get("telefone") or ""
-    qtd = int(request.args.get("qtd") or 0)
-
-    valor_total = qtd * 0.05
+    total = float(request.args.get("total") or 0)
 
     payment_data = {
-        "transaction_amount": valor_total,
-        "description": "Balance",
+        "transaction_amount": total,
+        "description": "caneta",
         "payment_method_id": "pix",
         "payer": {
             "email": email,
@@ -470,7 +434,7 @@ def pagamento_app(user_id):
     mp = response.get("response", {})
 
     if "id" not in mp:
-        return f"ERRO NO MERCADO PAGO:<br><br>{mp}", 500
+        return jsonify({"error": mp}), 400   # <<< AQUI TAMBÉM
 
     payment_id = str(mp["id"])
     status = mp.get("status", "pending")
@@ -478,7 +442,7 @@ def pagamento_app(user_id):
     documento = criar_documento_pagamento_app(
         payment_id=payment_id,
         status=status,
-        valor=valor_total,
+        total=total,
         user_id=user_id,
         email_user=email
     )
@@ -490,25 +454,29 @@ def pagamento_app(user_id):
     return render_template(
         "/transaction_pix.html",
         qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
-        valor=f"R$ {valor_total:.2f}",
-        description="Manually Card",
+        total=f"R$ {total:.2f}",
+        description="caneta",
         qr_code_cola=tx["qr_code"],
         status=status,
         payment_id=payment_id,
         user_id=user_id
     )
 
-# ===========================================
-# SOCKET.IO - SALA POR PAGAMENTO
-# ===========================================
+
+
+#===========================================================
+# SOCKET.IO — SALA POR PAGAMENTO
+#===========================================================
 @socketio.on("join_payment")
 def join_payment_room(data):
     room = data["payment_id"]
     join_room(room)
 
-# ===========================================
+
+
+#===========================================================
 # WEBHOOK MERCADO PAGO
-# ===========================================
+#===========================================================
 @app.route("/notificacoes", methods=["POST"])
 def handles_webhook():
 
@@ -527,9 +495,6 @@ def handles_webhook():
 
         status = payment_details.get("status")
 
-        # ----------------------------------------------------
-        # CREDITA BALANCE SE O PAGAMENTO FOR APROVADO
-        # ----------------------------------------------------
         if status == "approved":
 
             pagamento = Pagamento_appModel().collection.find_one(
@@ -539,14 +504,14 @@ def handles_webhook():
             if pagamento:
 
                 user_id = pagamento["user_id"]
-                valor = float(pagamento["valor"])
+                total = float(pagamento["total"])
 
                 user = user_model.get_user_by_id(user_id)
 
                 if user:
 
                     saldo_atual = float(user.get("balance", 0))
-                    novo_saldo = saldo_atual + valor
+                    novo_saldo = saldo_atual + total
 
                     user_model.update_user(user_id, {"balance": novo_saldo})
 
@@ -555,11 +520,8 @@ def handles_webhook():
                         {"$set": {"status": "approved"}}
                     )
 
-                    print(f"[CREDITO] +{valor} para usuário {user_id} | Novo saldo → {novo_saldo}")
+                    print(f"[CREDITO] +{total} | user: {user_id} | Novo saldo: {novo_saldo}")
 
-        # ----------------------------------------------------
-        # EMITE STATUS AO CLIENTE VIA SOCKET
-        # ----------------------------------------------------
         msg = "Pagamento aprovado" if status == "approved" else f"Status atualizado: {status}"
 
         socketio.emit(

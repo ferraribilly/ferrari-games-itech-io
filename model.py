@@ -189,6 +189,23 @@ class Pagamento_appModel:
 # -COMPRAS_APP
 #-------------------------------------------------------------------------
 compras_app_collection = db[COMPRAS_APP_COLLECTION_NAME]
+
+def criar_documento_pagamento_app(payment_id, status, total, user_id, email_user, data_criacao=None):
+    if data_criacao is None:
+        
+        data_criacao = datetime.now(timezone.utc)
+
+    return {
+        "_id": str(payment_id),
+        "status": status,
+        "total": total,
+        "user_id": user_id,
+        "email_user": email_user,
+        "data_criacao": data_criacao,
+        "data_atualizacao": None,
+        "detalhes_webhook": None
+    }
+    
 class Compras_appModel:
     def __init__(self):
         self.collection = compras_app_collection
