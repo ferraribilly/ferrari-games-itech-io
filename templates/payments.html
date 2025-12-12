@@ -1,194 +1,193 @@
-<!DOCTYPE html>              
-<html lang="pt-br">              
-<head>              
-    <meta charset="UTF-8">              
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">              
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">              
-    <title>SAV AWARDS | Rifa digital</title>              
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/raffle-dark.css') }}">              
-    <link rel="preconnect" href="https://fonts.googleapis.com">              
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>              
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">              
-    <script>              
-        ticketValue = 5.00              
-    </script>              
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FERRARI GAMES ITECH IO COMPRA APP</title>
 
-    <style>         
-     .organizer-tags img {      
-        box-shadow:      
-            0 0 10px #8a2be2,       
-            0 0 40px #8a2be2,       
-            0 0 80px #8a2be2;      
-        text-shadow:      
-            0 0 5px #fff,           
-            0 0 10px #8a2be2;      
-     }      
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/raffle-dark.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
 
-      .main-image {      
-          position: relative;      
-          display: inline-block;      
-      }      
-      .main-image .center-image {      
-          position: absolute;      
-          top: 50%;      
-          left: 50%;      
-          transform: translate(-50%, -50%);      
-          width: 200px;      
-          height: auto;      
-          pointer-events: none;      
-      }      
-      .add-tickets strong {  
-        color: gold;  
-      }  
-      .add-tickets div {  
-        color: green;  
-      }  
-      .quantity-box input {  
-        height: 50px;  
-        color: blue;  
-        font-size: 22px;  
-        font-family: monospace;	  
-      }  
-         
-      .valor-final {      
-        text-align: center;      
-        color: gold;      
-        font-size: 32px;      
-        font-family: monospace;      
-      }      
-    </style>              
-</head>              
+    <style>
+        .organizer-tags img {
+            box-shadow:
+                0 0 10px #8a2be2,
+                0 0 40px #8a2be2,
+                0 0 80px #8a2be2;
+            text-shadow:
+                0 0 5px #fff,
+                0 0 10px #8a2be2;
+        }
 
-<body>              
-<div id="overlay-blur-effect"></div>              
+        .main-image {
+            position: relative;
+            display: inline-block;
+        }
+        .main-image .center-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            pointer-events: none;
+        }
 
-<header>              
-    <div class="logo">              
-        <a href="#">              
-            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">              
-        </a>              
-    </div>              
-</header>              
+        .add-tickets strong { color: gold; }
+        .add-tickets div { color: green; }
 
-<main>              
-    <div class="main-container">              
-        <div class="raffle">              
-            <div class="main-image">              
-                <div class="main-statement">Deposito Minimo <b>R$5.00</b></div>              
-            </div>              
+        .quantity-box input {
+            height: 50px;
+            color: blue;
+            font-size: 22px;
+            font-family: monospace;
+        }
 
-            <div class="raffle-tickets">              
-                <h4>COMPRAS DE BALANCE</h4>              
-                <section class="add-tickets-container">              
-                    <div class="add-tickets-box">              
+        .valor-final {
+            text-align: center;
+            color: gold;
+            font-size: 32px;
+            font-family: monospace;
+        }
+    </style>
+</head>
 
-                        <div class="add-tickets">              
-                            <div id="compra_balance_5_bonus_1%" class="qty-btn">R$ 5.00+<strong>(1%)</strong></div>            
-                            <div id="compra_balance_10_bonus_5%" class="qty-btn">R$ 10.00+<strong>(2%)</strong></div>            
-                            <div id="compra_balance_30_bonus_15%" class="qty-btn">R$ 30.00+<strong>(5%)</strong></div>            
-                        </div>              
+<body>
+<div id="overlay-blur-effect"></div>
 
-                        <div class="quantity-container">              
-                            <div class="quantity-box">              
-                                <input   
-                                    id="quantityValue"   
-                                    type="number"   
-                                    value="5.00"   
-                                    min="5"   
-                                    max="1000"   
-                                    step="0.01"  
-                                >              
-                            </div>              
-                            <p id="quantity-error" style="display:none;color:red;">Insira um valor entre R$5 e R$1000</p>              
-                        </div>              
+<header>
+    <div class="logo">
+        <a href="#">
+            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">
+        </a>
+    </div>
+</header>
 
-                        <div class="total">              
-                            <div>Valor final</div>      
-                            <div id="total-value">R$ 5,00</div>              
-                        </div>              
+<main>
+    <div class="main-container">
+        <div class="raffle">
 
-                        <div class="purchase">              
-                            <div class="purchase-overlay" style="display:none;">              
-                                <form action="#">              
-                                    <div class="purchase-tickets-container">              
-                                        <div class="purchase-tickets-box">              
-                                            <img id="close-purchase-tickets" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/close-icon_vwjg9s.svg" alt="Fechar">              
-                                            <label>VALOR DEPOSITO</label>              
-                                            <strong class="valor-final" id="total-final">5,00</strong>              
-                                            <div class="terms">              
-                                                <input name="terms" type="checkbox" required>              
-                                                <p>Li e concordo com os <a href="#" target="_blank">Termos e Condições</a> e estou ciente que todo pagamento e seguro Mercado Pago.</p>              
-                                            </div>              
-                                            <a class="purchase-submit-btn" href="/review/compras_app/users/{{user_id}}">Reservar</a>              
-                                        </div>              
-                                    </div>              
-                                </form>              
-                            </div>              
-                            <button onclick="checkQuantity()"> Check Depositar</button>              
-                        </div>              
+            <div class="main-image">
+                <div class="main-statement">Depósito mínimo <b>R$5.00</b></div>
+            </div>
 
-                    </div>              
-                </section>              
-            </div>              
-        </div>              
-    </div>              
-</main>              
+            <div class="raffle-tickets">
+                <h4>COMPRAS DE BALANCE</h4>
 
-<script>  
-// BOTÕES  
-document.querySelectorAll(".qty-btn").forEach(btn => {  
-    btn.addEventListener("click", () => {  
-        let raw = btn.innerText.split("+")[0].replace("R$", "").trim();  
-        let value = parseFloat(raw);  
-  
-        const input = document.getElementById("quantityValue");  
-        input.value = value.toFixed(2);  
-  
-        atualizarValorFinal();  
-    });  
-});  
-  
-// ATUALIZA QUANDO DIGITA
-document.getElementById("quantityValue").addEventListener("input", () => {  
-    atualizarValorFinal();  
-});  
-  
-// ATUALIZA TOTAL  
-function atualizarValorFinal() {  
-    const input = document.getElementById("quantityValue");  
-    const totalLabel = document.getElementById("total-value");  
-    const totalFinal = document.getElementById("total-final");  
-  
-    let n = parseFloat(input.value);  
-    if (isNaN(n)) n = 0;  
-  
-    let formatado = n.toLocaleString("pt-BR", { minimumFractionDigits: 2 });  
-  
-    totalLabel.textContent = "R$ " + formatado;  
-    totalFinal.textContent = formatado;  
-}  
-  
-// ABRIR MODAL  
-function checkQuantity() {  
-    const input = document.getElementById("quantityValue");  
-    let n = parseFloat(input.value);  
-  
-    if (isNaN(n) || n < 5 || n > 1000) {  
-        document.getElementById("quantity-error").style.display = "block";  
-        return;  
-    }  
-  
-    document.getElementById("quantity-error").style.display = "none";  
-    atualizarValorFinal();  
-  
-    document.querySelector(".purchase-overlay").style.display = "flex";  
-}  
-  
-// FECHAR  
-document.getElementById("close-purchase-tickets").onclick = () => {  
-    document.querySelector(".purchase-overlay").style.display = "none";  
-};  
-</script>              
+                <section class="add-tickets-container">
+                    <div class="add-tickets-box">
 
-</body>              
+                        <div class="add-tickets">
+                            <div class="qty-btn" data-value="5.00">R$ 5.00 + <strong>(1%)</strong></div>
+                            <div class="qty-btn" data-value="10.00">R$ 10.00 + <strong>(2%)</strong></div>
+                            <div class="qty-btn" data-value="30.00">R$ 30.00 + <strong>(5%)</strong></div>
+                        </div>
+
+                        <div class="quantity-container">
+                            <div class="quantity-box">
+                                <input id="quantityValue" type="number" value="5.00" min="5" max="1000" step="0.01">
+                            </div>
+                            <p id="quantity-error" style="display:none;color:red;">Insira um valor entre R$5 e R$1000</p>
+                        </div>
+
+                        <div class="total">
+                            <div>Valor final</div>
+                            <div id="total-value">R$ 5,00</div>
+                        </div>
+
+                        <div class="purchase">
+
+                            <!-- AJUSTADO: agora inicia FECHADO -->
+                            <div class="purchase-overlay" style="display:;">
+                                <form>
+                                    <div class="purchase-tickets-container">
+                                        <div class="purchase-tickets-box">
+                                            <img id="close-purchase-tickets"
+                                                 src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/close-icon_vwjg9s.svg">
+
+                                            <label>VALOR DEPÓSITO</label>
+
+                                            <div class="terms">
+                                                <input name="terms" type="checkbox" required>
+                                                <p>Li e concordo com os <a href="#" target="_blank">Termos e Condições</a>.</p>
+                                            </div>
+                                            <strong class="valor-final" id="total-final">5,00</strong>
+
+                                            <a class="purchase-submit-btn"
+                                               href="/review/compras_app/users/{{user_id}}">Concluir compra</a>
+                                           </div>
+                                    </div>
+                                </form>
+                                          
+                    
+
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<script>
+document.querySelectorAll(".qty-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const v = parseFloat(btn.dataset.value);
+        const input = document.getElementById("quantityValue");
+        input.value = v.toFixed(2);
+        atualizarValorFinal();
+    });
+});
+
+document.getElementById("quantityValue").addEventListener("input", atualizarValorFinal);
+
+function atualizarValorFinal() {
+    const n = parseFloat(quantityValue.value) || 0;
+    const f = n.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+
+    document.getElementById("total-value").textContent = "R$ " + f;
+    document.getElementById("total-final").textContent = f;
+}
+
+
+</script>
+
+<script>
+document.querySelector(".purchase-submit-btn").addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const userId = window.USER_ID;
+    const quantity = document.getElementById("quantityValue").value;
+
+    const valorTotal = document.getElementById("total-final").textContent
+        .replace("R$", "")
+        .replace(".", "")
+        .replace(",", ".");
+
+    const valorUnit = ticketValue;
+
+    const body = {
+        data_sorteio: data_sorteio,
+        valor: parseFloat(valorTotal),
+        quantity: parseInt(quantity),
+        valor_unit: valorUnit
+    };
+
+    const response = await fetch(`/compras_app/${userId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+
+    const json = await response.json();
+
+    if (response.status === 201) {
+        window.location.href = `/review/users/${userId}`;
+    } else {
+        alert(json.error || "Erro ao registrar compra");
+    }
+});
+</script>
+
+</body>
 </html>

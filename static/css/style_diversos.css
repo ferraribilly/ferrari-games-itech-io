@@ -9,11 +9,13 @@
 body{
   width:100vw;
   height:100vh;
-  background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1765234639/hieroglifos-egipcios-na-parede_ny5mxy.jpg");
+  background-image:url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_gzpZ5hMvaRUkUlzwt0TU9fkd33Vy5rsoN7FWANeeSujqLTF8xtkC_70&s=10");
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
-  background-color:#000;
+  background-size: 120% 120%; /* Começa um pouco maior */
+  animation: zoomPan 30s ease infinite alternate; /* Alternate faz ir e voltar */
+  background-color:none;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -24,12 +26,22 @@ body{
   touch-action:none;
   padding-top:70px;
 }
+@keyframes zoomPan {
+  0% {
+    background-size: 120% 120%;
+    background-position: center;
+  }
+  100% {
+    background-size: 150% 150%; /* Zoom */
+    background-position: 50% 50%; /* Posição centralizada */
+  }
+}
 
 
 
 /* SLOT CANVAS */
 #slotCanvas{
-  animation: piscar_slotCanvas  1s infinite alternate;  
+  animation: piscar_slotCanvas  1.5s infinite alternate;  
   width:95vw;
   max-width:900px;
   aspect-ratio:3 / 3;
@@ -45,16 +57,16 @@ body{
   justify-content:center;
   padding:10px;
   box-shadow:
-  0 0 10px #fff, /* Sombra branca básica */
-  0 0 20px gold, /* Sombra de brilho ciano */
-  0 0 30px gold, /* Sombra de brilho ciano mais espalhada */
-  0 0 40px #0ff, /* Sombra de brilho ciano ainda mais espalhada */
-  0 0 50px #0ff;  /* Sombra de brilho ciano com maior alcance */
+  0 0 10px black,/* Sombra branca básica */
+  0 0 20px black, /* Sombra de brilho ciano */
+  0 0 30px black, /* Sombra de brilho ciano mais espalhada */
+  0 0 40px black, /* Sombra de brilho ciano ainda mais espalhada */
+  0 0 50px black;  /* Sombra de brilho ciano com maior alcance */
 }
 
 @keyframes piscar_slotCanvas {                                
-  0% { border-color: gold; }                                
-  100% { border-color: gold; }                                
+  0% { border-color: white; }                                
+  100% { border-color: white; }                                
 }      
 
 
@@ -76,8 +88,9 @@ body{
   height:100%;
   aspect-ratio:3 / 3;
   max-height:60vh;
-  /* background-image:url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765203729/pngwing.com_7_jeodlf.png'); */
+  background:#111;
   background-size:cover;
+  opacity:60%;
   background-position:center;
   background-repeat:no-repeat;
   box-shadow:0 0 10px orange,0 0 20px #0ff,0 0 40px #0ff;
@@ -95,7 +108,7 @@ body{
   height:100%;
   overflow:hidden;
   position:relative;
-  border:2px solid orange;
+  border:2px solid white;
   border-radius:12px;
   background:rgba(0,0,0,0.2);
 }
@@ -143,13 +156,14 @@ body{
 
 /* WIN */
 .reel .icons .symbol.win,
-.reel .icons img.win,
 .reel .icons .emoji-symbol.win {
   transform: scale(1.15);
   z-index: 2;
+  background-size: cover;
+  background-position: center;
   animation: 
     pulse-glow 1s infinite,
-    changeBackgroundColor 1s infinite;
+    changeBackgroundImage 1s infinite;
 }
 
 /* brilho */
@@ -159,16 +173,20 @@ body{
   100% { filter: brightness(100%); }          
 }
 
-/* fundo dourado */
-@keyframes changeBackgroundColor {          
-  from { background-color: gold; opacity: 50%; border-radius: 20px;height:calc(90% / 3); }          
-  to   { background-color: gold; opacity: 50%; border-radius: 20px;height:calc(90% / 3); }          
+/* fundo dourado animado */
+@keyframes changeBackgroundImage {          
+  0% { 
+    background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1765468247/win1_mwdbxz.png"); 
+  }          
+  100% { 
+    background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1765468247/win1_mwdbxz.png"); 
+  }          
 }
 /* CONTROLS */
 #controls{
   width:95vw;
   max-width:850px;
-  background:#fff;
+  background:red;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -192,7 +210,7 @@ body{
   text-align:center;
   border-radius:12px;
   /* background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763614144/Pngtree_button_button_colorful__3911001_xudrfv.png"); */
-  background:#000;
+  background:#555;
   background-size:cover;
   background-position:center;
   font-weight:bold;
@@ -263,7 +281,7 @@ body{
   font-size:32px;
   opacity:.8;
   cursor:pointer;
-  box-shadow:0 0 10px #fff,0 0 30px #0ff;
+  box-shadow:0 0 10px gold,0 0 30px gold;
    /* Centraliza o texto horizontal e verticalmente */
   display: flex; /* */
   justify-content: center; /* Alinhamento horizontal */
@@ -279,7 +297,7 @@ body{
     background-size: cover; /* Faz a imagem cobrir toda a área do botão, cortando as bordas se necessário */
     background-position: center; /* Centraliza a imagem dentro do botão */
     background-repeat: no-repeat; /* Evita que a imagem se repita */
-    box-shadow:0 0 10px #fff,0 0 30px #0ff;
+    box-shadow:0 0 10px gold,0 0 30px gold;
 }
 
 .betminus {
@@ -290,7 +308,7 @@ body{
     background-size: cover; /* Faz a imagem cobrir toda a área do botão, cortando as bordas se necessário */
     background-position: center; /* Centraliza a imagem dentro do botão */
     background-repeat: no-repeat; /* Evita que a imagem se repita */
-    box-shadow:0 0 10px #fff,0 0 30px #0ff;
+    box-shadow:0 0 10px red,0 0 30px red;
 }
 
 .turbo {
@@ -301,7 +319,7 @@ body{
     background-size: cover; /* Faz a imagem cobrir toda a área do botão, cortando as bordas se necessário */
     background-position: center; /* Centraliza a imagem dentro do botão */
     background-repeat: no-repeat; /* Evita que a imagem se repita */
-    box-shadow:0 0 10px #fff,0 0 30px #0ff;
+    box-shadow:0 0 10px gold,0 0 30px gold;
 }
 
 .betplus {
@@ -312,7 +330,7 @@ body{
     background-size: cover; /* Faz a imagem cobrir toda a área do botão, cortando as bordas se necessário */
     background-position: center; /* Centraliza a imagem dentro do botão */
     background-repeat: no-repeat; /* Evita que a imagem se repita */
-    box-shadow:0 0 10px #fff,0 0 30px #0ff;
+    box-shadow:0 0 10px red,0 0 30px red;
 }
 
 

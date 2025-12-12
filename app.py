@@ -51,8 +51,8 @@ SYMBOL_NAMES = [
       '1', '2', '3',
       '4', '5', '6',
       '7', '8', '9',
-      '10', '11', '12',
-      '13', '14', '15',
+      # '10', '11', '12',
+      # '13', '14', '15',
 ]   # <-- 15 símbolos
 
 class Machine:
@@ -527,10 +527,40 @@ def handles_webhook():
 
         status = payment_details.get("status")
 
+        # ----------------------------------------------------
+        # CREDITA BALANCE SE O PAGAMENTO FOR APROVADO
+        # ----------------------------------------------------
         if status == "approved":
-            msg = "Pagamento aprovado"
-        else:
-            msg = f"Status atualizado: {status}"
+
+            pagamento = Pagamento_appModel().collection.find_one(
+                {"payment_id": str(payment_id)}
+            )
+
+            if pagamento:
+
+                user_id = pagamento["user_id"]
+                valor = float(pagamento["valor"])
+
+                user = user_model.get_user_by_id(user_id)
+
+                if user:
+
+                    saldo_atual = float(user.get("balance", 0))
+                    novo_saldo = saldo_atual + valor
+
+                    user_model.update_user(user_id, {"balance": novo_saldo})
+
+                    Pagamento_appModel().collection.update_one(
+                        {"payment_id": str(payment_id)},
+                        {"$set": {"status": "approved"}}
+                    )
+
+                    print(f"[CREDITO] +{valor} para usuário {user_id} | Novo saldo → {novo_saldo}")
+
+        # ----------------------------------------------------
+        # EMITE STATUS AO CLIENTE VIA SOCKET
+        # ----------------------------------------------------
+        msg = "Pagamento aprovado" if status == "approved" else f"Status atualizado: {status}"
 
         socketio.emit(
             "payment_update",
@@ -545,27 +575,6 @@ def handles_webhook():
         print(f"[WEBHOOK] {msg} | ID: {payment_id}")
 
     return "", 204
-
-# ===========================================
-# CONSULTA STATUS MERCADO PAGO
-# ===========================================
-def get_payment_details(payment_id):
-
-    url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
-
-    headers = {
-        "Authorization": f"Bearer {MP_ACCESS_TOKEN}"
-    }
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-
-    return None
-
-
-
 
 
 
@@ -858,7 +867,7 @@ def acesso_users_painel(user_id):
     else:
         return "Nenhum usuário encontrado no banco de dados."
 #==========================================================
-# -ROTA MAQUINA 5x5
+# -ROTA MAQUINA Fortune dollar
 #==========================================================
 @app.route("/acesso/users/<string:user_id>")
 def acesso_users_machine(user_id):
@@ -875,14 +884,14 @@ def acesso_users_machine(user_id):
             # Formata com duas casas decimais
             balance_value = f"{balance_value:.2f}"
 
-        return render_template("slotmachine.html", user_id=user_id, balance=balance_value)
+        return render_template("slotmachine_dollar.html", user_id=user_id, balance=balance_value)
     else:
         return "Usuário não encontrado"
 
       
 
 #==========================================================
-# -ROTA MAQUINA 3x3
+# -ROTA MAQUINA Fortune Era Egpcia
 #==========================================================
 @app.route("/acesso/users/3x3/<string:user_id>")
 def acesso_users_machine3x3(user_id):
@@ -901,7 +910,74 @@ def acesso_users_machine3x3(user_id):
 
         return render_template("slotmachine3x3.html", user_id=user_id, balance=balance_value)
     else:
-        return "Usuário não encontrado"         
+        return "Usuário não encontrado"       
+
+
+#==========================================================
+# -ROTA MAQUINA Fortune duends
+#==========================================================
+@app.route("/acesso/users/fortune/duends/<string:user_id>")
+def acesso_users_machine_duends(user_id):
+    user = user_model.get_user_by_id(user_id)
+
+    if user:
+        # Pega o balance do banco
+        balance_value = user.get('balance')
+
+        # Se for None ou inválido, não mostra 0, pode mostrar vazio ou "-"
+        if balance_value is None:
+            balance_value = ""  # ou "-" se quiser
+        else:
+            # Formata com duas casas decimais
+            balance_value = f"{balance_value:.2f}"
+
+        return render_template("slotmachine_duends.html", user_id=user_id, balance=balance_value)
+    else:
+        return "Usuário não encontrado"
+
+#==========================================================
+# -ROTA MAQUINA Fortune Cofre Premiado "diveros"
+#==========================================================
+@app.route("/acesso/users/fortune/cofre/<string:user_id>")
+def acesso_users_machine_cofre(user_id):
+    user = user_model.get_user_by_id(user_id)
+
+    if user:
+        # Pega o balance do banco
+        balance_value = user.get('balance')
+
+        # Se for None ou inválido, não mostra 0, pode mostrar vazio ou "-"
+        if balance_value is None:
+            balance_value = ""  # ou "-" se quiser
+        else:
+            # Formata com duas casas decimais
+            balance_value = f"{balance_value:.2f}"
+
+        return render_template("slotmachine_diversos.html", user_id=user_id, balance=balance_value)
+    else:
+        return "Usuário não encontrado"
+#==========================================================
+# -ROTA MAQUINA Fortune Poker Girls
+#==========================================================
+@app.route("/acesso/users/fortune/poker/<string:user_id>")
+def acesso_users_machine_poker_girls(user_id):
+    user = user_model.get_user_by_id(user_id)
+
+    if user:
+        # Pega o balance do banco
+        balance_value = user.get('balance')
+
+        # Se for None ou inválido, não mostra 0, pode mostrar vazio ou "-"
+        if balance_value is None:
+            balance_value = ""  # ou "-" se quiser
+        else:
+            # Formata com duas casas decimais
+            balance_value = f"{balance_value:.2f}"
+
+        return render_template("slotmachine_duends.html", user_id=user_id, balance=balance_value)
+    else:
+        return "Usuário não encontrado"
+          
 #============================================================
 # -MOVIMENTACOES DENTRO APP
 #============================================================

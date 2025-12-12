@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fortune Era Egpcia</title>
+  <title>Fortune Money USD</title>
   <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
   <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.2.3/dist/css/bootstrap-reboot.min.css"/>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style3x3.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style_dollar.css') }}">
   <link rell="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
   <style>
     header {
@@ -113,7 +113,7 @@
       align-items: center;
       text-align: center;
       z-index: 9999;
-      background-image: url("https://res.cloudinary.com/dptprh0xk/image/upload/v1765234429/pngwing.com_1_pgr4aj.png");
+      background-image: url("https://res.cloudinary.com/dptprh0xk/image/upload/v1765412810/pngwing.com_5_x9e2sp.png");
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -177,11 +177,14 @@
       margin: 0;
     }
     #autoplayBox {
-      display:;
+      display:none;
       height:480px;
       position:fixed;
       right:30px;
-      background:#111;
+      background-image:url("https://res.cloudinary.com/dptprh0xk/image/upload/v1762733060/estilo-de-vida-fotorrealista-cassino_hny2za.jpg"); 
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
       padding:20px;
       border-radius:10px;
       z-index:99999;
@@ -214,7 +217,7 @@
         justify-content:center;
         font-size: 3rem;
         font-family: monospace;
-        color: #fff;
+        color: blue;
         text-align:center;
         padding: 10px 20px;
         border: 2px solid #333;
@@ -261,7 +264,7 @@
   <audio id="spinSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765318329/reelSpin_sea06g.mp3"></audio>
   <audio id="winSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765318888/slotWin_ivooyw.mp3"></audio>
   <audio id="stopSpinSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765319672/reelStop_znsv9k.mp3"></audio>
-  <audio id="ambienteSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765320627/cinematic-egypt-music-387089_yjnfna.mp3" loop autoplay></audio>
+  <audio id="ambienteSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765496203/money-patron-remix-japanese-in-352400_hxo3rj.mp3" loop autoplay></audio>
   
   <div id="reels">
     <div class="reel"></div>
@@ -272,25 +275,24 @@
 
   <div id="controls">
     <div class="secao-saldo">
-      <span class="titulo-saldo">balance</span>
+      <span class="titulo-saldo">balance💳</span>
       <span class="valor-saldo" id="balance">{{ balance }}</span>
     </div>
     <div class="secao-apostas">
-      <span class="titulo-apostas">bet</span>
+      <span class="titulo-apostas">bet💱</span>
       <span class="valor-apostas" id="betValue">0.50</span>
     </div>
     <div class="secao-ganhos">
-      <span class="titulo-ganhos">win</span>
+      <span class="titulo-ganhos">win💰🪙</span>
       <span class="valor-ganhos" id="espeho_win">0.00</span>
     </div>
   </div>
 
   <div id="spin-control">
-      <img class="turbo" onclick="velocidade-turbo()" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765216932/pngwing.com_x7b7mf.png" alt="turbo image">
-    <!-- <div class="turbo"><button onclick="toggleGrid()"></button></div> -->
-    <img class="betminus" onclick="betMinus()" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765398373/minus_b4jnqx.png" alt="betminus image">
-    <img id="spin" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765213395/button_besouro_spin_wgir8u.png" alt="spin image">
-    <img class="betplus" onclick="betPlus()" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765398373/add_lc59lu.png" alt="betplus image">
+    <img class="turbo" onclick="velocidade-turbo()" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765216932/pngwing.com_x7b7mf.png" alt="turbo image">
+    <img class="betminus" onclick="betMinus()" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765411421/pngwing.com_4_wdf0ax.png" alt="betminus image">
+    <img id="spin" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765411421/pngwing.com_2_k6svq4.png" alt="spin image">
+    <img class="betplus" onclick="betPlus()" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765411421/pngwing.com_3_nsre6x.png" alt="betplus image">
     <img id="autoplayBtn" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1763946973/Pngtree_vector_play_button_icon_4239632_djasvt.png" alt="auto image">
      
   </div>
@@ -319,9 +321,9 @@
 </footer>
 
 <script type="module">
-  import Slot from "{{ url_for('static', filename='js/Slot3x3.js') }}";
-  import Reel from "{{ url_for('static', filename='js/Reel3x3.js') }}";
-  import Symbol from "{{ url_for('static', filename='js/Symbol3x3.js') }}";
+  import Slot from "{{ url_for('static', filename='js/Slot_dollar.js') }}";
+  import Reel from "{{ url_for('static', filename='js/Reel_dollar.js') }}";
+  import Symbol from "{{ url_for('static', filename='js/Symbol_dollar.js') }}";
 
   const config = {
     inverted: false,
@@ -344,7 +346,7 @@
      const seconds = String(now.getSeconds()).padStart(2, '0');
      
      // Combina as partes da hora em uma string formatada
-     const timeString = `${hours}:${minutes}:${seconds}`;
+     const timeString = `🕖${hours}:${minutes}:${seconds}`;
      
      // Encontra o elemento HTML e atualiza seu conteúdo de texto
      document.getElementById('clock').textContent = timeString;

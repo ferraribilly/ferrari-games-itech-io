@@ -1,22 +1,17 @@
 const cache = {};
 
 const urls = {
-   "1": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765202646/farao_prc8ws.png",
-   "2": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765221103/ra_mwntdu.png",
-   "3": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765221103/ra1_vi5gig.png",
-   "4": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765221103/mascara_dw0qep.png",
-   "5": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765221102/cubo_j33zb4.png",
-   "6": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765221102/gata_bwynlj.png",
-   "7": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765221102/cleopta_oog5fz.png",
-   "8": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765221102/placa_wrqvbr.png",
-   "9": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765221102/piramide_rikoly.png",
-   "10": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765203732/symbol1_rnaorb.png",
-   "11": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765203729/symbol2_d8sc8h.png",
-   "12": 'https://res.cloudinary.com/dptprh0xk/image/upload/v1765203729/munra_a2mkda.png',
-   "13": 'https://res.cloudinary.com/dptprh0xk/image/upload/v1765203728/farao2_x5ckd9.png',
-   "14": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765203728/farao3_yuc1tz.png",
-   "15": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765203728/farao1_yvcqob.png"
-
+  // DOLLAR 3x3=9
+   "1": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765407069/pngwing.com_7_zxx6cn.png",
+   "2": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765407068/pngwing.com_9_pjxpa3.png",
+   "3": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765407068/pngwing.com_8_m8ndaw.png",
+   "4": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765407067/pngwing.com_10_kng23m.png",
+   "5": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765407067/pngwing.com_14_orcqyk.png",
+   "6": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765407066/pngwing.com_12_tkkukk.png",
+   "7": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765407066/pngwing.com_13_x5ureq.png",
+   "8": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765407065/pngwing.com_11_bjnjjj.png",
+   "9": "https://res.cloudinary.com/dptprh0xk/image/upload/v1765407065/bitcoin_pjo40b.png"
+   
   
 };
 
@@ -42,21 +37,15 @@ export default class Symbol {
 
   static get symbols() {
     return [
-     "1",
-     "2",
-     "3",
-     "4",
-     "5",
-     "6", 
-     "7",
-     "8",
-     "9",
-     "10",
-     "11",
-     "12",
-     "13",
-     "14",
-     "15"
+     "1",  //value 0.25 3x  //value 0.50 6x  //value 0.75 9x
+     "2",  //value 0.25 3x  //value 0.50 6x  //value 0.75 9x
+     "3",  //value 0.25 3x  //value 0.50 6x  //value 0.75 9x
+     "4",  //value 0.25 3x  //value 0.50 6x  //value 0.75 9x
+     "5",  //value 0.25 3x  //value 0.50 6x  //value 0.75 9x
+     "6",  //value 0.25 3x  //value 0.50 6x  //value 0.75 9x
+     "7",  //value 0.25 3x  //value 0.50 6x  //value 0.75 9x
+     "8",  //value 0.25 3x  //value 0.50 6x  //value 0.75 9x
+     "9"   //value 0.25 3x  //value 0.50 6x  //value 0.75 9x
     ];
   }
 
