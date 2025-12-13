@@ -1200,60 +1200,60 @@ def join_payment_room(data):
 # ===========================================
 # WEBHOOK MERCADO PAGO
 # ===========================================
-@app.route("/notificacoes", methods=["POST"])
-def handle_webhook():
-
-    data = request.json
-
-    if not data:
-        return "", 204
-
-    if data.get("type") == "payment":
-
-        payment_id = data["data"]["id"]
-        payment_details = get_payment_details(payment_id)
-
-        if not payment_details:
-            return "", 204
-
-        status = payment_details.get("status")
-
-        if status == "approved":
-            msg = "Pagamento aprovado"
-        else:
-            msg = f"Status atualizado: {status}"
-
-        socketio.emit(
-            "payment_update",
-            {
-                "status": status,
-                "message": msg,
-                "payment_id": payment_id
-            },
-            room=payment_id
-        )
-
-        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
-
-    return "", 204
-
-# ===========================================
-# CONSULTA STATUS MERCADO PAGO
-# ===========================================
-def get_payment_details(payment_id):
-
-    url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
-
-    headers = {
-        "Authorization": f"Bearer {MP_ACCESS_TOKEN}"
-    }
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-
-    return None
+# @app.route("/notificacoes", methods=["POST"])
+# def handle_webhook():
+# 
+#     data = request.json
+# 
+#     if not data:
+#         return "", 204
+# 
+#     if data.get("type") == "payment":
+# 
+#         payment_id = data["data"]["id"]
+#         payment_details = get_payment_details(payment_id)
+# 
+#         if not payment_details:
+#             return "", 204
+# 
+#         status = payment_details.get("status")
+# 
+#         if status == "approved":
+#             msg = "Pagamento aprovado"
+#         else:
+#             msg = f"Status atualizado: {status}"
+# 
+#         socketio.emit(
+#             "payment_update",
+#             {
+#                 "status": status,
+#                 "message": msg,
+#                 "payment_id": payment_id
+#             },
+#             room=payment_id
+#         )
+# 
+#         print(f"[WEBHOOK] {msg} | ID: {payment_id}")
+# 
+#     return "", 204
+# 
+# # ===========================================
+# # CONSULTA STATUS MERCADO PAGO
+# # ===========================================
+# def get_payment_details(payment_id):
+# 
+#     url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
+# 
+#     headers = {
+#         "Authorization": f"Bearer {MP_ACCESS_TOKEN}"
+#     }
+# 
+#     response = requests.get(url, headers=headers)
+# 
+#     if response.status_code == 200:
+#         return response.json()
+# 
+#     return None
 
 
 

@@ -118,7 +118,7 @@ socket.on("payment_update", function (data) {
 
          // REDIRECIONA APÓS 3 SEGUNDOS
         setTimeout(function () {
-            window.location.href = "/pagamento/sucesso/aprovado";
+            window.location.href = "/acesso/users/painel/{{user_id}}";
         }, 3000);
 
 
