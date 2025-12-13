@@ -5,10 +5,10 @@ import Symbol from "./Symbol_dollar.js";
 export default class Slot {
   constructor(domElement, config = {}) {
     Symbol.preload();
+
     this.balanceUI = document.getElementById("balance");
     this.betUI = document.getElementById("betValue");
     this.winUI = document.getElementById("win");
-
     this.espehoWinUI = document.getElementById("espeho_win");
 
     // >>> AUDIOS <<<
@@ -18,7 +18,6 @@ export default class Slot {
 
     // >>> AMBIENTE <<<
     this.ambienteSound = document.getElementById("ambienteSound");
-
     if (this.ambienteSound) {
       this.ambienteSound.volume = 0.35;
       this.ambienteSound.loop = true;
@@ -28,11 +27,7 @@ export default class Slot {
     this.betValue = 0.50;
 
     this.config = Object.assign(
-      {
-        betStep: 0.50,
-        betMin: 0.50,
-        betMax: 1000000
-      },
+      { betStep: 0.50, betMin: 0.50, betMax: 1000000 },
       config
     );
 
@@ -55,48 +50,44 @@ export default class Slot {
     this.spinButton = document.getElementById("spin");
     this.spinButton.addEventListener("click", () => this.spin());
 
-    
-        // ============================
-        // AUTOPLAY — BOTÃO + BOX
-        // ============================
-        this.autoPlayButton = document.getElementById("autoplayBtn");
-        this.autoPlayBox = document.getElementById("autoplayBox");
+    // ============================
+    // AUTOPLAY
+    // ============================
+    this.autoPlayButton = document.getElementById("autoplayBtn");
+    this.autoPlayBox = document.getElementById("autoplayBox");
+    this.autoPlayBox.style.display = "none";
+    this.autoPlaysLeft = 0;
+    this.selectedAutoBtn = null;
+
+    this.autoPlayButton.addEventListener("click", () => {
+      this.autoPlayBox.style.display =
+        this.autoPlayBox.style.display === "none" ? "block" : "none";
+    });
+
+    document.querySelectorAll(".autoOption").forEach(btn => {
+      btn.addEventListener("click", () => {
+        this.autoPlaysLeft = parseInt(btn.dataset.v);
+        if (this.selectedAutoBtn) this.selectedAutoBtn.style.background = "#222";
+        btn.style.background = "#555";
+        this.selectedAutoBtn = btn;
+      });
+    });
+
+    document.getElementById("startBtn").addEventListener("click", () => {
+      if (this.autoPlaysLeft > 0) {
         this.autoPlayBox.style.display = "none";
-        this.autoPlaysLeft = 0;
-        this.selectedAutoBtn = null;
-    
-        // Toggle box
-        this.autoPlayButton.addEventListener("click", () => {
-          this.autoPlayBox.style.display =
-            this.autoPlayBox.style.display === "none" ? "block" : "none";
-        });
-    
-        // Seleciona número de voltas (não dispara spin)
-        document.querySelectorAll(".autoOption").forEach(btn => {
-          btn.addEventListener("click", () => {
-            this.autoPlaysLeft = parseInt(btn.dataset.v);
-    
-            // Marcar botão selecionado
-            if (this.selectedAutoBtn) this.selectedAutoBtn.style.background = "#222";
-            btn.style.background = "#555";
-            this.selectedAutoBtn = btn;
-          });
-        });
-    
-        // Botão Iniciar autoplay
-        document.getElementById("startBtn").addEventListener("click", () => {
-          if (this.autoPlaysLeft > 0) {
-            this.autoPlayBox.style.display = "none";
-            this.spin();
-          }
-        });
-    
-        window.slot = this;
+        this.spin();
+      }
+    });
+
+    window.slot = this;
 
     window.betMinus = () => {
       const step = parseFloat(this.config.betStep) || 0.5;
-      const newBet = +(this.betValue - step).toFixed(2);
-      this.betValue = Math.max(this.config.betMin, newBet);
+      this.betValue = Math.max(
+        this.config.betMin,
+        +(this.betValue - step).toFixed(2)
+      );
       if (this.balance !== undefined && this.betValue > this.balance)
         this.betValue = this.balance;
       this.updateUI(0);
@@ -104,29 +95,23 @@ export default class Slot {
 
     window.betPlus = () => {
       const step = parseFloat(this.config.betStep) || 0.5;
-      const newBet = +(this.betValue + step).toFixed(2);
-      this.betValue = Math.min(this.config.betMax, newBet);
+      this.betValue = Math.min(
+        this.config.betMax,
+        +(this.betValue + step).toFixed(2)
+      );
       if (this.balance !== undefined && this.betValue > this.balance)
         this.betValue = this.balance;
       this.updateUI(0);
     };
   }
 
+  // >>> CORRIGIDO: NÃO CHAMA /rodar NO LOAD <<<
   async init() {
-    try {
-      const resp = await fetch(`/rodar/${window.USER_ID}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bet: 0 })
-      });
-
-      const result = await resp.json();
-
-      if (result && typeof result.balance_user !== "undefined") {
-        this.balance = parseFloat(result.balance_user);
-      }
-    } catch (err) {}
-
+    this.balance = parseFloat(
+      this.balanceUI.textContent
+        .replace("R$", "")
+        .replace(",", ".")
+    );
     this.updateUI(0);
   }
 
@@ -142,17 +127,13 @@ export default class Slot {
     if (winAmount > 0 && this.winUI) {
       this.winUI.textContent = "R$ " + winAmount.toFixed(2);
       this.winUI.style.opacity = 0.5;
-      setTimeout(() => {
-        this.winUI.style.opacity = 0;
-      }, 5000);
+      setTimeout(() => (this.winUI.style.opacity = 0), 5000);
     }
 
     if (winAmount > 0 && this.espehoWinUI) {
       this.espehoWinUI.textContent = "R$ " + winAmount.toFixed(2);
       this.espehoWinUI.style.opacity = 0.5;
-      setTimeout(() => {
-        this.espehoWinUI.style.opacity = 0;
-      }, 5000);
+      setTimeout(() => (this.espehoWinUI.style.opacity = 0), 5000);
     }
 
     if (winAmount > 0 && this.winSound) {
@@ -178,14 +159,16 @@ export default class Slot {
     msg.style.border = "2px solid #000";
     msg.style.textAlign = "center";
     msg.style.width = "580px";
-    msg.innerHTML = `<p>Saldo insuficiente!!</p><button id="deposit-btn">Ir para Depósitos</button>`;
+    msg.innerHTML =
+      `<p>Saldo insuficiente!!</p>
+       <button id="deposit-btn">Ir para Depósitos</button>`;
 
     document.body.appendChild(msg);
 
-    document
-      .getElementById("deposit-btn")
+    document.getElementById("deposit-btn")
       .addEventListener("click", () => {
-        window.location.href = `/acesso/users/compras_app/${window.USER_ID}`;
+        window.location.href =
+          `/acesso/users/compras_app/${window.USER_ID}`;
       });
   }
 
@@ -195,22 +178,18 @@ export default class Slot {
     this.spinButton.disabled = true;
 
     let backend = null;
-
     try {
       const resp = await fetch(`/rodar/${window.USER_ID}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bet: this.betValue })
       });
-
       backend = await resp.json();
-
-      if (backend && typeof backend.balance_user !== "undefined")
+      if (backend?.balance_user !== undefined)
         this.balance = parseFloat(backend.balance_user);
-
-      if (backend && backend.grid)
+      if (backend?.grid)
         this.nextSymbols = backend.grid;
-    } catch (err) {}
+    } catch {}
 
     this.onSpinStart(this.nextSymbols);
 
@@ -236,20 +215,15 @@ export default class Slot {
       this.stopSpinSound.play().catch(()=>{});
     }
 
-    if (backend && backend.wins)
+    if (backend?.wins)
       backend.wins.forEach(win => this.highlightWin(win.positions));
 
-    const totalWin = backend?.win ? parseFloat(backend.win) : 0;
-
-    this.updateUI(totalWin);
+    this.updateUI(backend?.win ? parseFloat(backend.win) : 0);
 
     this.onSpinEnd(backend?.wins || []);
 
     this.spinButton.disabled = false;
 
-    // ============================
-    // AUTOPLAY (voltas restantes)
-    // ============================
     if (this.autoPlaysLeft > 0) {
       this.autoPlaysLeft--;
       setTimeout(() => this.spin(), 200);

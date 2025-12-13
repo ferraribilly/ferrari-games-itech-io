@@ -45,21 +45,33 @@ CORS(app)
 #=========================================================
 # -LEVEL MAQUINA 3X3 ADCIONAR SOCKET POIS SERA TEMPO REAL.
 #=========================================================
-# LEVEL SERA CONTROLADO POR HORARIOS PAGANTES E COMPORTAMENTO
-# CADA -USERS COMPRAS APP TEMPO JOGO
-# COMPRA VALOR 5 LEVEL=1 AO SAIR 1 WIN LEVEL SOBE PARA O LEVEL=3  RESTANTE DOS GIROS 
-# COMPRAS VALOR 10 LEVEL1 AO SAIR 2 WIN SOBE LEVEL PARA O LEVEL=4 RESTANTE DOS GIROS
-# COMPRAS VALOR 30 LEVEL=1 AO SAIR 4 WINS SOBE LEVEL PARA O LEVEL=6 RESTANTE DOS GIROS
 LEVEL = 1
 
 SYMBOL_NAMES = [
-      '1', '2', '3',
-      '4', '5', '6',
-      '7', '8', '9',
-      # '10', '11', '12',
-      # '13', '14', '15',
-]   # <-- 15 símbolos
-# AQUI VAI TER OS VALORES DE CADA SYMBOLS_VALUE
+    '1','2','3',
+    '4','5','6',
+    '7','8','9',
+    '10','11','12',
+    '13','14','15',
+]
+
+SYMBOL_VALUES = {
+    "1": 0.05, #
+    "2": 0.10, #
+    "3": 0.10, #
+    "4": 0.10, #
+    "5": 0.35, #
+    "6": 0.15, #
+    "7": 0.50, #
+    "8": 0.75,
+    "9": 1.00,
+    "10": 1.25,
+    "11": 1.75,
+    "12": 2.25,
+    "13": 3.75,
+    "14": 4.50,
+    "15": 5.00,
+}
 
 class Machine:
     def __init__(self, balance=1000.0):
@@ -70,60 +82,40 @@ machine = Machine()
 def random_symbol():
     return random.choice(SYMBOL_NAMES)
 
-#==================================================================================
-# ---------------------------------------------------------------------------------
-# GERADOR COM VOLATILIDADE LEVEL ( 3X3)
-# ---------------------------------------------------------------------------------
-#LEVEL 1 SERA SYMBOLS MAOIRES VALORES 
 def generate_grid():
     grid = [[random_symbol() for r in range(3)] for c in range(3)]
 
     if LEVEL == 1:
-        # colunas
         for c in range(3):
             sym = random_symbol()
             for r in range(3):
-                grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
+                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
 
-        # linhas
         for r in range(3):
             sym = random_symbol()
             for c in range(3):
-                grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
+                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
 
-        # diagonal principal
         sym = random_symbol()
         for i in range(3):
-            grid[i][i] = sym if random.randint(0, 1) else grid[i][i]
+            grid[i][i] = sym if random.randint(0,1) else grid[i][i]
 
-        # diagonal invertida
         sym = random_symbol()
         for i in range(3):
-            grid[i][2-i] = sym if random.randint(0, 1) else grid[i][2-i]
+            grid[i][2-i] = sym if random.randint(0,1) else grid[i][2-i]
 
-        # cruzado / X
         sym = random_symbol()
-        for pos in [(0,0),(2,2),(0,2),(2,0),(1,1)]:
-            c,r = pos
-            grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
-
-        # janela (4 cantos)
-        sym = random_symbol()
-        for pos in [(0,0),(2,2),(2,0),(0,2)]:
-            c,r = pos
+        for c,r in [(0,0),(2,2),(0,2),(2,0),(1,1)]:
             grid[c][r] = sym if random.randint(0,1) else grid[c][r]
 
-        # borda/janelao = todos menos centro
         sym = random_symbol()
-        borda_positions = [
-            (0,0),(1,0),(2,0),
-            (0,2),(1,2),(2,2),
-            (0,1),(2,1)
-        ]
-        for c,r in borda_positions:
+        for c,r in [(0,0),(2,2),(2,0),(0,2)]:
             grid[c][r] = sym if random.randint(0,1) else grid[c][r]
 
-        # cheio
+        sym = random_symbol()
+        for c,r in [(0,0),(1,0),(2,0),(0,2),(1,2),(2,2),(0,1),(2,1)]:
+            grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+
         sym = random_symbol()
         for c in range(3):
             for r in range(3):
@@ -147,95 +139,62 @@ def generate_grid():
 
     return grid
 
-
-# -----------------------------
-# checkWins (ADAPTADO 3×3, nada removido)
-# -----------------------------
 def check_wins(grid):
     wins = []
 
-    def addWin(type_, positions):
-        multiplier = 0
-        if type_ == "horizontal": multiplier = 5
-        elif type_ == "vertical": multiplier = 8
-        elif type_ in ("diagonal_principal", "diagonal_invertida"): multiplier = 12
-        elif type_ == "cruzado_x": multiplier = 20
-        elif type_ == "janela": multiplier = 15
-        elif type_ == "janelao": multiplier = 30
-        elif type_ == "cheio": multiplier = 50
-
+    def addWin(type_, positions, multiplier):
         wins.append({
             "type": type_,
             "positions": positions,
             "payout": multiplier
         })
 
-    # horizontais
     for r in range(3):
         if all(grid[c][r] == grid[0][r] for c in range(3)):
-            addWin("horizontal", [(c, r) for c in range(3)])
+            addWin("horizontal", [(c,r) for c in range(3)], 5)
 
-    # verticais
     for c in range(3):
         if all(grid[c][r] == grid[c][0] for r in range(3)):
-            addWin("vertical", [(c, r) for r in range(3)])
+            addWin("vertical", [(c,r) for r in range(3)], 8)
 
-    # diagonal principal
     if all(grid[i][i] == grid[0][0] for i in range(3)):
-        addWin("diagonal_principal", [(i, i) for i in range(3)])
+        addWin("diagonal_principal", [(i,i) for i in range(3)], 12)
 
-    # diagonal invertida
     if all(grid[i][2-i] == grid[0][2] for i in range(3)):
-        addWin("diagonal_invertida", [(i, 2 - i) for i in range(3)])
+        addWin("diagonal_invertida", [(i,2-i) for i in range(3)], 12)
 
-    # cruzado X
     if (
-        grid[0][0] == grid[2][2] and
-        grid[0][2] == grid[2][0] and
-        grid[0][0] == grid[1][1] and
-        grid[0][0] == grid[0][2]
+        grid[0][0] == grid[2][2] ==
+        grid[0][2] == grid[2][0] ==
+        grid[1][1]
     ):
-        addWin("cruzado_x", [(0,0),(2,2),(0,2),(2,0),(1,1)])
+        addWin("cruzado_x", [(0,0),(2,2),(0,2),(2,0),(1,1)], 20)
 
-    # janela
     if (
-        grid[0][0] == grid[2][2] and
-        grid[2][0] == grid[0][2] and
-        grid[0][0] == grid[2][0]
+        grid[0][0] == grid[2][2] ==
+        grid[2][0] == grid[0][2]
     ):
-        addWin("janela", [(0,0),(2,2),(2,0),(0,2)])
+        addWin("janela", [(0,0),(2,2),(2,0),(0,2)], 15)
 
-    # borda / janelao 3×3
-    borda_positions = [
-        (0,0),(1,0),(2,0),
-        (0,2),(1,2),(2,2),
-        (0,1),(2,1)
-    ]
-    borda = [grid[c][r] for (c,r) in borda_positions]
+    borda_pos = [(0,0),(1,0),(2,0),(0,2),(1,2),(2,2),(0,1),(2,1)]
+    borda = [grid[c][r] for c,r in borda_pos]
     if all(s == borda[0] for s in borda):
-        addWin("janelao", borda_positions)
+        addWin("janelao", borda_pos, 30)
 
-    # cheio
-    full_positions = [(c,r) for c in range(3) for r in range(3)]
-    flat = [grid[c][r] for (c,r) in full_positions]
+    full_pos = [(c,r) for c in range(3) for r in range(3)]
+    flat = [grid[c][r] for c,r in full_pos]
     if all(s == flat[0] for s in flat):
-        addWin("cheio", full_positions)
+        addWin("cheio", full_pos, 50)
 
     return wins
-
-
-# Helper
-def only_digits(s):
-    return re.sub(r'\D', '', s or "")
 
 @app.route("/rodar/<string:user_id>", methods=["POST"])
 def rodar_machine(user_id):
     user = user_model.get_user_by_id(user_id)
-        
     if not user:
-        return jsonify({"error": "Usuário não encontrado"}), 404
+        return jsonify({"error":"Usuário não encontrado"}),404
 
-    user_balance = float(user.get("balance", 0.0))
+    user_balance = float(user.get("balance",0.0))
 
     bet_raw = request.json.get("bet") if request.json else 0.5
     try:
@@ -244,11 +203,23 @@ def rodar_machine(user_id):
         bet = 0.5
 
     if user_balance < bet:
-        return jsonify({"error": "Saldo insuficiente"}), 400
+        return jsonify({"error":"Saldo insuficiente"}),400
 
     grid = generate_grid()
     wins = check_wins(grid)
-    total_win = bet * len(wins) * 10.0 if wins else 0.0
+
+    total_win = 0.0
+    mega_win = False
+
+    for w in wins:
+        c,r = w["positions"][0]
+        symbol = grid[c][r]
+        total_win += bet * SYMBOL_VALUES[symbol] * w["payout"]
+        if w["type"] == "cheio":
+            mega_win = True
+
+    free_spins = 10 if mega_win else 0
+    message = "MEGA WIN" if mega_win else ""
 
     if total_win > 0:
         new_balance = user_balance + total_win
@@ -261,11 +232,14 @@ def rodar_machine(user_id):
 
     return jsonify({
         "grid": grid,
-        "win": round(total_win, 2),
-        "balance_user": round(new_balance, 2),
-        "balance_machine": round(machine.balance, 2),
+        "win": round(total_win,2),
+        "balance_user": round(new_balance,2),
+        "balance_machine": round(machine.balance,2),
         "wins": wins,
-        "level": LEVEL
+        "level": LEVEL,
+        "mega_win": mega_win,
+        "free_spins": free_spins,
+        "message": message
     })
 
 #======================================================================================
@@ -773,7 +747,7 @@ def register_user():
         "convite_ganbista": data.get("convite_ganbista",""),
         "chave_pix": data.get("chave_pix",""),
         "senha": data["senha"],
-        "balance": 50.0,  # inicial para o user pelo registro
+        "balance": 0,  
         "created_at": datetime.now()
     }
     user_id = user_model.create_user(new_user)
@@ -795,7 +769,7 @@ def login():
 
     # Login sem senha, igual seu frontend quer
     return jsonify({
-        "redirect": f"/acesso/users/{user['_id']}"
+        "redirect": f"/acesso/users/painel/{user['_id']}"
     })
 
 #======================================================
@@ -817,8 +791,12 @@ def acesso_users_painel(user_id):
     if user:
         nome_value = user.get('nome')
         cpf_value = user.get('cpf')
-        balance_value = user.get('balance', 0)
-
+        balance_value = user.get('balance')
+        if balance_value is None:
+            balance_value = ""  # ou "-" se quiser
+        else:
+            balance_value = f"{balance_value:.2f}"
+        
         return render_template(
             "painel_game.html",
             user_id=user_id,
