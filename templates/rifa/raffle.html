@@ -9,9 +9,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">        
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>        
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">        
+    <style>
+     video {
+        width: 100%;
+        height: 100%; /* Mantém a proporção do vídeo */
+        max-width: 800px; /* Define um tamanho máximo opcional */
+    }
+    </style>
     <script>        
         // Valor do ticket        
-        ticketValue = 0.05;        
+        ticketValue = 2.50;        
                   
     </script>        
     <style>   
@@ -157,6 +164,19 @@
           height: 16px;
           margin-right: 11px;
       }
+
+      strong {
+      	font-family:monospace;
+      	color:gold;
+      }
+
+      p {
+      	font-family:monospace;
+      	color:blue;
+      }
+      b {
+      	color:gold;
+      }
       
     </style>        
 </head>        
@@ -182,7 +202,9 @@
                         <label for="search-tickets">Buscar bilhetes</label>        
                         <img id="close-search-tickets" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/close-icon_vwjg9s.svg" alt="Fechar">        
                         <input id="search-tickets" type="email" placeholder="Digite seu e-mail" required>        
-                        <button type="submit">Buscar</button>        
+                        <button type="submit">Buscar</button>   
+                        
+ 
                     </div>        
                 </div>        
             </form>        
@@ -197,15 +219,18 @@
         
         <div class="raffle">        
             <div class="main-image">        
-                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">        
-                        
+                <!-- <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">         -->
+                <video controls width="600">
+                <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Seu navegador não suporta vídeo.
+              </video>
                 <!-- Imagem menor no centro -->        
                 <!-- <img class="center-image" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764599109/FB_IMG_1764597201315-removebg-preview_eptaed.png" alt="Imagem Menor"> -->        
                         
-                <div class="main-statement">por <b>R$0,05</b> cada número</div>        
+                <div class="main-statement"><b>por</b> <h4>R$2.50</h4> cada número</div>        
             </div>        
         
-            <h2>Premiação R$ 50,00</h2>        
+           
         
             <div class="raffle-organizer">        
                 <div class="organizer-image">        
@@ -240,9 +265,12 @@
             <div class="awards"></div>        
         
             <div class="raffle-description">  
-                <h4 id="data_sorteio">Data Sorteio:31/12/2025</h4>       
+                    
                 <h4>Descrição / Regulamento</h4>        
-                <p>O vencedor será definido no primeiro prêmio da loteria federal!</p>        
+                <p id="data_sorteio">Data Sorteio:<strong>{{dataProximoConcurso}}</strong></p>  
+                <p id="sorteio">Sorteio:<strong>{{proximoConcurso}}</strong></p> 
+                <p id="valor_premio">Valor Premio:<strong>R$300,00</strong></p> 
+                <strong>O vencedor será definido no primeiro prêmio da loteria federal!</strong>        
                 <p>O que comprar mais números leva: <b>R$ 50,00</b></p>        
             </div>        
         
@@ -266,8 +294,9 @@
                     </div>        
                 </div>        
             </div>        
-        
-            <div class="raffle-tickets">        
+           
+            <div class="raffle-tickets">   
+               <h4>saldo:{{balance}} </h4>  
                 <h4>SELECIONE A QUANTIDADE DE BILHETES</h4>        
                 <section class="add-tickets-container">        
                     <div class="add-tickets-box">        
@@ -308,12 +337,12 @@
                                                 <input name="terms" type="checkbox" required>        
                                                 <p>Li e concordo com os <a href="#" target="_blank">Termos e Condições</a> e estou ciente de que essa reserva me vincula apenas à esta campanha criada pelo(a) organizador(a) e NÃO à plataforma.</p>        
                                             </div>        
-                                            <a class="purchase-submit-btn" href="/raffle/diego/review/users/{{user_id}}">Reservar</a>        
+                                            <a class="purchase-submit-btn" href="/review/users/{{user_id}}">Verificar Bilhetes</a>        
                                         </div>        
                                     </div>        
                                 </form>        
                             </div>        
-                            <button onclick="checkQuantity()">Reservar</button>        
+                            <button onclick="checkQuantity()">Selecione seu numeros</button>        
                         </div>        
                     </div>        
                 </section>        

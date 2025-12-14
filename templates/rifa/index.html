@@ -9,6 +9,58 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <style>
+  
+    h3 {
+    	color:gold;
+    	font-family:monospace;
+    	font-size:22px;
+    	font-weigth:bold;
+    }
+    h4 {
+        	color:#fff;
+        	font-family:monospace;
+        	font-size:22px;
+        	font-weigth:bold;
+        }
+
+    p {
+    	color: green;
+    	font-family:monospace;
+    	font-size:16px;
+    	font-weigth:bold;
+    }
+    strong {
+    	color:#fff;
+    	font-family:monospace;
+    	fonte-size:16px;
+    }
+    <!-- .video-container { -->
+    <!--     position: relative; -->
+    <!--     padding-bottom: 56.25%; /* Proporção 16:9 (altura/largura = 0.5625) */ -->
+    <!--     height: 0; -->
+    <!--     overflow: hidden; -->
+    <!-- } -->
+    <!--  -->
+    <!-- .video-container iframe { -->
+    <!--     position: absolute; -->
+    <!--     top: 0; -->
+    <!--     left: 0; -->
+    <!--     width: 100%; -->
+    <!--     height: 100%; -->
+    <!--     z-index:9999; -->
+    <!-- } -->
+    <!--  -->
+    video {
+        width: 100%;
+        height: 100%; /* Mantém a proporção do vídeo */
+        max-width: 800px; /* Define um tamanho máximo opcional */
+        z-index:9999;
+    }
+
+   
+    
+    </style>
 </head>
 
 <body>
@@ -17,7 +69,8 @@
     <header>
         <div class="logo">
             <a href="#">
-                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290865/logo_swn9oo.svg" alt="Logo" draggable="false">
+                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765688811/file_0000000011f8720e86b5d386eda14632_zyaouw.png" alt="Logo" draggable="false">
+
             </a>
         </div>
     </header>
@@ -28,33 +81,46 @@
         <div class="main-container">
             <div class="main-raffle">
                 <div class="main-image">
-                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">
+              <!-- <div class="video-container"> -->
+              <!--  <iframe src="www.youtube.com" frameborder="0" allowfullscreen></iframe> -->
+              <!-- </div> -->
+              <video controls width="600">
+                <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Seu navegador não suporta vídeo.
+              </video>
+                                                                                             
                 </div>
                 <div class="info">
-                    <a href="/users/produto/{{ user_id }}">
+                    <a href="#">
                         <div class="main-description">
-                            <h4> Ganhe ate R$ 2.000,00 no PIX (2 mil reais no PIX)</h4>
-                            <p>Sorteio Loteria Federal</p>
-                            <div class="available">Adquira já!</div>
+                             <h3> Ganhador  premio  R$ 2.000,00 no PIX (2 mil reais no PIX)</h3>
+                            <p>Organizador:<strong> Carlos Albert</strong></p>
+                            <h4>Sorteio Loteria Federal "Dia da Sorte"</h4>
+                            <p>Concurso:<strong>{{concurso}}</strong></p>
+                            <p>Data sorteio:<strong>{{data}}</strong></p>
+                            <p>Dezenas:<strong>{{dezenas}}</strong></p>
+                            <p>Ganhador:<strong>Luis</strong></p>
+                            <p>Cidade:<strong>Franca-sp</strong></p>
+                            <p>Bilhete:<strong>431</strong></p>
                         </div>
                         <div class="go-to">
-                            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290953/right-arrow-icon_jrcfnh.png" alt="Acessar" draggable="false">
                         </div>
                     </a>
                 </div>
             </div>
             <div class="other-raffles">
                 <div class="info sc">
-                    <a href="/users/produto/{{ user_id }}">
+                    <a href="/users/produto/{{user_id}}">
                         <div class="group-info">
                             <div class="raffle-image">
-                            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">
-
-                            </div>
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">                            </div>
                             <div class="main-description">
-                                <h4>R$ 3.000,00 no PIX (3 mil reais no PIX)</h4>
-                                <p>Sorteio Loteria Federal</p>
-                                <div class="available">Adquira já!</div>
+                               <h3>R$ 300,00 no PIX (300,00 reais no PIX)</h3>
+                               <p>Organizador:<strong>Diego Rauny<strong></p>
+                               <h4>Sorteio Loteria Federal</h4>
+                               <p>Proximo Sorteio:<strong>{{proximoConcurso}}</strong></p>
+                               <p>Data Sorteio:<strong>{{dataProximoConcurso}}</strong></p>
+                               <div class="available">Adquira já!</div>
                             </div>
                         </div>
                         <div class="go-to">
@@ -63,33 +129,57 @@
                     </a>
                 </div>
                 <div class="info sc">
-                    <a href="/users/produto/{{ user_id }}">
+                    <a href="#">
                         <div class="group-info">
                             <div class="raffle-image">
-                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">
-                            </div>
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">                            </div>
                             <div class="main-description">
-                                <h4>R$ 100.000,00 no PIX (100.000,00 mil reais no PIX)</h4>
-                                <p>Sorteio Loteria Federal</p>
+                               <h3>R$ 2.000,00 no PIX (2.000,00 reais no PIX)</h3>
+                               <p>Organizador:<strong>Carlos Albert</strong></p>
+                               <h4>Sorteio Loteria Federal "Dia da Sorte"</h4>
+                               <p>Proximo Sorteio:<strong>{{concurso}}</strong></p>
+                                <p>Data Sorteio:<strong>{{data}}</strong></p>
                                 <div class="unavailable">Esgotou!</div>
                             </div>
                         </div>
                         <div class="go-to">
                             <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290953/right-arrow-icon_jrcfnh.png" alt="Acessar" draggable="false">
-
                         </div>
                     </a>
                 </div>
                 <div class="info sc">
-                    <a href="/users/produto/{{ user_id }}">
+                    <a href="/users/produto2/{{user_id}}">
                         <div class="group-info">
                             <div class="raffle-image">
-                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">
-                            </div>
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">                            </div>
                             <div class="main-description">
-                                <h4>R$ 3.000,00 no PIX (3 mil reais no PIX)</h4>
-                                <p>Sorteio Loteria Federal</p>
-                                <div class="unavailable">Esgotou!</div>
+                               <h3>R$ 100.000,00 no PIX (100.000,00 mil reais no PIX)</h3>
+                               <p>Organizador:<strong>Nicolas</strong></p>
+                               <h4>Sorteio Loteria Federal</h4>
+                              <p>Proximo Sorteio:<strong>{{proximoConcurso}}</strong></p>
+                              <p>Data Sorteio:<strong>{{dataProximoConcurso}}</strong></p>
+                             <div class="available">Adquira já!</div>
+                            </div>
+                        </div>
+                        <div class="go-to">
+                            <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290953/right-arrow-icon_jrcfnh.png" alt="Acessar" draggable="false">
+                        </div>
+                    </a>
+                </div>
+                 <div class="info sc">
+                    <a href="/users/produto2/{{user_id}}">
+                        <div class="group-info">
+                            <div class="raffle-image">
+                    <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290910/money_hyk7vf.jpg" alt="Rifa em Destaque">                            </div>
+                            <div class="main-description">
+                               <h3>R$ 100.000,00 no PIX (100.000,00 mil reais no PIX)</h3>
+                               <p>Organizador:<strong>Alice</strong></p>
+                               <h4>Sorteio Trasmissão Online</h4>
+                              <p>Local:<strong>Facebook/Instagram/Kaway</strong></p>
+                              <p>Proximo Sorteio:<strong>001</strong></p>
+                              <p>Data Sorteio:<strong>31.12.2025</strong></p>
+                               <p>Horario Sorteio:<strong>23:00:00</strong></p>
+                             <div class="available">Adquira já!</div>
                             </div>
                         </div>
                         <div class="go-to">

@@ -130,9 +130,12 @@ class Compras_rfModel:
 #--------------------------------------------------------------------
 # -PAGAMENTOS_APP
 #--------------------------------------------------------------------
-pagamentos_app_collection = db[PAGAMENTOS_APP_COLLECTION_NAME]
+#-------------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------------
+compras_app_collection = db[COMPRAS_APP_COLLECTION_NAME]
 
-def criar_documento_app_pagamento(payment_id, status, valor, user_id, email_user, data_criacao=None):
+def criar_documento_pagamento_app(payment_id, status, total, user_id, email_user, data_criacao=None):
     if data_criacao is None:
         
         data_criacao = datetime.now(timezone.utc)
@@ -140,18 +143,20 @@ def criar_documento_app_pagamento(payment_id, status, valor, user_id, email_user
     return {
         "_id": str(payment_id),
         "status": status,
-        "valor": valor,
+        "total": total,
         "user_id": user_id,
         "email_user": email_user,
         "data_criacao": data_criacao,
         "data_atualizacao": None,
         "detalhes_webhook": None
     }
+    
+
 
 
 class Pagamento_appModel:
     def __init__(self):
-        self.collection = pagamentos_app_collection
+        self.collection = db[PAGAMENTOS_APP_COLLECTION_NAME]        
 
     def create_pagamento_app(self, data):
         result = self.collection.insert_one(data)
@@ -185,27 +190,13 @@ class Pagamento_appModel:
     def delete_pagamento_app(self, pagamento_app_id):
         result = self.collection.delete_one({"_id": str(pagamento_app_id)})
         return result.deleted_count
-#-------------------------------------------------------------------------
-# -COMPRAS_APP
-#-------------------------------------------------------------------------
-compras_app_collection = db[COMPRAS_APP_COLLECTION_NAME]
 
-def criar_documento_pagamento_app(payment_id, status, total, user_id, email_user, data_criacao=None):
-    if data_criacao is None:
+
+
         
-        data_criacao = datetime.now(timezone.utc)
-
-    return {
-        "_id": str(payment_id),
-        "status": status,
-        "total": total,
-        "user_id": user_id,
-        "email_user": email_user,
-        "data_criacao": data_criacao,
-        "data_atualizacao": None,
-        "detalhes_webhook": None
-    }
-    
+#====================================================================================
+# COMPRAS APP
+#====================================================================================
 class Compras_appModel:
     def __init__(self):
         self.collection = compras_app_collection

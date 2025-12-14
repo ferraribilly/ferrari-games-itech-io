@@ -148,6 +148,53 @@
     margin-right: auto; /* Centraliza o slogan com max-width */
 }
 
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.modal-content{
+  background:#000;
+  border-radius:15px;
+  padding:30px;
+  text-align:center;
+  width:90%;
+  max-width:400px;
+  box-shadow:0 0 25px rgba(255,255,255,.3);
+}
+
+.modal-content h2{
+  margin-bottom:20px;
+}
+
+.modal-content button{
+  width:100%;
+  padding:15px;
+  margin:10px 0;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.btn-criar{
+  background:gold;
+  color:#000;
+}
+
+.btn-jogar{
+  background:#1e90ff;
+  color:#fff;
+}
+</style>
+
 </style>
 </head>
 <body>
@@ -183,13 +230,15 @@
    
   </a>
 
-  <a href="/index/users/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1764290951/loterias-caixa-logo_u3arzq.png');">
-    <div class="titulo-container">
-        <h1>SAV AWARD rifas onlines </h1>
-        <p class="slogan">Crie e ganhe também sorteio loteria federal.</p>
+ <div class="game"
+         onclick="abrirModal()"
+         style="background-image:url('https://res.cloudinary.com/dptprh0xk/image/upload/v1764290951/loterias-caixa-logo_u3arzq.png');">
+      <div class="titulo-container">
+        <h1>SAV AWARD</h1>
+        <p>rifas online</p>
+      </div>
     </div>
-    
-  </a>
+  
 
   <a href="/acesso/users/fortune/duends/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765490175/Screenshot_20251211-185016_2_gaa74o.jpg');">    <div class="titulo-container">
         <h1>Fortune Pote Ouro</h1>
@@ -204,24 +253,39 @@
     </div>
     
   </a>
- <!-- <a href="/acesso/users/fortune/poker/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765490175/Screenshot_20251211-185016_2_gaa74o.jpg');">    <div class="titulo-container"> -->
- <!--         <h1>Fortune Poker Girls</h1> -->
- <!--         <p class="slogan">Novo Jogo.</p> -->
- <!--     </div> -->
- <!--      -->
- <!--   </a> -->
-   
-  <!-- <a href="jogo6.html" class="game" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdCnRRITC5ruGKhRLl3Aex16edqdawyRfaqioy10OA9Q&s=10');"> -->
-  <!--   <div class="titulo-container"> -->
-  <!--       <h1>Emprestimos Socios</h1> -->
-  <!--       <p class="slogan">Somente para Socios Premium.</p> -->
-  <!--   </div> -->
-    
-  </a>
+
+ <div class="modal" id="modalRifa">
+   <div class="modal-content">
+     <h2>SAV AWARD</h2>
+ 
+     <button class="btn-criar"
+       onclick="location.href='/assinatura/{{ user_id }}'">
+       Organizar uma rifa
+     </button>
+ 
+     <button class="btn-jogar"
+       onclick="location.href='/index/users/{{ user_id }}'">
+       Jogar
+     </button>
+   </div>
+ </div>
+ 
 </div>
 <script>
 window.USER_ID = "{{ user_id }}";
+function abrirModal(){
+  document.getElementById('modalRifa').style.display='flex';
+}
+
+document.getElementById('modalRifa').onclick = function(e){
+  if(e.target === this){
+    this.style.display='none';
+  }
+}
 </script>
+
 
 </body>
 </html>
+
+

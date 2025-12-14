@@ -5,11 +5,70 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAV AWARDS | Pix</title>
+    <style>
+    .see-tickets {
+        display: flex;
+        justify-content: center;
+        font-size: 17px;
+        font-weight: 500;
+        text-transform: uppercase;
+        color: #373737;
+        border-radius: 7px;
+        cursor: pointer;
+        user-select: none;
+        padding: 12px;
+        margin-top: 12px;
+        transition: all 0.2s;
+    }
+    
+    .see-tickets:hover {
+        background-color: #f3f3f3;
+        color: #000000;
+        border-radius: 9px 9px 25px 25px;
+        transition: all 0.2s;
+    }
+    
+    .ticket-numbers {
+        opacity: 0;
+        visibility: hidden;
+        height: 0;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        transition: margin 0.4s;
+    }
+    
+    .ticket-numbers p {
+        font-size: 15px;
+        color: #474747;
+        border: 1px solid #6f6f6f;
+        border-radius: 7px;
+        min-width: 44px;
+        text-align: center;
+        text-align: -webkit-center;
+        padding: 8px;
+        margin: 0 5px 5px 0;
+    }
+    
+    .ticket-numbers p:last-child {
+        margin-right: 0;
+    }
+    
+    .visible {
+        height: max-content;
+        visibility: visible;
+        opacity: 1;
+        margin: 28px 22px;
+        transition: all 0.4s;
+    }
+    </style>
 
     <!-- SOCKET.IO CDN -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/transaction_pix.css') }}">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -43,7 +102,7 @@
             </div>
 
             <div class="pix-value">
-                <strong>FERRARI GAMES ITECH</strong>
+                <strong>SAV AWARDS</strong>
             </div>
 
             <div class="pix-value">
@@ -55,6 +114,21 @@
                 <span>Descrição:</span>
                 <strong>{{ description }}</strong>
             </div>
+
+            <div class="pix-value">
+             <span>Quantidade:</span>
+             <strong>{{ quantity }}</strong>
+             </div>
+            
+             <div id="see-tickets" class="see-tickets">
+             <span>Meus Bilhetes</span>
+             </div>
+
+            <div id="ticket-numbers" class="ticket-numbers">
+             {% for t in tickets %}
+             <p>{{ t }}</p>
+              {% endfor %}
+             </div>
 
             <div id="copy-mobile" class="pix-copy-mobile">
                 <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290949/copy-icon_z8ur77.svg" draggable="false">
@@ -73,6 +147,7 @@
         </div>
     </div>
 </main>
+<script src="{{ url_for('static', filename='js/see-tickets.js') }}"></script>
 
 <script>
 // ===== COPIAR PIX =====
@@ -97,15 +172,16 @@ function copyText() {
     });
 }
 
-// ===== SOCKET.IO (CORRETO E SEM DUPLICAÇÃO) =====
+// ===== SOCKET.IO =====
 var paymentId = "{{ payment_id }}";
+var userId = "{{ user_id }}";
 var socket = io(window.location.origin);
 
 socket.on("connect", function () {
     socket.emit("join_payment", { payment_id: paymentId });
 });
 
-socket.on("payment_update", function (data) {
+socket.on("payment_update", async function (data) {
     if (data.payment_id !== paymentId) return;
 
     var div = document.getElementById("notifications");
@@ -114,27 +190,30 @@ socket.on("payment_update", function (data) {
     if (data.status === "approved") {
         p.style.color = "green";
         p.innerText = "✅ Pagamento aprovado!";
+        div.innerHTML = "";
+        div.appendChild(p);
 
+        await fetch(`/atualizar/compras_rf/pagamento_aprovado/${userId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pagamento_aprovado: true })
+        });
 
-         // REDIRECIONA APÓS 3 SEGUNDOS
         setTimeout(function () {
-            window.location.href = "/pagamento/sucesso/aprovado";
+            window.location.href = `/index/users/${userId}`;
         }, 3000);
 
-
-
-        
     } else {
         p.style.color = "red";
         p.innerText = "❌ Pagamento recusado!";
+        div.innerHTML = "";
+        div.appendChild(p);
+
+        setTimeout(function () {
+            window.location.href = `/compra/recusada/${userId}`;
+        }, 3000);
     }
-
-    div.innerHTML = "";
-    div.appendChild(p);
 });
-
-
-
 </script>
 
 </body>

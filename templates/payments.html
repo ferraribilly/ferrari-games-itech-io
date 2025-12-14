@@ -138,7 +138,7 @@
             <!-- Opção 1 -->
             <div class="card">
                 <i class="fas fa-coins icon-large"></i>
-                <p>R$ 0.75</p>
+                <p>R$ 0.50</p>
                 <button>Comprar Agora</button>
             </div>
             <!-- Opção 2 -->
@@ -191,45 +191,55 @@
         <p>&copy; 2025 FERRARI GAMES ITECH IO. Todos os direitos reservados.</p>
     </footer>
   
-   <script>
-   window.USER_ID = "{{ user_id }}";
-   // Seleciona todos os botões de comprar
-   const botoes = document.querySelectorAll(".card button");
-   
-   // Cada botão define um valor diferente no total
-   botoes[0].onclick = () => document.getElementById("total").value = "0.75";
-   botoes[1].onclick = () => document.getElementById("total").value = " 10";
-   botoes[2].onclick = () => document.getElementById("total").value = " 30";
-
-    
-   
-   // Botão pagar (adicionei ID)
-   document.querySelector("form").onsubmit = (e) => {
-       e.preventDefault();
-   
-       const nome = document.getElementById("nome").value;
-       const email = document.getElementById("email").value;
-       const cpf = document.getElementById("cpf").value;
-       const telefone = document.getElementById("telefone").value;
-       const total = document.getElementById("total").value;
-       const qtd = document.getElementById("qtd").value;
-       const metodo = document.getElementById("payment-method").value;
-   
-       if (metodo === "pix") {
-           const url = `/payment_qrcode_pix/compra_app/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&total=${encodeURIComponent(total)}`;
-           window.location.href = url;
-       }
-   
-       if (metodo === "preference") {
-           const url = `/compra_app/preference/pagamento_pix/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}&total=${encodeURIComponent(total)}`;
-
-   
-           fetch(url)
-               .then(r => r.json())
-               .then(d => window.location.href = d.init_point);
-       }
-   };
-   </script>
+ <script>
+ window.USER_ID = "{{ user_id }}";
+ 
+ const botoes = document.querySelectorAll(".card button");
+ botoes[0].onclick = () => document.getElementById("total").value = "0.50";
+ botoes[1].onclick = () => document.getElementById("total").value = "10";
+ botoes[2].onclick = () => document.getElementById("total").value = "30";
+ 
+ document.querySelector("form").onsubmit = async (e) => {
+     e.preventDefault();
+ 
+     const nome = document.getElementById("nome").value;
+     const email = document.getElementById("email").value;
+     const cpf = document.getElementById("cpf").value;
+     const telefone = document.getElementById("telefone").value;
+     const total = document.getElementById("total").value;
+     const qtd = document.getElementById("qtd").value;
+     const metodo = document.getElementById("payment-method").value;
+ 
+     const body = {
+         total: total
+     };
+ 
+     const response = await fetch(`/registrar/compras_app/${window.USER_ID}`, {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify(body)
+     });
+ 
+     if (!response.ok) {
+         alert("Erro ao registrar compra");
+         return;
+     }
+ 
+     if (metodo === "pix") {
+         window.location.href =
+             `/payment_qrcode_pix/compra_app/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&total=${encodeURIComponent(total)}`;
+     }
+ 
+     if (metodo === "preference") {
+         const url =
+             `/compra_app/preference/pagamento_pix/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}&total=${encodeURIComponent(total)}`;
+ 
+         fetch(url)
+             .then(r => r.json())
+             .then(d => window.location.href = d.init_point);
+     }
+ };
+ </script>
     
    
     
