@@ -1171,10 +1171,6 @@ def pagamento_preference(user_id):
 
 
 
-
-
-        
-        
 #===========================================================              
 # -PAGAMENTO VIA SOMENTE PIX QRCODE               
 #===========================================================              
@@ -1199,7 +1195,7 @@ def pagamento_pix(user_id):
     telefone = request.args.get("telefone") or ""
     qtd = int(request.args.get("qtd") or 0)
 
-    valor_total = qtd * 2.50
+    valor_total = qtd * 0.05
 
     payment_data = {
         "transaction_amount": valor_total,
@@ -1250,35 +1246,47 @@ def pagamento_pix(user_id):
         tickets=compra_rf.get("tickets", []),
         user_id=user_id
     )
+# ===========================================
+
+# SOCKET.IO - SALA POR PAGAMENTO
 
 # ===========================================
-# SOCKET.IO - SALA POR PAGAMENTO
-# ===========================================
+
 @socketio.on("join_payment")
 def join_payment_room(data):
     room = data["payment_id"]
     join_room(room)
 
 # ===========================================
-# WEBHOOK MERCADO PAGO 
+# ATUALIZAR STATUS NO BANCO (ADICIONAR)
 # ===========================================
+
+def atualizar_status_pagamento(payment_id, status):
+    PagamentoModel().collection.update_one(
+        {"payment_id": str(payment_id)},
+        {"$set": {"status": status}}
+    )
+
+
+# ===========================================
+# WEBHOOK MERCADO PAGO (ADICIONAR LINHAS)
+# ===========================================
+
 @app.route("/notificacoes", methods=["POST"])
 def handle_webhook():
-
     data = request.json
-
     if not data:
         return "", 204
 
     if data.get("type") == "payment":
-
         payment_id = data["data"]["id"]
         payment_details = get_payment_details(payment_id)
-
         if not payment_details:
             return "", 204
 
         status = payment_details.get("status")
+
+        atualizar_status_pagamento(payment_id, status)
 
         if status == "approved":
             msg = "Pagamento aprovado"
@@ -1299,32 +1307,22 @@ def handle_webhook():
 
     return "", 204
 
-# # ===========================================
-# # CONSULTA STATUS MERCADO PAGO
-# # ===========================================
+# ===========================================
+
+# CONSULTA STATUS MERCADO PAGO
+
+# ===========================================
+
 def get_payment_details(payment_id):
- 
     url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
- 
     headers = {
         "Authorization": f"Bearer {MP_ACCESS_TOKEN}"
     }
- 
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
         return response.json()
-
     return None
-
-
-
-
-    
-
-
-
-
 
 
 
