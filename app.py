@@ -1203,7 +1203,7 @@ def pagamento_pix(user_id):
 
     payment_data = {
         "transaction_amount": valor_total,
-        "description": "Manually Card Games",
+        "description": "resistor",
         "payment_method_id": "pix",
         "payer": {
             "email": email,
@@ -1232,6 +1232,8 @@ def pagamento_pix(user_id):
         valor=valor_total,
         user_id=user_id,
         email_user=email
+       
+        
     )
 
     PagamentoModel().create_pagamento(documento)
@@ -1242,7 +1244,7 @@ def pagamento_pix(user_id):
         "rifa/transaction_pix.html",
         qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
         valor=f"R$ {valor_total:.2f}",
-        description="Manually Card",
+        description="resistor",
         qr_code_cola=tx["qr_code"],
         status=status,
         payment_id=payment_id,

@@ -194,11 +194,15 @@ socket.on("payment_update", async function (data) {
         div.innerHTML = "";
         div.appendChild(p);
 
-        await fetch(`/atualizar/compras_rf/pagamento_aprovado/${userId}`, {
+        setTimeout(function () {
+        	await fetch(`/atualizar/compras_rf/pagamento_aprovado/${userId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ pagamento_aprovado: true })
-        });
+        }2000);
+        })
+        
+       
 
         setTimeout(function () {
             window.location.href = `/index/users/${userId}`;
