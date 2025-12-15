@@ -1,5 +1,5 @@
-from flask import Flask, request, jsonify, abort, render_template, redirect,  url_for
-from flask_socketio import SocketIO, join_room
+from flask import Flask, request, jsonify, abort, render_template, redirect, url_for
+from flask_socketio import SocketIO, join_room, emit
 import requests
 import mercadopago
 from io import BytesIO
@@ -36,16 +36,113 @@ os.makedirs('static/upload', exist_ok=True)
 CORS(app)
 
 
+
+
+#==========================================================================================
+# CRIAR REGISTRO DOS USER 
+#==========================================================================================
+
+@app.route("/users", methods=["POST"])
+def register_user():
+    data = request.get_json()
+    required = ["nome","sobrenome","cpf","data_nascimento","email","senha"]
+    for field in required:
+        if not data.get(field):
+            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
+    cpf_digits = re.sub(r"\D", "", data["cpf"])
+    exists = user_model.get_user_by_cpf(cpf_digits)
+    if exists:
+        return jsonify({"error": "CPF já registrado"}), 409
+
+    new_user = {
+        "nome": data["nome"],
+        "sobrenome": data["sobrenome"],
+        "cpf": cpf_digits,
+        "data_nascimento": data["data_nascimento"],
+        "email": data["email"],
+        "convite_ganbista": data.get("convite_ganbista",""),
+        "chave_pix": data.get("chave_pix",""),
+        "senha": data["senha"],
+        "balance": 0,  
+        "created_at": datetime.now()
+    }
+    user_id = user_model.create_user(new_user)
+    return jsonify({"id": user_id}), 201
+
+
+#==================================================================
+# GET USER
+#==================================================================
+@app.route("/users/<string:user_id>", methods=["GET"])
+def get_user(user_id):
+    user = user_model.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+    user["_id"] = str(user["_id"])
+    return jsonify(user), 200
+
+
+#===========================================================
+# PUT USER
+#===========================================================
+@app.route("/users/<string:user_id>", methods=["PUT"])
+def update_user(user_id):
+    data = request.get_json()
+    updated = user_model.update_user(user_id, data)
+    if not updated:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+    return jsonify({"status": "atualizado"}), 200
+
+
+#=========================================================
+# DELETE USER
+#=========================================================
+@app.route("/users/<string:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    deleted = user_model.delete_user(user_id)
+    if not deleted:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+    return jsonify({"status": "removido"}), 200
+
+
+#========================================
+# LOGIN CPF
+#========================================
+#========================================
+# -LOGIN E REGISTRO DOS USERS
+#========================================
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    cpf = data.get("cpf", "")
+
+    cpf_digits = re.sub(r"\D", "", cpf)
+    user = user_model.get_user_by_cpf(cpf_digits)
+
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+
+    # Login sem senha, igual seu frontend quer
+    return jsonify({
+        "redirect": f"/acesso/users/painel/{user['_id']}"
+    })
+
+
 #============================================================================================
 #============================================================================================
 
 
-
+#MAQUINA TEMPO REAL COM SOCKET
 #=========================================================
 # -LEVEL MAQUINA 3X3 ADCIONAR SOCKET POIS SERA TEMPO REAL.
 #=========================================================
 LEVEL = 1
-
+#SERA CONTROLADO PELO CPF OU USER_ID QUER TER EXEMPLO: CPF: 459.772.778-73 lEVEL=1 ASSIM POR DIANTE VAI TER 5 USERS AQUI OK 
+#SERA CONTROLADO COM A QUANTIDADE DE USERS CONECTADOS E TOTAL SOMADO DO BALANCE DE TODOS SE TIVER 3 USERS CADA COM 5.00 DE BALANCE 2 PERDERA 1 1 VAI GANHAR 5.00 SE FICAR JOGANDO APOS OS 2 USER TER BALANCE 0 ELE COMECA PERDER ATE PARA  OK
 SYMBOL_NAMES = [
     '1','2','3',
     '4','5','6',
@@ -239,512 +336,11 @@ def rodar_machine(user_id):
         "mega_win": mega_win,
         "free_spins": free_spins,
         "message": message
+        
     })
 
-#======================================================================================
-# -COMPRAS APLICATIVO  (REGISTRAR AS COMPRAS)
-#======================================================================================
-@app.route("/registrar/compras_app/<string:user_id>", methods=["POST"])
-def compras_app_user(user_id):
-    data = request.get_json()
-
-    # validação correta → só existe "valor"
-    if "valor" not in data or not data["valor"]:
-        return jsonify({"error": "Campo obrigatório: valor"}), 400
-
-    # pega usuário
-    user = user_model.get_user_by_id(user_id)
-    if not user:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-
-    cpf = user.get("cpf")
-    email = user.get("email")
-
-    new_compras_app = {
-        "user_id": user_id,
-        "cpf": cpf,
-        "email_user": email,
-        "pagamento_aprovado": "pendente",
-        "valor": float(data["valor"]),
-        "created_at": datetime.now()
-    }
-
-    compras_app_id = compras_app_model.create_compras_app(new_compras_app)
-    return jsonify({"id": compras_app_id}), 201
 
 
-
-#======================================================
-#  COMPRA APLICATIVO - renderiza frontend
-#======================================================
-@app.route("/users/loja/virtual/compras/<string:user_id>")
-def compra_app(user_id):
-    compra_app = compras_app_model.collection.find_one(
-        {"user_id": user_id},
-        sort=[("_id", -1)]
-    )
-
-    user = user_model.get_user_by_id(user_id)
-
-    nome_value = user.get('nome') if user else ""
-    cpf_value = user.get('cpf') if user else ""
-    email_value = user.get('email') if user else ""
-
-    if not compra_app:
-        return render_template(
-            "payments.html",
-            user_id=user_id,
-            nome=nome_value,
-            cpf=cpf_value,
-            email=email_value,
-            total=0,
-        )
-
-    return render_template(
-        "payments.html",
-        user_id=user_id,
-        nome=nome_value,
-        cpf=cpf_value,
-        email=email_value,
-        total=compra_app.get("total"),
-    )
-
-
-
-#===========================================================
-# PAGAMENTO VIA PREFERENCE PIX — SOMENTE VALOR
-#===========================================================
-@app.route("/compra_app/preference/pagamento_pix/<string:user_id>")
-def pagamento_preference_app(user_id):
-
-    nome = request.args.get("nome") or ""
-    email = request.args.get("email") or ""
-    cpf = request.args.get("cpf") or ""
-    valor = float(request.args.get("valor") or 0)
-
-    payment_data = {
-        "items": [
-            {
-                "id": user_id,
-                "title": "Product Pen",
-                "quantity": 1,
-                "description": "caneta",
-                "currency_id": "BRL",
-                "unit_price": valor
-            }
-        ],
-        "payer": {
-            "email": email,
-            "first_name": nome,
-            "identification": {
-                "type": "CPF",
-                "number": cpf
-            }
-        },
-        "external_reference": user_id,
-        "back_urls": {
-            "success": "https://ferrari-games-itech-io.onrender.com/compra_app/sucesso",
-            "failure": "https://ferrari-games-itech-io.onrender.com/compra_app/recusada"
-        },
-        "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes",
-        "payment_methods": {
-            "excluded_payment_types": [{"id": "credit_card"}]
-        }
-    }
-
-    result = sdk.preference().create(payment_data)
-    mp = result.get("response", {})
-
-    if "id" not in mp:
-        return jsonify({"error": mp}), 400   
-
-    payment_id = mp["id"]
-    status = "pending"
-
-    documento = criar_documento_pagamento_app(
-        payment_id=str(payment_id),
-        status=status,
-        valor=valor,
-        user_id=user_id,
-        email_user=email
-    )
-
-    Pagamento_appModel().create_pagamento_app(documento)
-
-    return jsonify({"init_point": mp.get("init_point", "")}), 200
-
-
-
-#===========================================================
-# PAGAMENTO PIX QR CODE — SOMENTE VALOR
-#===========================================================
-@app.route("/payment_qrcode_pix/compra_app/<string:user_id>")
-def pagamento_app(user_id):
-
-    nome = request.args.get("nome") or ""
-    email = request.args.get("email") or ""
-    cpf = request.args.get("cpf") or ""
-    telefone = request.args.get("telefone") or ""
-    valor = float(request.args.get("valor") or 0)
-
-    payment_data = {
-        "transaction_amount": valor,
-        "description": "caneta",
-        "payment_method_id": "pix",
-        "payer": {
-            "email": email,
-            "first_name": nome,
-            "identification": {
-                "type": "CPF",
-                "number": cpf
-            }
-        },
-        "external_reference": user_id,
-        "notification_url": "https://ferrari-games-itech-io.onrender.com/notificacoes"
-    }
-
-    response = sdk.payment().create(payment_data)
-    mp = response.get("response", {})
-
-    if "id" not in mp:
-        return jsonify({"error": mp}), 400   
-
-    payment_id = str(mp["id"])
-    status = mp.get("status", "pending")
-
-    documento = criar_documento_pagamento_app(
-        payment_id=payment_id,
-        status=status,
-        valor=valor,
-        user_id=user_id,
-        email_user=email
-    )
-
-    Pagamento_appModel().create_pagamento_app(documento)
-
-    tx = mp["point_of_interaction"]["transaction_data"]
-
-    return render_template(
-        "/transaction_pix.html",
-        qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
-        valor=f"R$ {valor:.2f}",
-        description="caneta",
-        qr_code_cola=tx["qr_code"],
-        status=status,
-        payment_id=payment_id,
-        user_id=user_id
-    )
-
-
-
-
-
-
-
-
-
-
-
-#========================================================
-# -LEVEL MAQUINA 5X5
-#========================================================
-# LEVEL = 1
-# 
-# SYMBOL_NAMES = [
-#     "avestruz","aguia","burro","borboleta","cachorro",
-#     "cabra","carneiro","camelo","cobra","coelho",
-#     "galo","cavalo","elefante","gato","jacare",
-#     "leao","macaco","porco","pavao","peru",
-#     "tigre","touro","urso","veado","vaca"
-# ]
-# 
-# 
-# class Machine:
-#     def __init__(self, balance=1000.0):
-#         self.balance = float(balance)
-# 
-# machine = Machine()
-# 
-# def random_symbol():
-#     return random.choice(SYMBOL_NAMES)
-# #==================================================================================
-# # ---------------------------------------------------------------------------------
-# # GERADOR COM VOLATILIDADE LEVEL
-# # ---------------------------------------------------------------------------------
-# def generate_grid():
-#     grid = [[random_symbol() for r in range(5)] for c in range(5)]
-# 
-#     # Facilitação de padrões conforme LEVEL
-#     if LEVEL == 1:
-#         # Facilita vertical, horizontal, diagonal, cruzado, janela, janelao, cheio
-#         for c in range(5):
-#             sym = random_symbol()
-#             for r in range(5):
-#                 grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
-#         for r in range(5):
-#             sym = random_symbol()
-#             for c in range(5):
-#                 grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
-#         sym = random_symbol()
-#         for i in range(5):
-#             grid[i][i] = sym if random.randint(0, 1) else grid[i][i]
-#         sym = random_symbol()
-#         for i in range(5):
-#             grid[i][4-i] = sym if random.randint(0, 1) else grid[i][4-i]
-#         sym = random_symbol()
-#         for pos in [(0,0),(4,4),(0,4),(4,0),(2,2)]:
-#             c,r = pos
-#             grid[c][r] = sym if random.randint(0, 1) else grid[c][r]
-#         sym = random_symbol()
-#         for pos in [(0,0),(4,4),(4,0),(0,4)]:
-#             c,r = pos
-#             grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-#         sym = random_symbol()
-#         borda_positions = [
-#             (0,0),(1,0),(2,0),(3,0),(4,0),
-#             (0,4),(1,4),(2,4),(3,4),(4,4),
-#             (0,1),(0,2),(0,3),
-#             (4,1),(4,2),(4,3)
-#         ]
-#         for c,r in borda_positions:
-#             grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-#         sym = random_symbol()
-#         for c in range(5):
-#             for r in range(5):
-#                 grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-# 
-#     elif LEVEL == 2:
-#         for c in range(5):
-#             sym = random_symbol()
-#             for r in range(5):
-#                 grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-#         for r in range(5):
-#             sym = random_symbol()
-#             for c in range(5):
-#                 grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-#     elif LEVEL == 3:
-#         for c in range(5):
-#             sym = random_symbol()
-#             for r in range(5):
-#                 grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-# 
-#     return grid
-# 
-# # -----------------------------
-# # checkWins 
-# # -----------------------------
-# def check_wins(grid):
-#     wins = []
-# 
-#     def addWin(type_, positions):
-#         multiplier = 0
-#         if type_ == "horizontal": multiplier = 5
-#         elif type_ == "vertical": multiplier = 8
-#         elif type_ in ("diagonal_principal", "diagonal_invertida"): multiplier = 12
-#         elif type_ == "cruzado_x": multiplier = 20
-#         elif type_ == "janela": multiplier = 15
-#         elif type_ == "janelao": multiplier = 30
-#         elif type_ == "cheio": multiplier = 50
-# 
-#         wins.append({
-#             "type": type_,
-#             "positions": positions,
-#             "payout": multiplier
-#         })
-# 
-#     # horizontais
-#     for r in range(5):
-#         if all(grid[c][r] == grid[0][r] for c in range(5)):
-#             addWin("horizontal", [(c, r) for c in range(5)])
-# 
-#     # verticais
-#     for c in range(5):
-#         if all(grid[c][r] == grid[c][0] for r in range(5)):
-#             addWin("vertical", [(c, r) for r in range(5)])
-# 
-#     # diagonal principal
-#     if all(grid[i][i] == grid[0][0] for i in range(5)):
-#         addWin("diagonal_principal", [(i, i) for i in range(5)])
-# 
-#     # diagonal invertida
-#     if all(grid[i][4 - i] == grid[0][4] for i in range(5)):
-#         addWin("diagonal_invertida", [(i, 4 - i) for i in range(5)])
-# 
-#     # cruzado X
-#     if (
-#         grid[0][0] == grid[4][4] and
-#         grid[0][4] == grid[4][0] and
-#         grid[0][0] == grid[2][2] and
-#         grid[0][0] == grid[0][4]
-#     ):
-#         addWin("cruzado_x", [(0,0),(4,4),(0,4),(4,0),(2,2)])
-# 
-#     # janela
-#     if (
-#         grid[0][0] == grid[4][4] and
-#         grid[4][0] == grid[0][4] and
-#         grid[0][0] == grid[4][0]
-#     ):
-#         addWin("janela", [
-#             (0,0),(4,4),(4,0),(0,4)
-#         ])
-# 
-#     # borda / janelao
-#     borda_positions = [
-#         (0,0),(1,0),(2,0),(3,0),(4,0),
-#         (0,4),(1,4),(2,4),(3,4),(4,4),
-#         (0,1),(0,2),(0,3),
-#         (4,1),(4,2),(4,3)
-#     ]
-#     borda = [grid[c][r] for (c,r) in borda_positions]
-#     if all(s == borda[0] for s in borda):
-#         addWin("janelao", borda_positions)
-# 
-#     # cheio
-#     full_positions = [(c,r) for c in range(5) for r in range(5)]
-#     flat = [grid[c][r] for (c,r) in full_positions]
-#     if all(s == flat[0] for s in flat):
-#         addWin("cheio", full_positions)
-# 
-#     return wins
-# 
-# # Helper: normalize digits
-# def only_digits(s):
-#     return re.sub(r'\D', '', s or "")
-# 
-# @app.route("/rodar/<string:user_id>", methods=["POST"])
-# def rodar(user_id):
-#     user = user_model.get_user_by_id(user_id)
-#     
-#     if not user:
-#         return jsonify({"error": "Usuário não encontrado"}), 404
-# 
-#     user_balance = float(user.get("balance", 0.0))
-# 
-#     bet_raw = request.json.get("bet") if request.json else 0.5
-#     try:
-#         bet = max(0.01, float(bet_raw))
-#     except:
-#         bet = 0.5
-# 
-#     if user_balance < bet:
-#         return jsonify({"error": "Saldo insuficiente"}), 400
-# 
-#     grid = generate_grid()
-#     wins = check_wins(grid)
-#     total_win = bet * len(wins) * 10.0 if wins else 0.0
-# 
-#     if total_win > 0:
-#         new_balance = user_balance + total_win
-#         machine.balance -= total_win
-#     else:
-#         new_balance = user_balance - bet
-#         machine.balance += bet
-# 
-#     user_model.update_user(user_id, {"balance": float(new_balance)})
-# 
-#     return jsonify({
-#         "grid": grid,
-#         "win": round(total_win, 2),
-#         "balance_user": round(new_balance, 2),
-#         "balance_machine": round(machine.balance, 2),
-#         "wins": wins,
-#         "level": LEVEL
-#     })
-
-#==========================================================================================
-# CRIAR REGISTRO DOS USER 
-#==========================================================================================
-
-@app.route("/users", methods=["POST"])
-def register_user():
-    data = request.get_json()
-    required = ["nome","sobrenome","cpf","data_nascimento","email","senha"]
-    for field in required:
-        if not data.get(field):
-            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
-    cpf_digits = re.sub(r"\D", "", data["cpf"])
-    exists = user_model.get_user_by_cpf(cpf_digits)
-    if exists:
-        return jsonify({"error": "CPF já registrado"}), 409
-
-    new_user = {
-        "nome": data["nome"],
-        "sobrenome": data["sobrenome"],
-        "cpf": cpf_digits,
-        "data_nascimento": data["data_nascimento"],
-        "email": data["email"],
-        "convite_ganbista": data.get("convite_ganbista",""),
-        "chave_pix": data.get("chave_pix",""),
-        "senha": data["senha"],
-        "balance": 0,  
-        "created_at": datetime.now()
-    }
-    user_id = user_model.create_user(new_user)
-    return jsonify({"id": user_id}), 201
-
-
-#==========================================================================================
-# GET USER
-#==========================================================================================
-@app.route("/users/<string:user_id>", methods=["GET"])
-def get_user(user_id):
-    user = user_model.get_user_by_id(user_id)
-    if not user:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-    user["_id"] = str(user["_id"])
-    return jsonify(user), 200
-
-
-#==========================================================================================
-# PUT USER
-#==========================================================================================
-@app.route("/users/<string:user_id>", methods=["PUT"])
-def update_user(user_id):
-    data = request.get_json()
-    updated = user_model.update_user(user_id, data)
-    if not updated:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-    return jsonify({"status": "atualizado"}), 200
-
-
-#==========================================================================================
-# DELETE USER
-#==========================================================================================
-@app.route("/users/<string:user_id>", methods=["DELETE"])
-def delete_user(user_id):
-    deleted = user_model.delete_user(user_id)
-    if not deleted:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-    return jsonify({"status": "removido"}), 200
-
-
-#========================================
-# LOGIN CPF
-#========================================
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.get_json()
-    cpf = data.get("cpf", "")
-
-    cpf_digits = re.sub(r"\D", "", cpf)
-    user = user_model.get_user_by_cpf(cpf_digits)
-
-    if not user:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-
-    # Login sem senha, igual seu frontend quer
-    return jsonify({
-        "redirect": f"/acesso/users/painel/{user['_id']}"
-    })
-
-#======================================================
-# -LOGIN E REGISTRO DOS USERS
-#======================================================
-
-@app.route("/")
-def index():
-    return render_template("index.html")
 
 
 #=======================================================
@@ -776,25 +372,46 @@ def acesso_users_painel(user_id):
 #==========================================================
 # -ROTA MAQUINA Fortune dollar
 #==========================================================
+# ================= SOCKET =================
+
+# ================= ROTA ===================
 @app.route("/acesso/users/<string:user_id>")
 def acesso_users_machine(user_id):
     user = user_model.get_user_by_id(user_id)
-
-    if user:
-        # Pega o balance do banco
-        balance_value = user.get('balance')
-
-        # Se for None ou inválido, não mostra 0, pode mostrar vazio ou "-"
-        if balance_value is None:
-            balance_value = ""  # ou "-" se quiser
-        else:
-            # Formata com duas casas decimais
-            balance_value = f"{balance_value:.2f}"
-
-        return render_template("slotmachine_dollar.html", user_id=user_id, balance=balance_value)
-    else:
+    if not user:
         return "Usuário não encontrado"
 
+    balance = user.get("balance")
+    balance = "" if balance is None else f"{balance:.2f}"
+
+    return render_template(
+        "slotmachine_dollar.html",
+        user_id=user_id,
+        balance=balance
+    )
+
+# ============== SOCKET EVENTS =============
+# ============== SOCKET.IO =================
+from flask_socketio import SocketIO, emit
+
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+@socketio.on("join_users")
+def join_users(data):
+    user_id = str(data["user_id"])
+
+    user = user_model.get_user_by_id(user_id)
+    balance = user.get("balance") if user else 0
+
+    # ENVIA PRA TODOS CONECTADOS
+    emit(
+        "user_conectado",
+        {
+            "user_id": user_id,
+            "balance": f"{balance:.2f}"
+        },
+        broadcast=True
+    )
       
 
 #==========================================================
@@ -922,53 +539,53 @@ def acesso_users_movimentacoes(user_id):
 #========================================================================================================
 # -PUT ( ATUALIZAR COMPRAS_RF "PAGAMENTO_APROVADO")
 #========================================================================================================
-@app.route('/atualizar/compras_rf/pagamento_aprovado/<string:user_id>', methods=["PUT"])
-def atualizar_compras_rf_pagamento(user_id):
-    data = request.get_json()
-
-    if "pagamento_aprovado" not in data or not data["pagamento_aprovado"]:
-        return jsonify({"error": "Campo obrigatório: pagamento_aprovado"}), 400
-
-    result = compras_rf_model.update_pagamento_aprovado(
-        user_id=user_id,
-        status=data["pagamento_aprovado"]
-    )
-
-    if not result:
-        return jsonify({"error": "Compra não encontrada"}), 404
-
-    return jsonify({"status": "ok"}), 200
+# @app.route('/atualizar/compras_rf/pagamento_aprovado/<string:user_id>', methods=["PUT"])
+# def atualizar_compras_rf_pagamento(user_id):
+#     data = request.get_json()
+# 
+#     if "pagamento_aprovado" not in data or not data["pagamento_aprovado"]:
+#         return jsonify({"error": "Campo obrigatório: pagamento_aprovado"}), 400
+# 
+#     result = compras_rf_model.update_pagamento_aprovado(
+#         user_id=user_id,
+#         status=data["pagamento_aprovado"]
+#     )
+# 
+#     if not result:
+#         return jsonify({"error": "Compra não encontrada"}), 404
+# 
+#     return jsonify({"status": "ok"}), 200
 
 
 #========================================================================
 # -DELETE APOS 1HORA DELETA TODAS COMPRA_RF PENDENTE
 #========================================================================
-@app.route('/delete/compras_rf/pagamento_aprovado/pendente/<string:user_id>', methods=["DELETE"])
-def delete_compras_rf_pendente(user_id):
-    limite = datetime.now() - timedelta(hours=1)
-
-    deletados = compras_rf_model.delete_pendentes_antes_1h(
-        user_id=user_id,
-        limite=limite
-    )
-
-    return jsonify({"deletados": deletados}), 200
+# @app.route('/delete/compras_rf/pagamento_aprovado/pendente/<string:user_id>', methods=["DELETE"])
+# def delete_compras_rf_pendente(user_id):
+#     limite = datetime.now() - timedelta(hours=1)
+# 
+#     deletados = compras_rf_model.delete_pendentes_antes_1h(
+#         user_id=user_id,
+#         limite=limite
+#     )
+# 
+#     return jsonify({"deletados": deletados}), 200
 
 
 #=======================================================================
 # GET MOSTRAR TODAS COMPRAS_RF APPROVED BUSCAR POR EMAIL
 #=======================================================================
-@app.route('/buscar/compras_rf/pagamento_aprovado/approved/<string:user_id>', methods=["GET"])
-def buscar_compras_rf_aprovadas(user_id):
-    user = user_model.get_user_by_id(user_id)
-    if not user:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-
-    email_user = user.get("email")
-
-    compras = compras_rf_model.get_approved_by_email(email_user)
-
-    return jsonify(compras), 200
+# @app.route('/buscar/compras_rf/pagamento_aprovado/approved/<string:user_id>', methods=["GET"])
+# def buscar_compras_rf_aprovadas(user_id):
+#     user = user_model.get_user_by_id(user_id)
+#     if not user:
+#         return jsonify({"error": "Usuário não encontrado"}), 404
+# 
+#     email_user = user.get("email")
+# 
+#     compras = compras_rf_model.get_approved_by_email(email_user)
+# 
+#     return jsonify(compras), 200
 
 #==============================================================
 # tela inicial raffles
@@ -1064,7 +681,7 @@ def review_compra(user_id):
 # - COMPRAS_RF POST
 #====================================================================================================
 @app.route("/compras_rf/<string:user_id>", methods=["POST"])
-def compras_rf_user(user_id):
+def create_purchase(user_id):
     data = request.get_json()
 
 
@@ -1091,7 +708,7 @@ def compras_rf_user(user_id):
         "email_user": email_user,
         "data_sorteio": data_sorteio,
         "tickets": data["tickets"],
-        "pagamento_aprovado": "pendente",
+        "pagamento_aprovado": "pending",
         "valor": data["valor"],
         "quantity": data["quantity"],
         "valor_unit": data["valor_unit"],
@@ -1106,6 +723,25 @@ def compras_rf_user(user_id):
 #===========================================================
 # -PAGAMENTO VIA SOMENTE PIX PREFERENCE MERCADO´PAGO 
 #===========================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @app.route("/compra/preference/pagamento_pix/<string:user_id>")
 def pagamento_preference(user_id):
     nome = request.args.get("nome") or ""
@@ -1365,52 +1001,7 @@ def get_payment_details(payment_id):
 
 
 
-#------------------------------------------------
-# -COMPRA Sorteio 
-#------------------------------------------------
-# @app.route("/sorteio/<string:user_id>")
-# def compra_sucesso_raffle(user_id):
-#     # pega o último sorteio
-#     sorteio = sorteio_model.collection.find_one({}, sort=[("_id", -1)])
-# 
-#     # valores do sorteio
-#     concurso_value = sorteio.get('concurso') if sorteio else ""
-#     data_value = sorteio.get('data') if sorteio else ""
-#     dezenas_value = sorteio.get('dezenas') if sorteio else []
-# 
-#     # pega a compra do usuário
-    # compra_rf = compras_rf_model.collection.find_one(
-    #     {"user_id": user_id},
-    #     sort=[("_id", -1)]
-    # )
-# 
-#     user = user_model.get_user_by_id(user_id)
-#     nome_value = user.get('nome') if user else ""
-#     cpf_value = user.get('cpf') if user else ""
-#     email_value = user.get('email') if user else ""
-# 
-#     if not compra_rf:
-#         return render_template(
-#             "rifa/sorteio.html",
-#             user_id=user_id,
-#             nome=nome_value,
-#             quantity=0,
-#             tickets=[],
-#             concurso=concurso_value,
-#             data=data_value,
-#             dezenas=dezenas_value
-#         )
-# 
-#     return render_template(
-#         "rifa/sorteio.html",
-#         user_id=user_id,
-#         nome=nome_value,
-#         quantity=compra_rf.get("quantity"),
-#         tickets=compra_rf.get("tickets", []),
-#         concurso=concurso_value,
-#         data=data_value,
-#         dezenas=dezenas_value
-#     )
+
 
 @app.route('/compra/sucesso')
 def success():

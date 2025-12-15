@@ -319,7 +319,17 @@
   <p>&copy; 2025 Ferrari Games Itech-io Todos os direitos reservados.</p>
   <div><a href="#">Compartilhe</a> | <a href="#">Suporte</a></div>
 </footer>
+<!-- slotmachine_dollar.html -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io();
 
+  socket.emit("join_users", { user_id: "{{ user_id }}" });
+
+  socket.on("user_conectado", (data) => {
+    console.log(`👤 ${data.user_id} entrou no jogo | 💰 ${data.balance}`);
+  });
+</script>
 <script type="module">
   import Slot from "{{ url_for('static', filename='js/Slot_dollar.js') }}";
   import Reel from "{{ url_for('static', filename='js/Reel_dollar.js') }}";
