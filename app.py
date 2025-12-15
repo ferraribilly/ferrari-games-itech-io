@@ -1261,15 +1261,47 @@ def join_payment_room(data):
 # ATUALIZAR STATUS NO BANCO (ADICIONAR)
 # ===========================================
 
-def atualizar_status_pagamento(payment_id, status):
+# ===========================================
+# ATUALIZA PAGAMENTOS + COMPRAS_RF (COLAR)
+# ===========================================
+
+from datetime import datetime
+
+def atualizar_pagamento_e_compra(payment_id, status, webhook_data):
+    # pagamentos
     PagamentoModel().collection.update_one(
         {"payment_id": str(payment_id)},
-        {"$set": {"status": status}}
+        {
+            "$set": {
+                "status": status,
+                "data_atualizacao": datetime.utcnow(),
+                "detalhes_webhook": webhook_data
+            }
+        }
     )
+
+    # pegar pagamento pra achar user_id
+    pagamento = PagamentoModel().collection.find_one(
+        {"payment_id": str(payment_id)}
+    )
+    if not pagamento:
+        return
+
+    # compras_rf
+    if status == "approved":
+        compras_rf_model.collection.update_one(
+            {"user_id": pagamento["user_id"], "pagamento_aprovado": "pendente"},
+            {
+                "$set": {
+                    "pagamento_aprovado": "aprovado",
+                    "data_pagamento": datetime.utcnow()
+                }
+            }
+        )
 
 
 # ===========================================
-# WEBHOOK MERCADO PAGO (ADICIONAR LINHAS)
+# WEBHOOK MERCADO PAGO (SUBSTITUIR)
 # ===========================================
 
 @app.route("/notificacoes", methods=["POST"])
@@ -1286,24 +1318,20 @@ def handle_webhook():
 
         status = payment_details.get("status")
 
-        atualizar_status_pagamento(payment_id, status)
-
-        if status == "approved":
-            msg = "Pagamento aprovado"
-        else:
-            msg = f"Status atualizado: {status}"
+        atualizar_pagamento_e_compra(
+            payment_id,
+            status,
+            payment_details
+        )
 
         socketio.emit(
             "payment_update",
             {
                 "status": status,
-                "message": msg,
                 "payment_id": payment_id
             },
-            room=payment_id
+            room=str(payment_id)
         )
-
-        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
 
     return "", 204
 
