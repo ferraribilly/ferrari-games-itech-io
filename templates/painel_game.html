@@ -42,7 +42,20 @@
     margin-bottom: 10px;
     border: 2px solid #fff;
   }
-
+.logo img {
+    height: 100px;
+    max-width: 100px;
+    background:#fff;
+    border-radius:50%;
+    box-shadow:
+     0 0 10px #8a2be2,   /* Brilho interno suave */
+     0 0 40px #8a2be2,   /* Brilho externo mais forte */
+     0 0 80px #8a2be2;   /* Brilho ainda mais espalhado */
+     text-shadow:
+     0 0 5px #fff,       /* Brilho no texto */
+     0 0 10px #8a2be2;
+    }
+}
   .user-info {
     display: flex;
     flex-direction: column;
@@ -112,19 +125,6 @@
     aling-items:center;
     justify-content:center;
   }
-
-  @media (max-width: 500px) {
-    .user-photo {
-      margin-right: 0;
-    }
-    .user-info {
-      font-size: 14px;
-    }
-    .game-label {
-      font-size: 12px;
-      padding: 3px 6px;
-    }
-  }
 .titulo-container {
     text-align: center; /* Centraliza o título e o slogan */
     margin-bottom: 20px; /* Adiciona espaço abaixo do contêiner, se necessário */
@@ -138,15 +138,7 @@
     text-transform: uppercase; /* Deixa o título em maiúsculas, se desejar */
 }
 
-.titulo-container .slogan {
-    font-size: 1.2em; /* Tamanho da fonte menor para o slogan */
-    color: gold; /* Cor mais suave para o slogan */
-    font-style: italic; /* Deixa o slogan em itálico, se desejar */
-    margin-top: 0; /* Remove a margem superior padrão do parágrafo */
-    max-width: 600px; /* Limita a largura do slogan para melhor leitura em telas grandes */
-    margin-left: auto; /* Centraliza o slogan com max-width */
-    margin-right: auto; /* Centraliza o slogan com max-width */
-}
+
 
 /* MODAL */
 .modal{
@@ -193,6 +185,19 @@
   background:#1e90ff;
   color:#fff;
 }
+  @media (max-width: 500px) {
+    .user-photo {
+      margin-right: 0;
+    }
+    .user-info {
+      font-size: 14px;
+    }
+    .game-label {
+      font-size: 12px;
+      padding: 3px 6px;
+    }
+  }
+
 </style>
 
 </style>
@@ -200,18 +205,14 @@
 <body>
   <audio id="ambienteSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765497375/no-time-left-the-final-battle-epic-soundtrack-no13-vos-studio-387551_tzzl94.mp3" loop autoplay></audio>
 <div class="user-panel">
-  <div class="user-info">
-    <span>id: <strong id="user_id">{{ user_id}}</strong></span>
-    <span>nome: <strong id="nome">{{ nome }}</strong></span>
-    <span>cpf: <strong id="cpf">{{ cpf }}</strong></span>
-    <span>Saldo: <strong id="balance">{{ balance}}</strong></span>
-  </div>
-  <div class="titulo-container">
-      <h1>FERRARI GAMES ITECH IO</h1>
-      <p class="slogan">Plataforma somente pra convidados.</p>
-  </div>
   
+     <div class="logo">
+            <a href="#">
+      <img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png" alt="Logo do sistema">
+            </a>
+        </div>
 </div>
+
 <div class="grid-container">
   <a href="/acesso/users/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765459482/Screenshot_20251211-101658_2_l62kgf.jpg');">
     <div class="titulo-container">

@@ -683,6 +683,42 @@ def register_user():
     user_id = user_model.create_user(new_user)
     return jsonify({"id": user_id}), 201
 
+
+#==========================================================================================
+# GET USER
+#==========================================================================================
+@app.route("/users/<string:user_id>", methods=["GET"])
+def get_user(user_id):
+    user = user_model.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+    user["_id"] = str(user["_id"])
+    return jsonify(user), 200
+
+
+#==========================================================================================
+# PUT USER
+#==========================================================================================
+@app.route("/users/<string:user_id>", methods=["PUT"])
+def update_user(user_id):
+    data = request.get_json()
+    updated = user_model.update_user(user_id, data)
+    if not updated:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+    return jsonify({"status": "atualizado"}), 200
+
+
+#==========================================================================================
+# DELETE USER
+#==========================================================================================
+@app.route("/users/<string:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    deleted = user_model.delete_user(user_id)
+    if not deleted:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+    return jsonify({"status": "removido"}), 200
+
+
 #========================================
 # LOGIN CPF
 #========================================
@@ -706,7 +742,7 @@ def login():
 # -LOGIN E REGISTRO DOS USERS
 #======================================================
 
-@app.route("/login/ferrari-games-itech-io")
+@app.route("/")
 def index():
     return render_template("index.html")
 

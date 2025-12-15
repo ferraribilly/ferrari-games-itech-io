@@ -14,6 +14,7 @@ header {
     display: flex;
     justify-content: center;
     background-color: #18262d;
+    top:0;
 }
 
 .logo a {
@@ -23,8 +24,18 @@ header {
 }
 
 .logo img {
-    height: 28px;
-    max-width: 300px;
+    height: 100px;
+    max-width: 100px;
+    background:#fff;
+    border-radius:50%;
+    box-shadow:
+     0 0 10px #8a2be2,   /* Brilho interno suave */
+     0 0 40px #8a2be2,   /* Brilho externo mais forte */
+     0 0 80px #8a2be2;   /* Brilho ainda mais espalhado */
+     text-shadow:
+     0 0 5px #fff,       /* Brilho no texto */
+     0 0 10px #8a2be2;
+    }
 }
 
 .logo img:hover {
