@@ -918,47 +918,6 @@ def acesso_users_movimentacoes(user_id):
 
 
 
-#====================================================================================================
-# - COMPRAS_RF POST
-#====================================================================================================
-@app.route("/compras_rf/<string:user_id>", methods=["POST"])
-def compras_rf_user(user_id):
-    data = request.get_json()
-
-
-    required_fields = ["tickets", "valor", "quantity", "valor_unit"]
-    for field in required_fields:
-        if field not in data or not data[field]:
-            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
-
-    # pega dados do usuário
-    user = user_model.get_user_by_id(user_id)
-    if not user:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-
-    cpf = user.get("cpf")
-    email_user = user.get("email")
-
-    # pega data do h4 id="data_sorteio" que veio do frontend
-    data_sorteio = data.get("data_sorteio")
-
-    # registro
-    new_compras_rf = {
-        "user_id": user_id,
-        "cpf": cpf,
-        "email_user": email_user,
-        "data_sorteio": data_sorteio,
-        "tickets": data["tickets"],
-        "pagamento_aprovado": "pendente",
-        "valor": data["valor"],
-        "quantity": data["quantity"],
-        "valor_unit": data["valor_unit"],
-        "created_at": datetime.now()
-    }
-
-    compras_rf_id = compras_rf_model.create_compras_rf(new_compras_rf)
-
-    return jsonify({"id": compras_rf_id}), 201
 
 #========================================================================================================
 # -PUT ( ATUALIZAR COMPRAS_RF "PAGAMENTO_APROVADO")
@@ -1098,6 +1057,51 @@ def review_compra(user_id):
         tickets=compra_rf.get("tickets", [])
     )
                    
+
+
+
+#====================================================================================================
+# - COMPRAS_RF POST
+#====================================================================================================
+@app.route("/compras_rf/<string:user_id>", methods=["POST"])
+def compras_rf_user(user_id):
+    data = request.get_json()
+
+
+    required_fields = ["tickets", "valor", "quantity", "valor_unit"]
+    for field in required_fields:
+        if field not in data or not data[field]:
+            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
+
+    # pega dados do usuário
+    user = user_model.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+
+    cpf = user.get("cpf")
+    email_user = user.get("email")
+
+    # pega data do h4 id="data_sorteio" que veio do frontend
+    data_sorteio = data.get("data_sorteio")
+
+    # registro
+    new_compras_rf = {
+        "user_id": user_id,
+        "cpf": cpf,
+        "email_user": email_user,
+        "data_sorteio": data_sorteio,
+        "tickets": data["tickets"],
+        "pagamento_aprovado": "pendente",
+        "valor": data["valor"],
+        "quantity": data["quantity"],
+        "valor_unit": data["valor_unit"],
+        "created_at": datetime.now()
+    }
+
+    compras_rf_id = compras_rf_model.create_compras_rf(new_compras_rf)
+
+    return jsonify({"id": compras_rf_id}), 201
+
 
 #===========================================================
 # -PAGAMENTO VIA SOMENTE PIX PREFERENCE MERCADO´PAGO 
@@ -1257,83 +1261,85 @@ def join_payment_room(data):
     room = data["payment_id"]
     join_room(room)
 
-# ===========================================
-# ATUALIZAR STATUS NO BANCO (ADICIONAR)
-# ===========================================
 
 # ===========================================
-# ATUALIZA PAGAMENTOS + COMPRAS_RF (COLAR)
+# ATUALIZA PAGAMENTO + COMPRAS_RF (CERTO)
 # ===========================================
 
-from datetime import datetime
 
-def atualizar_pagamento_e_compra(payment_id, status, webhook_data):
-    # pagamentos
+def atualizar_pagamento_e_compra(payment_id, status, detalhes):
     PagamentoModel().collection.update_one(
         {"payment_id": str(payment_id)},
         {
             "$set": {
                 "status": status,
                 "data_atualizacao": datetime.utcnow(),
-                "detalhes_webhook": webhook_data
+                "detalhes_webhook": detalhes
             }
         }
     )
 
-    # pegar pagamento pra achar user_id
-    pagamento = PagamentoModel().collection.find_one(
-        {"payment_id": str(payment_id)}
-    )
-    if not pagamento:
-        return
-
-    # compras_rf
     if status == "approved":
-        compras_rf_model.collection.update_one(
-            {"user_id": pagamento["user_id"], "pagamento_aprovado": "pendente"},
-            {
-                "$set": {
-                    "pagamento_aprovado": "aprovado",
-                    "data_pagamento": datetime.utcnow()
-                }
-            }
+        pagamento = PagamentoModel().collection.find_one(
+            {"payment_id": str(payment_id)}
         )
+        if pagamento:
+            compras_rf_model.collection.update_one(
+                {
+                    "user_id": pagamento["user_id"],
+                    "pagamento_aprovado": "pendente"
+                },
+                {
+                    "$set": {
+                        "pagamento_aprovado": "aprovado",
+                        "data_pagamento": datetime.utcnow()
+                    }
+                }
+            )
 
 
 # ===========================================
-# WEBHOOK MERCADO PAGO (SUBSTITUIR)
+# WEBHOOK MERCADO PAGO (SUBSTITUIR TUDO)
 # ===========================================
 
 @app.route("/notificacoes", methods=["POST"])
 def handle_webhook():
     data = request.json
     if not data:
-        return "", 204
+        return "", 200
 
-    if data.get("type") == "payment":
+    payment_id = None
+
+    if "data" in data and "id" in data["data"]:
         payment_id = data["data"]["id"]
-        payment_details = get_payment_details(payment_id)
-        if not payment_details:
-            return "", 204
+    elif "id" in data:
+        payment_id = data["id"]
 
-        status = payment_details.get("status")
+    if not payment_id:
+        return "", 200
 
-        atualizar_pagamento_e_compra(
-            payment_id,
-            status,
-            payment_details
-        )
+    payment_details = get_payment_details(payment_id)
+    if not payment_details:
+        return "", 200
 
-        socketio.emit(
-            "payment_update",
-            {
-                "status": status,
-                "payment_id": payment_id
-            },
-            room=str(payment_id)
-        )
+    status = payment_details.get("status")
 
-    return "", 204
+    atualizar_pagamento_e_compra(
+        payment_id,
+        status,
+        payment_details
+    )
+
+    socketio.emit(
+        "payment_update",
+        {
+            "status": status,
+            "payment_id": str(payment_id)
+        },
+        room=str(payment_id)
+    )
+
+    return "", 200
 
 # ===========================================
 
