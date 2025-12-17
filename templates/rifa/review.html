@@ -28,6 +28,9 @@
         <div class="main-container">
             <div class="checkout-list">
                 <div class="information-list">
+                <div class="info">
+                <p class="balance-amount">R${{balance}}</p>
+                </div>
                     <div class="info">
                         <span>Nome:</span>
                         <b>{{nome}}</b>
@@ -41,16 +44,20 @@
                      <b>{{cpf}}</b>
                       </div>
                     <div class="info">
-                        <span>Telefone/WhatsApp:</span>
-                        <b>{{telefone}}</b>
+                        <span>Codigo/Compra:</span>
+                        <b id="codigo">{{codigo}}</b>
                     </div>
+                    <div class="info">
+                    <span>Data Sorteio::</span>
+                    <b id="data_sorteio">{{dataProximoConcurso}}</b>
+                     </div>
                     <div class="info">
                         <span>Quantidade de bilhetes:</span>
                         <b>{{quantity}}</b>
                     </div>
-                    <div class="info">
+                    <div class="info" id="valor_total">
                          <span>valor:</span>
-                        <b>{{valor}}</b>
+                        <b >{{valor}}</b>
                     </div>
 
                     <div id="see-tickets" class="see-tickets">
@@ -64,14 +71,16 @@
                     </div>
                 </div>
             </div>
-
-            <a class="purchase" id="btn-pagar">
-                <span>Pagar com o PIX</span>
+            <a class="purchase withdraw-btn" id="withdraw-btn">
+                <span>Pagar com o Saldo</span>
             </a>
-            <a class="purchase" id="btn-pagar">
-             <a class="purchase" id="link-pagar-preference">
-             <span>Pagar outros metódos</span>
-             </a>
+            <!-- <a class="purchase" id="btn-pagar"> -->
+            <!--     <span>Pagar com o PIX</span> -->
+            <!-- </a> -->
+            <!-- <a class="purchase" id="btn-pagar"> -->
+            <!--  <a class="purchase" id="link-pagar-preference"> -->
+            <!--  <span>Pagar outros metódos</span> -->
+            <!--  </a> -->
         </div>
     </main>
     <!-- Content -->
@@ -79,37 +88,107 @@
 <script src="{{ url_for('static', filename='js/see-tickets.js') }}"></script>
 
 <script>
-document.getElementById("btn-pagar").onclick = () => {
-
-    const nome = document.querySelectorAll('.info b')[0].innerText;
-    const email = document.querySelectorAll('.info b')[1].innerText;
-    const cpf = document.querySelectorAll('.info b')[2].innerText;
-    const telefone = document.querySelectorAll('.info b')[3].innerText;
-    const qtd = document.querySelectorAll('.info b')[4].innerText;
-
-    const url = `/payment_qrcode_pix/pagamento_pix/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}`;
-
-    window.location.href = url;
-};
-window.USER_ID = "{{ user_id }}";
+<!-- document.getElementById("btn-pagar").onclick = () => { -->
+<!--  -->
+<!--     const nome = document.querySelectorAll('.info b')[0].innerText; -->
+<!--     const email = document.querySelectorAll('.info b')[1].innerText; -->
+<!--     const cpf = document.querySelectorAll('.info b')[2].innerText; -->
+<!--     const telefone = document.querySelectorAll('.info b')[3].innerText; -->
+<!--     const qtd = document.querySelectorAll('.info b')[4].innerText; -->
+<!--  -->
+<!--     const url = `/payment_qrcode_pix/pagamento_pix/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}`; -->
+<!--  -->
+<!--     window.location.href = url; -->
+<!-- }; -->
+<!-- window.USER_ID = "{{ user_id }}"; -->
 
 //pagamento preference
-document.getElementById("link-pagar-preference").onclick = async () => {
+<!-- document.getElementById("link-pagar-preference").onclick = async () => { -->
+<!--  -->
+<!--     const nome = document.querySelectorAll('.info b')[0].innerText; -->
+<!--     const email = document.querySelectorAll('.info b')[1].innerText; -->
+<!--     const cpf = document.querySelectorAll('.info b')[2].innerText; -->
+<!--     const telefone = document.querySelectorAll('.info b')[3].innerText; -->
+<!--     const qtd = document.querySelectorAll('.info b')[4].innerText; -->
+<!--  -->
+<!--     const url = `/compra/preference/pagamento_pix/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}`; -->
+<!--  -->
+<!--     const resposta = await fetch(url); -->
+<!--     const link = await resposta.text(); -->
+<!--  -->
+<!--     window.location.href = link; -->
+<!-- }; -->
 
-    const nome = document.querySelectorAll('.info b')[0].innerText;
-    const email = document.querySelectorAll('.info b')[1].innerText;
-    const cpf = document.querySelectorAll('.info b')[2].innerText;
-    const telefone = document.querySelectorAll('.info b')[3].innerText;
-    const qtd = document.querySelectorAll('.info b')[4].innerText;
+//Pagamento com balance disponivel
+const userId = "{{ user_id }}";
+const withdrawBtn = document.querySelector(".withdraw-btn");
 
-    const url = `/compra/preference/pagamento_pix/{{user_id}}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}`;
+withdrawBtn.addEventListener("click", async () => {
+    withdrawBtn.disabled = true; // desativa o botão para evitar múltiplos cliques
 
-    const resposta = await fetch(url);
-    const link = await resposta.text();
+    const valorDiv = document.getElementById("valor_total");
+    const valor = parseFloat(valorDiv.querySelector("b").innerText.replace(",", ".").replace("R$", "").trim());
 
-    window.location.href = link;
-};
+    if (!valor || valor < 0.05) {
+        alert("Valor mínimo para compra é R$ 0.05");
+        withdrawBtn.disabled = false; 
+        return;
+    }
 
+    try {
+        // 1️⃣ Deduz saldo
+        const res = await fetch(`/compra/raffle/balance/diponivel/${userId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ valor_total: valor })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.error || "Erro ao processar compra");
+            withdrawBtn.disabled = false;
+            return;
+        }
+
+        alert(data.message);
+        document.querySelector(".balance-amount").innerText =
+            "R$" + data.novo_saldo.toFixed(2);
+
+        // 2️⃣ Salvar informações da compra
+        const tickets = [...document.querySelectorAll("#ticket-numbers p")].map(p => p.innerText);
+        const quantity = tickets.length;
+        const data_sorteio = new Date().toISOString(); // ou a data do sorteio real
+        const valorTotal = valor;
+
+        const body = {
+            data_sorteio: data_sorteio,
+            tickets: tickets,
+            valor: parseFloat(valorTotal),
+            quantity: parseInt(quantity),
+        };
+
+        const response = await fetch(`/compras_rf/${userId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        const json = await response.json();
+
+        if (response.status === 201) {
+            // 3️⃣ Redireciona após salvar
+            window.location.href = `/index/users/${userId}`;
+        } else {
+            alert(json.error || "Erro ao registrar compra");
+            withdrawBtn.disabled = false; // reativa se erro
+        }
+
+    } catch (e) {
+        alert("Erro de conexão");
+        withdrawBtn.disabled = false;
+    }
+});
 </script>
 
 </body>

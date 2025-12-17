@@ -316,7 +316,8 @@
                         </div>        
                         <div class="total">        
                             <div>Valor final</div>        
-                            <div id="total-value">R$ 0,00</div>        
+                            <div id="total-value">R$ 0,00</div>    
+                            <span id="codigo">1234</span>    
                         </div>        
                         <div class="purchase">        
                             <div class="purchase-overlay">        
@@ -327,6 +328,7 @@
                                             <label>Compras</label>        
                                             <div id="see-tickets" class="see-tickets">
                                              <span>Escolhas seus numeros e boa sorte.</span>
+                                              
                                              </div>
                                              
                                              <div id="ticket-numbers" class="ticket-numbers">
@@ -336,9 +338,11 @@
                                             <div class="terms">        
                                                 <input name="terms" type="checkbox" required>        
                                                 <p>Li e concordo com os <a href="#" target="_blank">Termos e Condições</a> e estou ciente de que essa reserva me vincula apenas à esta campanha criada pelo(a) organizador(a) e NÃO à plataforma.</p>        
-                                            </div>        
-                                            <a class="purchase-submit-btn" href="/review/users/{{user_id}}">Verificar Bilhetes</a>        
-                                        </div>        
+                                            </div>    
+                                                
+                                            <a class="withdraw-btn" id="withdraw-btn" >Comprar Bilhetes</a>        
+                                        </div>  
+       
                                     </div>        
                                 </form>        
                             </div>        
@@ -377,50 +381,80 @@ VMasker(document.getElementById("phone-number")).maskPattern("(99) 99999-9999");
 <script src="{{ url_for('static', filename='js/purchase-tickets.js') }}"></script>
 <script src="{{ url_for('static', filename='js/see-tickets.js') }}"></script>
 
-
 <!-- ENVIO DA COMPRA PARA O BACKEND (NÃO MEXE EM MAIS NADA) -->
 <script>
-document.querySelector(".purchase-submit-btn").addEventListener("click", async (e) => {
-    e.preventDefault();
+// Pagamento com balance disponível
+const withdrawBtn = document.querySelector(".withdraw-btn");
 
-    const userId = window.USER_ID;
+withdrawBtn.addEventListener("click", async () => {
+    withdrawBtn.disabled = true; // desativa o botão para evitar múltiplos cliques
 
-    const tickets = Array.from(document.querySelectorAll("#ticket-numbers input"))
-        .map(i => i.value)
-        .filter(v => v !== "");
+    const quantity = parseInt(document.getElementById("quantityValue").value);
+    if (!quantity || quantity < 1) {
+        alert("Selecione pelo menos 1 bilhete");
+        withdrawBtn.disabled = false;
+        return;
+    }
 
-    const quantity = document.getElementById("quantityValue").value;
-    const valorTotal = document.getElementById("total-final").textContent
-        .replace("R$", "")
-        .replace(".", "")
-        .replace(",", ".");
-    
-    const valorUnit = ticketValue;
+    const valorTotal = parseFloat((quantity * ticketValue).toFixed(2));
+    if (valorTotal < 0.05) {
+        alert("Valor mínimo para compra é R$ 0.05");
+        withdrawBtn.disabled = false; 
+        return;
+    }
 
-    const body = {
-        data_sorteio: data_sorteio,
-        tickets: tickets,
-        valor: parseFloat(valorTotal),
-        quantity: parseInt(quantity),
-        valor_unit: valorUnit
-    };
+    try {
+        // Deduz saldo
+        const res = await fetch(`/compra/raffle/balance/diponivel/${window.USER_ID}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ valor_total: valorTotal })
+        });
 
-    const response = await fetch(`/compras_rf/${userId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
+        const data = await res.json();
 
-    const json = await response.json();
+        if (!res.ok) {
+            alert(data.error || "Erro ao processar compra");
+            withdrawBtn.disabled = false;
+            return;
+        }
 
-    if (response.status === 201) {
-        window.location.href = `/review/users/${userId}`;
-    } else {
-        alert(json.error || "Erro ao registrar compra");
+        alert(data.message);
+        const balanceEl = document.querySelector(".balance-amount");
+        if (balanceEl) balanceEl.innerText = "R$" + data.novo_saldo.toFixed(2);
+
+        // Salvar informações da compra
+        const tickets = Array.from(document.querySelectorAll("#ticket-numbers input"))
+                             .map(i => i.value)
+                             .filter(v => v !== "");
+        const body = {
+            data_sorteio: new Date().toISOString(),
+            tickets: tickets,
+            valor: valorTotal,
+            quantity: tickets.length
+        };
+
+        const compraRes = await fetch(`/compras_rf/${window.USER_ID}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        const compraJson = await compraRes.json();
+
+        if (compraRes.status === 201) {
+            window.location.href = `/index/users/${window.USER_ID}`;
+        } else {
+            alert(compraJson.error || "Erro ao registrar compra");
+            withdrawBtn.disabled = false;
+        }
+
+    } catch (e) {
+        alert("Erro de conexão");
+        withdrawBtn.disabled = false;
     }
 });
 </script>
-
 
 <!-- GERADOR DE INPUTS — INTACTO DO JEITO QUE VOCÊ JÁ TINHA -->
 <script>

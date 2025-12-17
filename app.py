@@ -17,7 +17,9 @@ from flask_cors import CORS
 import random
 import cloudinary
 import cloudinary.uploader
+import tempfile
 from dotenv import load_dotenv
+
 
 load_dotenv()
 app = Flask(__name__)
@@ -37,7 +39,9 @@ os.makedirs('static/upload', exist_ok=True)
 CORS(app)
 
 
-
+@app.route('/msg/<string:user_id>')
+def msg(user_id):
+    return render_template("msg.html",user_id=user_id)
 
 #==========================================================================================
 # CRIAR REGISTRO DOS USER 
@@ -594,6 +598,41 @@ def sacar(user_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/compra/raffle/balance/diponivel/<string:user_id>", methods=["POST"])
+def compra_raffle_balance(user_id):
+    try:
+        data = request.get_json()
+        valor = data.get("valor_total")
+
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            return jsonify({"error": "Valor Balance  inválido"}), 400
+
+        try:
+            object_id = ObjectId(user_id)
+        except:
+            return jsonify({"error": "ID inválido"}), 400
+
+        result = user_model.collection.find_one_and_update(
+            {
+                "_id": object_id,
+                "balance": {"$gte": valor}
+            },
+            {
+                "$inc": {"balance": -valor}
+            },
+            return_document=True
+        )
+
+        if not result:
+            return jsonify({"error": "Saldo insuficiente"}), 400
+
+        return jsonify({
+            "message": "Compra realizada com sucesso",
+            "novo_saldo": result["balance"]
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 #========================================================================================================
@@ -714,6 +753,7 @@ def review_compra(user_id):
             "rifa/review.html",
             user_id=user_id,
             nome=nome_value,
+            balance=user.get("balance", 0),
             cpf=cpf_value,
             email=email_value,
             valor=0,
@@ -728,6 +768,7 @@ def review_compra(user_id):
         nome=nome_value,
         cpf=cpf_value,
         email=email_value,
+        balance=user.get("balance", 0),
         valor=compra_rf.get("valor_unit"),
         valor_final=compra_rf.get("valor"),
         quantity=compra_rf.get("quantity"),
@@ -744,7 +785,7 @@ def review_compra(user_id):
 def create_purchase(user_id):
     data = request.get_json()
 
-    required_fields = ["tickets", "valor", "quantity", "valor_unit"]
+    required_fields = ["tickets", "valor", "quantity"]
     for field in required_fields:
         if field not in data or not data[field]:
             return jsonify({"error": f"Campo obrigatório: {field}"}), 400
@@ -759,11 +800,10 @@ def create_purchase(user_id):
         "email_user": user.get("email"),
         "data_sorteio": data.get("data_sorteio"),
         "tickets": data["tickets"],
-        "pagamento_id": None,              # 🔴 ainda não existe
-        "pagamento_aprovado": "pendente",
+        "pagamento_id": None,              
+        # "codigo": data.get("codigo"),
         "valor": data["valor"],
         "quantity": data["quantity"],
-        "valor_unit": data["valor_unit"],
         "created_at": datetime.utcnow()
     }
 
@@ -789,8 +829,81 @@ def create_purchase(user_id):
 
 
 
+#=======================================================================
+#=======================================================================
+# COMPRA DE BALANCE API MERCADO PAGO 
+
+@app.route('/comprar_saldo')
+def comprarSaldo():
+    return render_template("compra_balance.html")
+    
+    
+@app.route('/create_payment_preference', methods=['POST'])
+def create_payment_preference():
+    data = request.get_json()
+    amount = data.get('amount')
+    user_id = data.get('user_id')
+
+    preference_data = {
+        "items": [
+            {
+                "title": "Livro",
+                "quantity": 1,
+                "unit_price": float(amount)
+            }
+        ],
+        #Configura a URL notifiaçao 
+        "notification_url": f"https://ferrari-games-itech-io.onrender.com/notificacoes{user_id}",
+        "external_reference": user_id # Armazena o ID do usuario para referencia
+    }
+
+    preference_response = sdk.preference().create(preference_data)
+    preference = preference_response["response"]
+
+    return jsonify({"preference_id": preference["id"]})
 
 
+@app.route('/notificacoes', methods=["POST"])    
+def mercadopago_webhook():
+    data = request.get_json()
+    payment_id = data.get('data', {}).get('id')
+
+    if payment_id:
+        payment_info = sdk.payment().get(payment_id)
+        status = payment_info["response"]["status"]
+        user_id = payment_info["response"].get("external_reference")
+        amount = payment_info["response"].get("transaction_amount", 0)
+
+        if status == "approved":
+            users_collection.update_one(
+                {"_id": user_id},
+                {"$inc": {"balance": float(amount)}}
+            )
+            msg = f"Saldo do usuário {user_id} atualizado com {amount}!"
+            print(msg)
+
+            socketio.emit(
+                "payment_update",
+                {
+                    "status": status,
+                    "message": msg,
+                    "payment_id": payment_id,
+                    "amount": amount
+                },
+                room=payment_id
+            )
+            print(f"[WEBHOOK] {msg} | ID: {payment_id}")
+            return jsonify({"status": "success"}), 200
+
+    return jsonify({"status": "error"}), 400
+#==========================================================================
+#==========================================================================
+#==========================================================================
+
+
+
+
+       
 @app.route("/compra/preference/pagamento_pix/<string:user_id>")
 def pagamento_preference(user_id):
     nome = request.args.get("nome") or ""
@@ -884,11 +997,11 @@ def pagamento_pix(user_id):
     telefone = request.args.get("telefone") or ""
     qtd = int(request.args.get("qtd") or 0)
 
-    valor_total = qtd * 0.05
+    amount = qtd * 0.05
 
     payment_data = {
-        "transaction_amount": valor_total,
-        "description": "resistor",
+        "transaction_amount": amount,
+        "description": "Livro",
         "payment_method_id": "pix",
         "payer": {
             "email": email,
@@ -914,7 +1027,7 @@ def pagamento_pix(user_id):
     documento = criar_documento_pagamento(
         payment_id=payment_id,
         status=status,
-        valor=valor_total,
+        valor=amount,
         user_id=user_id,
         email_user=email
        
@@ -928,13 +1041,11 @@ def pagamento_pix(user_id):
     return render_template(
         "rifa/transaction_pix.html",
         qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
-        valor=f"R$ {valor_total:.2f}",
-        description="resistor",
+        valor=f"R$ {amount:.2f}",
+        description="Livro",
         qr_code_cola=tx["qr_code"],
         status=status,
         payment_id=payment_id,
-        quantity=compra_rf.get("quantity"),
-        tickets=compra_rf.get("tickets", []),
         user_id=user_id
     )
 # ===========================================
@@ -950,6 +1061,62 @@ def join_payment_room(data):
 
 
 
+cloudinary.config(
+    cloud_name="dptprh0xk",
+    api_key="445146224712139",
+    api_secret="f6_EFYbTpEy8SlV8BHyRqwuiEWA",
+    secure=True
+)
+
+# Mensagens
+@socketio.on('enviar_mensagem_frontend')
+def handle_message(data):
+    user_id = data.get('user_id', 'Anon')
+    emit('receber_mensagem_backend', {
+        'texto': data.get('texto'),
+        'user_id': user_id,
+        'tipo': 'recebida'
+    }, broadcast=True)
+
+@socketio.on('upload_audio')
+def handle_audio_upload(audio_blob):
+    # audio_blob é um objeto Bytes (buffer)
+
+    try:
+        # Salvar temporariamente para upload (ou manipular o buffer diretamente, se preferir)
+        temp_file_path = "temp_audio.webm"
+        with open(temp_file_path, "wb") as f:
+            f.write(audio_blob)
+
+        # Fazer upload para o Cloudinary
+        # Define resource_type como 'video' para uploads de áudio/vídeo
+        upload_result = cloudinary.uploader.upload(
+            temp_file_path,
+            resource_type="video", 
+            folder="audio_uploads" # Pasta opcional no Cloudinary
+        )
+
+        # Limpar o arquivo temporário
+        os.remove(temp_file_path)
+
+        # Enviar a URL segura de volta para o cliente ou logar
+        secure_url = upload_result.get('secure_url')
+        print(f"Upload bem-sucedido: {secure_url}")
+        socketio.emit('audio_uploaded', {'url': secure_url})
+
+    except Exception as e:
+        print(f"Erro no upload: {e}")
+        socketio.emit('upload_error', {'message': 'Falha no upload do áudio'})
+
+# ====================== IMAGEM ======================
+@app.route('/api/save-image', methods=['POST'])
+def save_imagem_rifa():
+    data = request.get_json()
+    imagem_rifa = data.get('imagem_comprovante')
+    if imagem_rifa:
+        print(f"URL recebida e salva no DB: {imagem_comprovante}")
+        return jsonify({"message": "URL salva com sucesso"}), 200
+    return jsonify({"error": "URL não fornecida"}), 400
 
 # ===========================================
 # WEBHOOK MERCADO PAGO 
@@ -970,40 +1137,55 @@ def atualizar_status_pagamento(payment_id, status):
 # WEBHOOK MERCADO PAGO (ADICIONAR LINHAS)
 # ===========================================
 
-@app.route("/notificacoes", methods=["POST"])
-def handle_webhook():
-    data = request.json
-    if not data:
-        return "", 204
-
-    if data.get("type") == "payment":
-        payment_id = data["data"]["id"]
-        payment_details = get_payment_details(payment_id)
-        if not payment_details:
-            return "", 204
-
-        status = payment_details.get("status")
-
-        atualizar_status_pagamento(payment_id, status)
-
-        if status == "approved":
-            msg = "Pagamento aprovado"
-        else:
-            msg = f"Status atualizado: {status}"
-
-        socketio.emit(
-            "payment_update",
-            {
-                "status": status,
-                "message": msg,
-                "payment_id": payment_id
-            },
-            room=payment_id
-        )
-
-        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
-
-    return "", 204
+# @app.route("/notificacoes", methods=["POST"])
+# def handle_webhook():
+#     data = request.json
+#     if not data:
+#         return "", 204
+# 
+#     if data.get("type") == "payment":
+#         payment_id = data["data"]["id"]
+#         payment_details = get_payment_details(payment_id)
+#         if not payment_details:
+#             return "", 204
+# 
+#         status = payment_details.get("status")
+# 
+#         
+# 
+#         atualizar_status_pagamento(payment_id, status)
+# 
+#         if status == "approved":
+#             msg = "Pagamento aprovado"
+#         else:
+#             msg = f"Status atualizado: {status}"
+#             
+# 
+# 
+# 
+#           # Logica para atualizar o saldo "balance " no MongoDB
+#           users_collection.update_one(
+#             {"_id": user_id},
+#             {"$inc": {"balance": float(amount)}}
+#           )
+#           print(f"Saldo do usuario {user_id} atualizado com sucesso!")            
+# 
+# 
+#             
+# 
+#         socketio.emit(
+#             "payment_update",
+#             {
+#                 "status": status,
+#                 "message": msg,
+#                 "payment_id": payment_id
+#             },
+#             room=payment_id
+#         )
+# 
+#         print(f"[WEBHOOK] {msg} | ID: {payment_id}")
+# 
+#     return "", 204
 # ===========================================
 
 def get_payment_details(payment_id):

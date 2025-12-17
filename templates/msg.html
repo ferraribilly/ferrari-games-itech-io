@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat</title>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+html,body{
+    height:100%;
+    overflow:hidden;
+    background:#ece5;
+}
+
+.chat-container{
+    height:100%;
+    max-width:420px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    background:#111;
+}
+
+/* HEADER */
+.chat-header{
+    height:55px;
+    background:#075e54;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+}
+
+/* MENSAGENS */
+.chat-messages{
+    flex:1;
+    padding:10px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.bolha{
+    max-width:75%;
+    padding:8px 12px;
+    border-radius:18px;
+    font-size:14px;
+    display:flex;
+    gap:8px;
+}
+
+.bolha.enviada{
+    align-self:flex-end;
+    background:#dcf8c6;
+    flex-direction:row-reverse;
+}
+
+.bolha.recebida{
+    align-self:flex-start;
+    background:#fff;
+}
+
+.bolha img{
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.uid{
+    font-size:11px;
+    font-weight:bold;
+    display:block;
+    margin-bottom:2px;
+}
+
+/* INPUT */
+.chat-input{
+    position:relative;
+    padding:8px;
+    background:#fff;
+    border-top:1px solid #ddd;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.chat-input input[type="text"]{
+    flex:1;
+    border:none;
+    padding:10px 14px;
+    border-radius:20px;
+    outline:none;
+    background:#f0f0f0;
+}
+
+.btn-circle{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:#fff;
+    font-size:18px;
+}
+
+.btn-send{ background:#075e54; }
+.btn-attach{ background:#25d366; }
+
+.attach-menu{
+    position:absolute;
+    bottom:60px;
+    left:10px;
+    display:none;
+    flex-direction:column;
+    gap:10px;
+}
+
+.attach-menu button{
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    font-size:20px;
+}
+ p{
+ 	color:#fff;
+ }
+
+.btn-img{ background:#128c7e; color:#fff; }
+.btn-audio{ background:#34b7f1; color:#fff; }
+
+input[type="file"]{ display:none; }
+
+@media(max-width:600px){
+    .chat-container{ max-width:100%; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">FERRARI GAMES ITECH.IO</div>
+
+    <div class="chat-messages" id="mensagens"></div>
+
+    <div class="chat-input">
+
+        <div class="attach-menu" id="attachMenu">
+             <button class="btn-img" onclick="document.getElementById('uploadImg').click()">🖼️</button>
+             <button id="startButton">🎤</button>
+             <button id="stopButton" disabled>🚫</button>
+             <p id="status">Status: Pronto</p>
+             <p>URL do áudio: <a id="audioUrl" href="#" target="_blank"></a></p>
+        </div>
+
+        <button class="btn-circle btn-attach" onclick="toggleAttach()">📎</button>
+        <input type="file" id="uploadImg" accept="image/*">
+
+        <input type="text" id="mensagemInput" placeholder="Mensagem">
+        <button class="btn-circle btn-send" onclick="enviarMensagem()">➤</button>
+    </div>
+</div>
+
+<script>
+var socket = io();
+
+// ====================== MENU DE ANEXOS ======================
+function toggleAttach(){
+    const menu = document.getElementById('attachMenu');
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+}
+
+// ====================== MENSAGENS ======================
+function enviarMensagem(){
+    const input = document.getElementById('mensagemInput');
+    if(!input.value.trim()) return;
+    socket.emit('enviar_mensagem_frontend', { texto: input.value, user_id: "User" });
+    input.value = '';
+}
+
+socket.on('receber_mensagem_backend', data => {
+    const box = document.getElementById('mensagens');
+    const div = document.createElement('div');
+    div.className = 'bolha ' + (data.tipo || 'recebida');
+    const img = document.createElement('img');
+    img.src = `/upload/${data.user_id}`;
+    img.onerror = () => img.src = 'https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png';
+    const texto = document.createElement('div');
+    texto.innerHTML = `<span class="uid">${data.user_id}</span>${data.texto}`;
+    div.append(img, texto);
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+});
+
+// ====================== ÁUDIO ======================
+const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+const status = document.getElementById('status');
+const audioUrl = document.getElementById('audioUrl');
+let mediaRecorder;
+let audioChunks = [];
+
+startButton.addEventListener('click', async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+            socket.emit('upload_audio', { audio: reader.result });
+        };
+        audioChunks = [];
+    };
+    mediaRecorder.start();
+    status.textContent = 'Status: Gravando...';
+    startButton.disabled = true;
+    stopButton.disabled = false;
+});
+
+stopButton.addEventListener('click', () => {
+    mediaRecorder.stop();
+    status.textContent = 'Status: Parando gravação...';
+    startButton.disabled = false;
+    stopButton.disabled = true;
+});
+
+// ====================== STATUS DO UPLOAD ======================
+socket.on('connect', () => status.textContent = 'Status: Conectado ao servidor');
+socket.on('upload_complete', data => {
+    status.textContent = 'Status: Upload concluído!';
+    audioUrl.href = data.url;
+    audioUrl.textContent = data.url;
+});
+socket.on('upload_error', data => status.textContent = `Status: Erro no upload - ${data.error}`);
+</script>
+
+
+</body>
+</html>
+
+
+
