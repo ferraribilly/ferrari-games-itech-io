@@ -949,44 +949,10 @@ def join_payment_room(data):
     join_room(room)
 
 
-# ===========================================
-# ATUALIZA PAGAMENTO + COMPRAS_RF (CERTO)
-# ===========================================
-
-#
-def atualizar_pagamento_e_compra(payment_id, status, detalhes):
-    PagamentoModel().collection.update_one(
-        {"_id": str(payment_id)},
-        {
-            "$set": {
-                "status": status,
-                "data_atualizacao": datetime.utcnow(),
-                "detalhes_webhook": detalhes
-            }
-        }
-    )
-
-    if status == "approved":
-        pagamento = PagamentoModel().collection.find_one(
-            {"_id": str(payment_id)}
-        )
-
-        if pagamento:
-            compras_rf_model.collection.update_one(
-                {
-                    "pagamento_id": str(payment_id)
-                },
-                {
-                    "$set": {
-                        "pagamento_aprovado": "aprovado",
-                        "data_pagamento": datetime.utcnow()
-                    }
-                }
-            )
 
 
 # ===========================================
-# WEBHOOK MERCADO PAGO (SUBSTITUIR TUDO)
+# WEBHOOK MERCADO PAGO 
 # ===========================================
 
 @app.route("/notificacoes", methods=["POST"])
@@ -995,13 +961,10 @@ def handle_webhook():
     if not data:
         return "", 200
 
-    payment_id = None
-
-    if "data" in data and "id" in data["data"]:
-        payment_id = data["data"]["id"]
-    elif "id" in data:
-        payment_id = data["id"]
-
+    payment_id = (
+        data.get("data", {}).get("id")
+        or data.get("id")
+    )
     if not payment_id:
         return "", 200
 
@@ -1011,21 +974,25 @@ def handle_webhook():
 
     status = payment_details.get("status")
 
-    pagamento = PagamentoModel().get_by_payment_id(str(payment_id))
+    pagamento = PagamentoModel().collection.find_one(
+        {"payment_id": str(payment_id)}
+    )
     if not pagamento:
         return "", 200
 
-    if status == "approved" and pagamento["status"] != "approved":
-        PagamentoModel().update_status(payment_id, "approved")
-
-        user_id = pagamento["user_id"]
-        valor = pagamento["valor"]
-
-        user_model.collection.update_one(
-            {"_id": ObjectId(user_id)},
-            {"$inc": {"balance": valor}}
+    # ===== ATUALIZA BALANCE UMA ÚNICA VEZ =====
+    if status == "approved" and pagamento.get("status") != "approved":
+        PagamentoModel().collection.update_one(
+            {"payment_id": str(payment_id)},
+            {"$set": {"status": "approved"}}
         )
 
+        user_model.collection.update_one(
+            {"_id": ObjectId(pagamento["user_id"])},
+            {"$inc": {"balance": pagamento["valor"]}}
+        )
+
+    # ===== SOCKET CONTINUA NORMAL =====
     socketio.emit(
         "payment_update",
         {
