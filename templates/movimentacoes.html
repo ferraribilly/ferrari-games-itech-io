@@ -7,7 +7,7 @@
     <!-- Linka o arquivo CSS externo -->
       <link rel="stylesheet" href="{{ url_for('static', filename='css/movimentacoes.css') }}">
     <!-- Opcional: Adiciona ícones para um visual melhor -->
-    <link rel="stylesheet" href="cdnjs.cloudflare.com">
+   
 </head>
 <body>
     <div class="container">
@@ -20,9 +20,9 @@
                 <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1762726173/logo_dna0xx.jpg" alt="Logo" class="logo">
                 <h2>Saldo Disponível</h2>
                 <p class="balance-amount" id="balance">{{balance}}</p>
-                <p class="account-info" id="user_id">{{user_id}}</p>
-                <p class="account-info" id="cpf">{{cpf}}</p>
-                <p class="account-info" id="convite_ganbista">{{convite_ganbista}}</p>
+                <p class="account-info" id="user_id">nome:{{user_id}}</p>
+                <p class="account-info" id="cpf">cpf:{{cpf}}</p>
+               
                 
                 
             </div>
@@ -43,33 +43,33 @@
                 <tbody>
                     <!--  (saída) -->
                     <tr class="expense">
-                        <td>25/11/2025</td>
-                        <td>agiuytfgdersjkbv</td>
-                        <td>Ganhos</td>                        
+                        <td>{{data}}</td>
+                        <td>{{saque_id}}</td>
+                        <td>{{descricao}}</td>                        
                         <td>Saída</td>
-                        <td>- R$ 150,00</td>
+                        <td>- R$ {{valor_saque}}</td>
                     </tr>
                     <!-- (entrada) -->
                     <tr class="income">
-                        <td>24/11/2025</td>
-                        <td>12345</td>                        
-                        <td>Compra Bloco Bichos</td>
+                        <td>{{data}}</td>
+                        <td>{{payment_id}}</td>                        
+                        <td>{{descricao}}</td>
                         <td>Entrada</td>
-                        <td>+ R$ 5,00</td>
+                        <td>+ R$ {{valor}}</td>
                     </tr>
                     <tr class="expense">
-                        <td>23/11/2025</td>
-                        <td>asgdfcgfhhfrrfgg7</td>                        
-                        <td>Ganhos</td>
+                        <td>{{data}}</td>
+                        <td>{{saque_id}}</td>                        
+                        <td>{{descricao}}</td>
                         <td>Saída</td>
-                        <td>- R$ 500,00</td>
+                        <td>- R$ {{valor_saque}}</td>
                     </tr>
                     <tr class="income">
-                        <td>22/11/2025</td>
-                        <td>123456</td>                        
-                        <td>Compra Bloco Bichos</td>
+                        <td>{{data}}</td>
+                        <td>{{payment_id}}</td>                        
+                        <td>{{descricao}}</td>
                         <td>Entrada</td>
-                        <td>+ R$ 10,00</td>
+                        <td>+ R$ {{valor}}</td>
                     </tr>
                 </tbody>
             </table>

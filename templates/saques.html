@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Saques - Pix</title>
+  
+    <style>
+    /* Reset básico e fontes */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: sans-serif;
+        background-color: #f4f4f4;
+        padding: 20px;
+    }
+    
+    .dashboard-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    header {
+        background-color: #007bff; /* Cor primária, ajuste conforme desejar */
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    main {
+        padding: 20px;
+    }
+    
+    .balance-card {
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .balance-amount {
+        font-size: 2em;
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .withdraw-section h2 {
+        margin-bottom: 15px;
+    }
+    
+    .pix-area input, .pix-area button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+    
+    .withdraw-btn {
+        background-color: #28a745; /* Cor verde para ação de saque */
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 1em;
+    }
+    
+    .withdraw-btn:hover {
+        background-color: #218838;
+    }
+    
+    /* Responsividade: Para telas menores que 600px (mobile-first, então ajustes são mínimos) */
+    @media (max-width: 600px) {
+        body {
+            padding: 10px;
+        }
+        .dashboard-container {
+            border-radius: 0; /* Ocupa toda a largura em mobile */
+            box-shadow: none;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>Painel de Saques</h1>
+        </header>
+        
+        <main>
+            <section class="balance-card">
+                 <h4>nome:{{nome}}</h4>
+                  <h4>cpf:{{cpf}}</h4>
+                <h2>Saldo Disponível</h2>
+                <p class="balance-amount">R${{balance}}</p>
+            </section>
+
+            <section class="withdraw-section">
+                <h2>Solicitar Saque via Pix</h2>
+                <div class="pix-area">
+                    <label for="pix-key">Sua Chave Pix:</label>
+                    <input type="text" id="chave_pix" value="{{chave_pix}}">
+                    <label for="withdraw-amount">Valor (R$):</label>
+                    <input type="number" id="valor_saque" placeholder="{{balance}}" min="5">
+                    <button class="withdraw-btn">Sacar</button>
+                </div>
+               
+            </section>
+        </main>
+    </div>
+
+    <!-- Script  -->
+   <script>
+    const userId = "{{ user_id }}"; // passe isso no render_template
+    
+    document.querySelector(".withdraw-btn").addEventListener("click", async () => {
+        const valorInput = document.getElementById("valor_saque");
+        const valor = parseFloat(valorInput.value);
+    
+        if (!valor || valor < 5) {
+            alert("Valor mínimo para saque é R$ 5,00");
+            return;
+        }
+    
+        try {
+            const res = await fetch(`/saque/${userId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    valor_saque: valor
+                })
+            });
+    
+            const data = await res.json();
+    
+            if (!res.ok) {
+                alert(data.error || "Erro ao sacar");
+                return;
+            }
+    
+            alert(data.message);
+    
+            // atualiza saldo na tela
+            document.querySelector(".balance-amount").innerText =
+                "R$" + data.novo_saldo.toFixed(2);
+    
+            valorInput.value = "";
+    
+        } catch (e) {
+            alert("Erro de conexão");
+        }
+    });
+    </script>
+</body>
+</html>

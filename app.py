@@ -7,7 +7,7 @@ import base64
 import qrcode
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
-from model import UsuarioModel, AdminModel, Compras_appModel, Compras_rfModel, SorteioModel, Pagamento_appModel, PagamentoModel, compras_app_collection, criar_documento_pagamento_app, pagamentos_collection, criar_documento_pagamento
+from model import UsuarioModel, AdminModel, Compras_appModel, SaquesModel, Compras_rfModel, SorteioModel, Pagamento_appModel, PagamentoModel, compras_app_collection, criar_documento_pagamento_app, pagamentos_collection, criar_documento_pagamento
 from bson.errors import InvalidId
 import os
 import re
@@ -25,6 +25,7 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*") 
 app.secret_key = 'sua_chave_secreta' 
 user_model = UsuarioModel()
+saques_model = SaquesModel()
 pagamento_model = PagamentoModel()      
 pagamento_app_model = Pagamento_appModel()
 admin_model = AdminModel()
@@ -45,7 +46,7 @@ CORS(app)
 @app.route("/users", methods=["POST"])
 def register_user():
     data = request.get_json()
-    required = ["nome","sobrenome","cpf","data_nascimento","email","senha"]
+    required = ["nome","sobrenome", "cidade", "cpf","data_nascimento","email","senha"]
     for field in required:
         if not data.get(field):
             return jsonify({"error": f"Campo obrigatório: {field}"}), 400
@@ -57,6 +58,7 @@ def register_user():
     new_user = {
         "nome": data["nome"],
         "sobrenome": data["sobrenome"],
+        "cidade": data.get("cidade",""),
         "cpf": cpf_digits,
         "data_nascimento": data["data_nascimento"],
         "email": data["email"],
@@ -384,13 +386,18 @@ def acesso_users_machine(user_id):
     balance = user.get("balance")
     balance = "" if balance is None else f"{balance:.2f}"
 
+    nome = user.get("nome") or ""
+    cidade = user.get("cidade") or ""
+
     return render_template(
         "slotmachine_dollar.html",
         user_id=user_id,
-        balance=balance
+        balance=balance,
+        nome=nome,
+        cidade=cidade
     )
 
-# ============== SOCKET EVENTS =============
+
 # ============== SOCKET.IO =================
 from flask_socketio import SocketIO, emit
 
@@ -401,18 +408,19 @@ def join_users(data):
     user_id = str(data["user_id"])
 
     user = user_model.get_user_by_id(user_id)
-    balance = user.get("balance") if user else 0
+    if not user:
+        return
 
-    # ENVIA PRA TODOS CONECTADOS
     emit(
         "user_conectado",
         {
             "user_id": user_id,
-            "balance": f"{balance:.2f}"
+            "nome": user.get("nome", ""),
+            "cidade": user.get("cidade", ""),
+            "balance": f"{user.get('balance', 0):.2f}"
         },
         broadcast=True
     )
-      
 
 #==========================================================
 # -ROTA MAQUINA Fortune Era Egpcia
@@ -436,7 +444,9 @@ def acesso_users_machine3x3(user_id):
     else:
         return "Usuário não encontrado"       
 
-
+@app.route("/informacao/jogo/era_egpcia/<string:user_id>")
+def informacao_era_egpcia(user_id):
+    return render_template("help/informacao_era_egpcia.html", user_id=user_id)
 #==========================================================
 # -ROTA MAQUINA Fortune duends
 #==========================================================
@@ -526,12 +536,62 @@ def acesso_users_movimentacoes(user_id):
     else:
         return "Nenhum usuário encontrado no banco de dados."
 
+#=====================================================
+# saques
+#=====================================================
+
+@app.route("/acesso/users/saques/<string:user_id>")
+def acesso_users_saques(user_id):
+    user = user_model.get_user_by_id(user_id)
+
+    if not user:
+        return "Nenhum usuário encontrado no banco de dados."
+
+    return render_template(
+        "saques.html",
+        user_id=user_id,
+        nome=user.get("nome"),
+        cpf=user.get("cpf"),
+        chave_pix=user.get("chave_pix"),
+        balance=user.get("balance", 0)
+    )
 
 
+@app.route("/saque/<string:user_id>", methods=["POST"])
+def sacar(user_id):
+    try:
+        data = request.get_json()
+        valor_saque = data.get("valor_saque")
 
+        if not isinstance(valor_saque, (int, float)) or valor_saque <= 0:
+            return jsonify({"error": "Valor de saque inválido"}), 400
 
+        try:
+            object_id = ObjectId(user_id)
+        except:
+            return jsonify({"error": "ID inválido"}), 400
 
+        result = user_model.collection.find_one_and_update(
+            {
+                "_id": object_id,
+                "balance": {"$gte": valor_saque}
+            },
+            {
+                "$inc": {"balance": -valor_saque}
+            },
+            return_document=True
+        )
 
+        if not result:
+            return jsonify({"error": "Saldo insuficiente"}), 400
+
+        return jsonify({
+            "message": "Saque realizado com sucesso",
+            "novo_saldo": result["balance"]
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 
@@ -604,7 +664,7 @@ def raffle_inicio(user_id):
 #===============================================================
 
 #==============================================================
-# tela comprar raffles
+# tela comprar raffles 
 @app.route("/users/produto/<string:user_id>")
 def raffle(user_id):
     sorteio = sorteio_model.collection.find_one({}, sort=[("_id", -1)])
@@ -684,42 +744,31 @@ def review_compra(user_id):
 def create_purchase(user_id):
     data = request.get_json()
 
-
     required_fields = ["tickets", "valor", "quantity", "valor_unit"]
     for field in required_fields:
         if field not in data or not data[field]:
             return jsonify({"error": f"Campo obrigatório: {field}"}), 400
 
-    # pega dados do usuário
     user = user_model.get_user_by_id(user_id)
     if not user:
         return jsonify({"error": "Usuário não encontrado"}), 404
 
-    cpf = user.get("cpf")
-    email_user = user.get("email")
-
-    # pega data do h4 id="data_sorteio" que veio do frontend
-    data_sorteio = data.get("data_sorteio")
-
-    # registro
     new_compras_rf = {
         "user_id": user_id,
-        "cpf": cpf,
-        "email_user": email_user,
-        "data_sorteio": data_sorteio,
+        "cpf": user.get("cpf"),
+        "email_user": user.get("email"),
+        "data_sorteio": data.get("data_sorteio"),
         "tickets": data["tickets"],
-        "pagamento_aprovado": "pending",
+        "pagamento_id": None,              # 🔴 ainda não existe
+        "pagamento_aprovado": "pendente",
         "valor": data["valor"],
         "quantity": data["quantity"],
         "valor_unit": data["valor_unit"],
-        "created_at": datetime.now()
+        "created_at": datetime.utcnow()
     }
 
     compras_rf_id = compras_rf_model.create_compras_rf(new_compras_rf)
-
     return jsonify({"id": compras_rf_id}), 201
-
-
 #===========================================================
 # -PAGAMENTO VIA SOMENTE PIX PREFERENCE MERCADO´PAGO 
 #===========================================================
@@ -904,10 +953,10 @@ def join_payment_room(data):
 # ATUALIZA PAGAMENTO + COMPRAS_RF (CERTO)
 # ===========================================
 
-
+#
 def atualizar_pagamento_e_compra(payment_id, status, detalhes):
     PagamentoModel().collection.update_one(
-        {"payment_id": str(payment_id)},
+        {"_id": str(payment_id)},
         {
             "$set": {
                 "status": status,
@@ -919,13 +968,13 @@ def atualizar_pagamento_e_compra(payment_id, status, detalhes):
 
     if status == "approved":
         pagamento = PagamentoModel().collection.find_one(
-            {"payment_id": str(payment_id)}
+            {"_id": str(payment_id)}
         )
+
         if pagamento:
             compras_rf_model.collection.update_one(
                 {
-                    "user_id": pagamento["user_id"],
-                    "pagamento_aprovado": "pendente"
+                    "pagamento_id": str(payment_id)
                 },
                 {
                     "$set": {
@@ -962,11 +1011,20 @@ def handle_webhook():
 
     status = payment_details.get("status")
 
-    atualizar_pagamento_e_compra(
-        payment_id,
-        status,
-        payment_details
-    )
+    pagamento = PagamentoModel().get_by_payment_id(str(payment_id))
+    if not pagamento:
+        return "", 200
+
+    if status == "approved" and pagamento["status"] != "approved":
+        PagamentoModel().update_status(payment_id, "approved")
+
+        user_id = pagamento["user_id"]
+        valor = pagamento["valor"]
+
+        user_model.collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$inc": {"balance": valor}}
+        )
 
     socketio.emit(
         "payment_update",
@@ -978,7 +1036,6 @@ def handle_webhook():
     )
 
     return "", 200
-
 # ===========================================
 
 # CONSULTA STATUS MERCADO PAGO
@@ -996,12 +1053,39 @@ def get_payment_details(payment_id):
         return response.json()
     return None
 
+#=======================================================================
+# ATUALIZAR BALANCE COM VALOR APPROVED 
+#=======================================================================
+@app.route("/deposito/atualizado/balance/<string:user_id>", methods=["POST"])
+def deposito(user_id):
+    try:
+        data = request.get_json()
+        valor_total = data.get("valor_total")
 
+        if not isinstance(valor_total, (int, float)) or valor_total <= 0:
+            return jsonify({"error": "valor inválido"}), 400
 
+        try:
+            object_id = ObjectId(user_id)
+        except:
+            return jsonify({"error": "ID inválido"}), 400
 
+        result = user_model.collection.find_one_and_update(
+            {"_id": object_id},
+            {"$inc": {"balance": valor_total}},
+            return_document=True
+        )
 
+        if not result:
+            return jsonify({"error": "usuário não encontrado"}), 404
 
+        return jsonify({
+            "message": "saldo atualizado com sucesso",
+            "novo_saldo": result["balance"]
+        }), 200
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/compra/sucesso')
 def success():

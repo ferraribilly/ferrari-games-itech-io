@@ -55,7 +55,7 @@
       position: fixed;
       top: 20px;
       left: 20px;
-      z-index: 99999;
+      z-index: 9999;
     }
     strong {
       color: #000;
@@ -67,11 +67,12 @@
       position: fixed;
       top: 0;
       right: 0;
-      width: 300px;
+      width: 100%;
       height: 100vh;
       background: #111;
       padding-top: 100px;
-      z-index: 9999;
+      z-index: 2;
+      opacity:70%;
     }
     #menu-toggle:checked ~ nav {
       display: block;
@@ -87,7 +88,7 @@
     }
     nav ul li a {
       color: #fff;
-      font-size: 22px;
+      font-size: 32px;
       text-decoration: none;
     }
     .meu-novo-footer {
@@ -231,14 +232,7 @@
 <body>
 
 <header>
-  <!-- <div id="notification-container"> -->
-  <!--   <div class="notification-card"> -->
-  <!--     <img src="icon.png" alt="Ícone" class="notification-icon"> -->
-  <!--     <div class="notification-content"> -->
-  <!--       <h3 class="notification-title">Novo user conectado!</h3> -->
-  <!--       <p class="notification-body">Você tem uma nova notificação para ver.</p> -->
-  <!--     </div> -->
-  <!--   </div> -->
+
   </div>
   <input type="checkbox" id="menu-toggle">
   <label for="menu-toggle">
@@ -254,7 +248,27 @@
       <li><a href="/users/saques/ganhos/">Sacar Ganhos</a></li>
       <li><a href="#">Ajuda</a></li>
       <li><a href="#">Compartilhar e ganhe mesmo valor depositado</a></li>
+      <li><a href="/">Logout "sair da conta"</a></li>
     </ul>
+    <!-- DIV VISÍVEL PRA TODOS -->
+    <div id="users-online" style="
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      width: auto;
+      max-height: auto;
+      overflow-y: auto;
+      background: #111;
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 22px;
+      border: 1px solid #0f0;
+      text-align:center;
+    ">
+      <strong style="color:#fff;">👥 Jogadores conectados</strong>
+      <div id="users-list" style="color:#fff;"></div>
+    </div>
   </nav>
 </header>
 
@@ -319,15 +333,20 @@
   <p>&copy; 2025 Ferrari Games Itech-io Todos os direitos reservados.</p>
   <div><a href="#">Compartilhe</a> | <a href="#">Suporte</a></div>
 </footer>
+
+
 <!-- slotmachine_dollar.html -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
   const socket = io();
+  const usersList = document.getElementById("users-list");
 
   socket.emit("join_users", { user_id: "{{ user_id }}" });
 
   socket.on("user_conectado", (data) => {
-    console.log(`👤 ${data.user_id} entrou no jogo | 💰 ${data.balance}`);
+    const div = document.createElement("div");
+    div.textContent = `👤 ${data.user_id} |👤${data.nome}| |🌍 ${data.cidade} 💰 ${data.balance}`;
+    usersList.prepend(div);
   });
 </script>
 <script type="module">

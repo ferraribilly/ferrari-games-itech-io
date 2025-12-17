@@ -18,6 +18,7 @@ ADMINS_COLLECTION_NAME = "admins"
 COMPRAS_RF_COLLECTION_NAME = "compras_rf" 
 COMPRAS_APP_COLLECTION_NAME = "compras_app"
 SORTEIO_COLLECTION_NAME = "sorteio"
+SAQUES_COLLECTION_NAME = "saques"
 
 
 
@@ -122,8 +123,45 @@ class Compras_rfModel:
         result = self.collection.delete_one({"_id": str(compras_rf_id)})
         return result.deleted_count
 #===================================================================================================
+#SAQUES
 #===================================================================================================
+#======================================================
+# 
+#=====================================================
+saques_collection = db[SAQUES_COLLECTION_NAME]
+class SaquesModel:
+    def __init__(self):
+        self.collection = saques_collection
 
+    def create_saques(self, data):
+        result = self.collection.insert_one(data)
+        return str(result.inserted_id)
+
+    def get_saques(self, saques_id):
+        doc = self.collection.find_one({"_id": str(saques_id)})
+        if doc:
+            doc["_id"] = str(doc.get("_id"))
+        return doc
+
+    def get_saques_by_id(self, saques_id):
+        return self.get_saques(saques_id)
+
+    def get_all_saques(self):
+        docs = list(self.collection.find())
+        for d in docs:
+            d["_id"] = str(d.get("_id"))
+        return docs
+
+    def update_saques(self, saques_id, new_data):
+        result = self.collection.update_one(
+            {"_id": str(saques_id)},
+            {"$set": new_data}
+        )
+        return result.modified_count
+
+    def delete_saques(self, saques_id):
+        result = self.collection.delete_one({"_id": str(saques_id)})
+        return result.deleted_count
         
 #==================================================================================================
 #==================================================================================================
