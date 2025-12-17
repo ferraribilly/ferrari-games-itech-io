@@ -955,58 +955,55 @@ def join_payment_room(data):
 # WEBHOOK MERCADO PAGO 
 # ===========================================
 
+# ===========================================
+# ATUALIZAR STATUS NO BANCO (ADICIONAR)
+# ===========================================
+
+def atualizar_status_pagamento(payment_id, status):
+    PagamentoModel().collection.update_one(
+        {"payment_id": str(payment_id)},
+        {"$set": {"status": status}}
+    )
+
+
+# ===========================================
+# WEBHOOK MERCADO PAGO (ADICIONAR LINHAS)
+# ===========================================
+
 @app.route("/notificacoes", methods=["POST"])
 def handle_webhook():
     data = request.json
     if not data:
-        return "", 200
+        return "", 204
 
-    payment_id = (
-        data.get("data", {}).get("id")
-        or data.get("id")
-    )
-    if not payment_id:
-        return "", 200
+    if data.get("type") == "payment":
+        payment_id = data["data"]["id"]
+        payment_details = get_payment_details(payment_id)
+        if not payment_details:
+            return "", 204
 
-    payment_details = get_payment_details(payment_id)
-    if not payment_details:
-        return "", 200
+        status = payment_details.get("status")
 
-    status = payment_details.get("status")
+        atualizar_status_pagamento(payment_id, status)
 
-    pagamento = PagamentoModel().collection.find_one(
-        {"payment_id": str(payment_id)}
-    )
-    if not pagamento:
-        return "", 200
+        if status == "approved":
+            msg = "Pagamento aprovado"
+        else:
+            msg = f"Status atualizado: {status}"
 
-    # ===== ATUALIZA BALANCE UMA ÚNICA VEZ =====
-    if status == "approved" and pagamento.get("status") != "approved":
-        PagamentoModel().collection.update_one(
-            {"payment_id": str(payment_id)},
-            {"$set": {"status": "approved"}}
+        socketio.emit(
+            "payment_update",
+            {
+                "status": status,
+                "message": msg,
+                "payment_id": payment_id
+            },
+            room=payment_id
         )
 
-        user_model.collection.update_one(
-            {"_id": ObjectId(pagamento["user_id"])},
-            {"$inc": {"balance": pagamento["valor"]}}
-        )
+        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
 
-    # ===== SOCKET CONTINUA NORMAL =====
-    socketio.emit(
-        "payment_update",
-        {
-            "status": status,
-            "payment_id": str(payment_id)
-        },
-        room=str(payment_id)
-    )
-
-    return "", 200
-# ===========================================
-
-# CONSULTA STATUS MERCADO PAGO
-
+    return "", 204
 # ===========================================
 
 def get_payment_details(payment_id):
