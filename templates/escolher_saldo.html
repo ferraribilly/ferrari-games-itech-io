@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Métodos de Pagamento</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    min-height:100vh;
+    background:#1e1e1e;
+    font-family:monospace;
+    color:#fff;
+    overfloy-y:auto;
+}
+
+/* HEADER */
+header{
+    width:100%;
+    background:#0f1720;
+    border-bottom:1px solid #2b2b2b;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px 0;
+}
+
+.logo img{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 0 10px #8a2be2,0 0 40px #8a2be2;
+}
+
+/* TÍTULO */
+.title{
+    text-align:center;
+    margin:25px 0;
+    font-size:20px;
+    color:#a78bfa;
+}
+
+/* CONTAINER SEÇÃO */
+.section{
+    max-width:440px;
+    margin:0 auto 30px;
+    padding:0 15px;
+}
+
+.section h5{
+    margin-bottom:12px;
+    font-size:16px;
+    opacity:.8;
+    text-align:center;
+}
+
+.pix-logo{
+    display:flex;
+    justify-content:center;
+    margin:6px 0 14px;
+    background:#333;
+    border-radius:20px;
+}
+
+.pix-logo img{
+    height:60px;
+    
+}
+.preference-logo {
+    display:flex;
+    justify-content:center;
+    margin:6px 0 14px;
+    background:#333;
+    border-radius:20px;
+    
+    
+}
+
+.preference-logo img {
+	height:100px;
+	border-radius:40px;
+	
+	
+	
+}
+
+/* GRID */
+.container-link-pagamento{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+/* GRID */
+.container-cartao-credito{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+/* CARD */
+.container-item{
+    background:#111827;
+    border-radius:14px;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    box-shadow:0 6px 20px rgba(0,0,0,.4);
+}
+
+/* TEXTO */
+.qtd{
+    font-size:13px;
+    opacity:.7;
+    text-align:center;
+}
+
+/* BOTÕES */
+.link-pagar-preference,
+.pix{
+    height:46px;
+    border-radius:10px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-decoration:none;
+    color:#fff;
+    font-size:15px;
+    cursor:pointer;
+}
+
+.link-pagar-preference{
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+}
+
+.pix{
+    background:linear-gradient(135deg,#16a34a,#22c55e);
+}
+
+.link-pagar-preference:hover,
+.pix:hover{opacity:.9}
+
+/* FOOTER */
+.footer{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    background:#0f1720;
+    border-top:1px solid #2b2b2b;
+    padding:14px 10px;
+    z-index:10;
+}
+
+.footer-content{
+    max-width:500px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    text-align:center;
+}
+
+.footer-logos{
+    display:flex;
+    gap:18px;
+    align-items:center;
+    justify-content:center;
+}
+
+.footer-logos img{
+    height:28px;
+    filter:brightness(1.1);
+}
+
+.footer-text{
+    font-size:12px;
+    opacity:.85;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
+/* MOBILE */
+@media(max-width:400px){
+    .container-link-pagamento{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        <img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png">
+    </div>
+</header>
+
+<div class="title">Escolha seu método de depósito</div>
+
+<!-- PREFERENCES -->
+<div class="section">
+<div class="preference-logo">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZHT_LjEqGReK2sRQkYoGogO57sbGudHsw_P4Eb97uYg&s=10" alt="Mercado Pago">
+        </div>
+    <h5>PREFERENCIAS PAGAMENTOS</h5>
+    <div class="container-link-pagamento">
+        <div class="container-item">
+            <span class="qtd">Qtd: 1</span>
+            <a class="link-pagar-preference" data-valor="1.00">R$ 1,00</a>
+        </div>
+        <div class="container-item">
+            <span class="qtd">Qtd: 1</span>
+            <a class="link-pagar-preference" data-valor="5.00">R$ 5,00</a>
+        </div>
+        <div class="container-item">
+            <span class="qtd">Qtd: 1</span>
+            <a class="link-pagar-preference" data-valor="10.00">R$ 10,00</a>
+        </div>
+        <div class="container-item">
+            <span class="qtd">Qtd: 1</span>
+            <a class="link-pagar-preference" data-valor="30.00">R$ 30,00</a>
+        </div>
+    </div>
+</div>
+
+<!-- PIX -->
+<div class="section">
+<div class="pix-logo">
+        <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290951/pix-icon_ixm2o0.svg" alt="Pix" draggable="false">        
+        </div>
+    <h5>QRCODE PIX COLA</h5>
+    <div class="container-link-pagamento">
+        <div class="container-item">
+            <span class="qtd">Qtd: 1</span>
+            <a class="pix" data-valor="1.00">PIX R$ 1,00</a>
+        </div>
+        <div class="container-item">
+        <span class="qtd">Qtd: 1</span>
+        <a class="pix" data-valor="5.00">PIX R$ 5,00</a>
+        </div>
+        <div class="container-item">
+           <span class="qtd">Qtd: 1</span>
+          <a class="pix" data-valor="10.00">PIX R$ 10,00</a>
+          </div>
+          <div class="container-item">
+          <span class="qtd">Qtd: 1</span>
+          <a class="pix" data-valor="30.00">PIX R$ 30,00</a>
+          </div>
+    </div>
+</div>
+<!-- CARTAO CREDITOS -->
+<div class="section">
+<div class="pix-logo">
+        <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765203728/mastercard_i5c2wh.png" alt="Pix" draggable="false">        
+        </div>
+    <!-- <h5>CARTÃO CRÉDITO</h5> -->
+    <div class="container-cartao-credito">
+        <div class="container-item">
+            <!-- <span class="qtd">Qtd: 1</span> -->
+            <!-- <a class="pix" data-valor="1.00">R$ 1,00</a> -->
+        </div>
+        
+       
+        
+         
+    </div>
+</div>
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-logos">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZHT_LjEqGReK2sRQkYoGogO57sbGudHsw_P4Eb97uYg&s=10" alt="Mercado Pago">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa">
+        </div>
+
+        <div class="footer-text">
+            <strong>Pagamento 100% Seguro</strong>
+            <span>Transações processadas via API oficial do Mercado Pago</span>
+            <span>Seus dados são protegidos com criptografia e padrões de segurança</span>
+        </div>
+    </div>
+</footer>
+
+
+<script>
+window.USER_ID = "{{ user_id }}";
+
+document.querySelectorAll('.link-pagar-preference').forEach(btn=>{
+    btn.onclick = async ()=>{
+        const valorTotal = btn.dataset.valor;
+
+        const res = await fetch(`/compras_app/${window.USER_ID}`,{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify({ valor:valorTotal, quantity:1 })
+        });
+
+        const json = await res.json();
+
+        if(res.status===201){
+            window.location.href = `/comprar_saldo/${window.USER_ID}`;
+        }else{
+            alert(json.error || "Erro ao registrar compra");
+        }
+    };
+});
+
+document.querySelectorAll('.pix').forEach(btn=>{
+    btn.onclick = async ()=>{
+        const valorTotal = btn.dataset.valor;
+
+        const res = await fetch(`/compras_app/${window.USER_ID}`,{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify({ valor:valorTotal, quantity:1 })
+        });
+
+        const json = await res.json();
+
+        if(res.status===201){
+            window.location.href = `/comprar/api/${window.USER_ID}`;
+        }else{
+            alert(json.error || "Erro ao registrar compra");
+        }
+    };
+});
+</script>
+
+</body>
+</html>
+

@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pagamento Recusado - FERRARI GAMES ITECH.io</title>
-    <link rel="stylesheet" href="styles.css">
+    
     <!-- Importe uma biblioteca de ícones, como Font Awesome, para o ícone de X -->
-    <link rel="stylesheet" href="cdnjs.cloudflare.com">
+    <!-- <link rel="stylesheet" href="cdnjs.cloudflare.com"> -->
    <style>
 body {
     font-family: Arial, sans-serif;
@@ -16,6 +16,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    overflow:hidden;
 }
 
 .container {
@@ -89,21 +90,47 @@ p {
     font-size: 14px;
 }
 
+/* HEADER */
+header{
+    width:100%;
+    background:#0f1720;
+    border-bottom:1px solid #2b2b2b;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px 0;
+}
+
+.logo img{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 0 10px #8a2be2,0 0 40px #8a2be2;
+}
+
+
    </style>    
 </head>
 <body>
+
     <div class="container">
+    <header>
+        <div class="logo">
+            <img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png">
+        </div>
+        </header>
         <div class="status-icon error-icon">
             <i class="fas fa-times-circle"></i>
         </div>
         <h1>Compra Recusada</h1>
         <p>Olá {{nome}}, infelizmente não conseguimos processar o seu pagamento.</p>
-        <p><strong>Motivo:</strong> Fundos insuficientes. (Este motivo deve ser dinâmico com base na resposta do gateway de pagamento).</p>
+        <p><strong>Motivo:</strong> Fundos insuficientes. (ou Verifique com seu Banco e tente novamente.</p>
         <div class="actions">
-            <a href="/users/produto/{{user_id}}" class="btn primary-btn">Tentar Novamente</a>
+            <a href="/metodos/pagamento/{{user_id}}" class="btn primary-btn">Tentar Novamente</a>
             <a href="https://chat.whatsapp.com/DGD7PMP8WBaESR6MWEpo9M " class="btn secondary-btn">Preciso de Ajuda</a>
         </div>
-        <p class="contact-info">Se o problema persistir, entre em contato com seu banco ou com nosso [suporte ao cliente](link-para-suporte).</p>
+        <p class="contact-info">Se o problema persistir, entre em contato com seu banco ou com nosso<a href="https://chat.whatsapp.com/DGD7PMP8WBaESR6MWEpo9M">Suporte</a></p>
     </div>
 </body>
 </html>

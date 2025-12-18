@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compra Saldo</title>
+<title>Compra Aplicativo "payment-QrCode pix {{user_id}}"</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -143,6 +143,17 @@ header{
     gap:2px;
 }
 
+
+.pix-logo{
+    display:flex;
+    justify-content:center;
+    margin:6px 0 14px;
+}
+
+.pix-logo img{
+    height:42px;
+}
+
 </style>
 </head>
 
@@ -156,8 +167,11 @@ header{
 
 <div class="container">
     <div class="card">
-        <h4>Pagamentos</h4>
-
+                                    <!-- LOGO PIX -->
+        <div class="pix-logo">
+        <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290951/pix-icon_ixm2o0.svg" alt="Pix" draggable="false">        
+        </div>
+        <h4>Pagamentos QrCode Pix</h4>
         <div class="info"><span>Nome</span><span id="nome">{{nome}}</span></div>
         <div class="info"><span>Email</span><span id="email">{{email}}</span></div>
         <div class="info"><span>CPF</span><span id="cpf">{{cpf}}</span></div>
@@ -166,8 +180,8 @@ header{
 
         <div class="valor">R$ <span id="valor">{{valor}}</span></div>
 
-        <button class="purchase" id="link-pagar-preference">
-            Gerar Pagamento
+        <button class="purchase" id="btn-pagar">
+            Gerar Pix
         </button>
     </div>
 </div>
@@ -188,18 +202,22 @@ header{
 </footer>
 
 <script>
-document.getElementById("link-pagar-preference").onclick = async () => {
-    const nome = nome.innerText;
-    const email = email.innerText;
-    const cpf = cpf.innerText;
-    const telefone = telefone.innerText;
-    const qtd = qtd.innerText;
+document.getElementById("btn-pagar").onclick = () => {
 
-    const url = `/compra/preference/pagamento_pix/{{ user_id }}?nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&cpf=${encodeURIComponent(cpf)}&telefone=${encodeURIComponent(telefone)}&qtd=${encodeURIComponent(qtd)}`;
+    const nome = document.getElementById("nome").innerText;
+    const email = document.getElementById("email").innerText;
+    const cpf = document.getElementById("cpf").innerText;
+    const telefone = document.getElementById("telefone").innerText;
+    const qtd = document.getElementById("qtd").innerText;
 
-    const resposta = await fetch(url);
-    const link = await resposta.text();
-    window.location.href = link;
+    const url = `/payment_qrcode_pix/pagamento_pix/{{ user_id }}`
+        + `?nome=${encodeURIComponent(nome)}`
+        + `&email=${encodeURIComponent(email)}`
+        + `&cpf=${encodeURIComponent(cpf)}`
+        + `&telefone=${encodeURIComponent(telefone)}`
+        + `&qtd=${encodeURIComponent(qtd)}`;
+
+    window.location.href = url;
 };
 </script>
 

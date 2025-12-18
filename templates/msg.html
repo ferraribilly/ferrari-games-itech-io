@@ -18,7 +18,12 @@
 html,body{
     height:100%;
     overflow:hidden;
-    background:#ece5;
+    <!-- background-image:url("https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png"); -->
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position:center;
+    
+    
 }
 
 .chat-container{
@@ -28,6 +33,7 @@ html,body{
     display:flex;
     flex-direction:column;
     background:#111;
+ 
 }
 
 /* HEADER */
@@ -41,6 +47,32 @@ html,body{
     font-weight:bold;
 }
 
+/* HEADER */
+header{
+    width:100%;
+    background:#0f1720;
+    border-bottom:1px solid #2b2b2b;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px 0;
+}
+
+.logo img{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 0 10px #8a2be2,0 0 40px #8a2be2;
+}
+
+/* TÍTULO */
+.title{
+    text-align:center;
+    margin:25px 0;
+    font-size:20px;
+    color:#a78bfa;
+}
 /* MENSAGENS */
 .chat-messages{
     flex:1;
@@ -156,8 +188,12 @@ input[type="file"]{ display:none; }
 <body>
 
 <div class="chat-container">
-    <div class="chat-header">FERRARI GAMES ITECH.IO</div>
-
+    <!-- <div class="chat-header">FERRARI GAMES ITECH.IO</div> -->
+<header>
+    <div class="logo">
+        <img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png">
+    </div>
+</header>
     <div class="chat-messages" id="mensagens"></div>
 
     <div class="chat-input">

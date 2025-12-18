@@ -349,9 +349,14 @@ def rodar_machine(user_id):
 
 
 
-#=======================================================
-# -PAINEL DE CONTROLE ACESSO
-#=======================================================
+#==========================================================================
+# -PAINEL DE CONTROLE ACESSO TERA SOCKET MARKINK QUE VAI MOSTRA PROPAGANDAS
+#==========================================================================
+#MENSAGEM 1 OLA {[NOME]} SEJA BEM VINDO A FERRARI GAMES GOSTARIA DE FAZER PARTE DE UNS DOS AFILIADOS DA PLATAFORMA "SIM OU NAO"
+#MENSAGEM 2 VAI DIZER JOGO E ONLINEE PODE ENTERAGIR COM FOTOS DOS GAMES E COMPARTILHAR COMPROVANTES DE GANHOS 
+#MENSAGEM 3 VC PODE CRIAR SUA BANCA COM SEUS PARTICIPANTES E SUBTRAIR SEU SALDO POR APENAS 30.00 VC PODE TER 5 PARTICIPANTES E RODAR ONLINE CADA GANHO PEGA ENTREOS DEMAIS DIVIDE A PERCA E VC GANHA ATE 0 TODOS OU VICE VERSO 
+#MENSAGEM 4 UNICA PLATAFORMA DISPONIVEL A RENDA FIXA AOS USERS RIFAS ELABORE RIFAS E GANHE MUITO POR APENAS 19.99 
+
 @app.route("/acesso/users/painel/<string:user_id>")
 def acesso_users_painel(user_id):
     # Busca o usuário pelo ID
@@ -560,7 +565,9 @@ def acesso_users_saques(user_id):
         balance=user.get("balance", 0)
     )
 
-
+#=====================================================
+# SAQUES DE  BALANCE NA PĹATAFORMA
+#=====================================================
 @app.route("/saque/<string:user_id>", methods=["POST"])
 def sacar(user_id):
     try:
@@ -597,7 +604,9 @@ def sacar(user_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
+#=============================================================================
+# COMPRAS DE RAFFLES COM BALANCE DISPONIVEL NA CONTA
+#=============================================================================
 @app.route("/compra/raffle/balance/diponivel/<string:user_id>", methods=["POST"])
 def compra_raffle_balance(user_id):
     try:
@@ -635,29 +644,9 @@ def compra_raffle_balance(user_id):
         return jsonify({"error": str(e)}), 500
 
 
-#========================================================================================================
-# -PUT ( ATUALIZAR COMPRAS_RF "PAGAMENTO_APROVADO")
-#========================================================================================================
-# @app.route('/atualizar/compras_rf/pagamento_aprovado/<string:user_id>', methods=["PUT"])
-# def atualizar_compras_rf_pagamento(user_id):
-#     data = request.get_json()
-# 
-#     if "pagamento_aprovado" not in data or not data["pagamento_aprovado"]:
-#         return jsonify({"error": "Campo obrigatório: pagamento_aprovado"}), 400
-# 
-#     result = compras_rf_model.update_pagamento_aprovado(
-#         user_id=user_id,
-#         status=data["pagamento_aprovado"]
-#     )
-# 
-#     if not result:
-#         return jsonify({"error": "Compra não encontrada"}), 404
-# 
-#     return jsonify({"status": "ok"}), 200
-
 
 #========================================================================
-# -DELETE APOS 1HORA DELETA TODAS COMPRA_RF PENDENTE
+# -DELETE APOS 24 HORAS "data_sorteio"
 #========================================================================
 # @app.route('/delete/compras_rf/pagamento_aprovado/pendente/<string:user_id>', methods=["DELETE"])
 # def delete_compras_rf_pendente(user_id):
@@ -672,17 +661,17 @@ def compra_raffle_balance(user_id):
 
 
 #=======================================================================
-# GET MOSTRAR TODAS COMPRAS_RF APPROVED BUSCAR POR EMAIL
+# GET MOSTRAR TODAS Tickets COMPRAS_RF  BUSCAR POR EMAIL
 #=======================================================================
 # @app.route('/buscar/compras_rf/pagamento_aprovado/approved/<string:user_id>', methods=["GET"])
-# def buscar_compras_rf_aprovadas(user_id):
+# def buscar_compras_rf(user_id):
 #     user = user_model.get_user_by_id(user_id)
 #     if not user:
 #         return jsonify({"error": "Usuário não encontrado"}), 404
 # 
 #     email_user = user.get("email")
 # 
-#     compras = compras_rf_model.get_approved_by_email(email_user)
+#     compras = compras_rf_model.get_by_email(email_user)
 # 
 #     return jsonify(compras), 200
 
@@ -730,13 +719,20 @@ def raffle(user_id):
 
 
 
-
-
-@app.route("/review/users/<string:user_id>")
-def review_compra(user_id):
+#===============================================
+#TEMPLATE PAGINA QUE ESCOLHE METODO DE PAGAMENTO
+#===============================================
+@app.route('/metodos/pagamento/<string:user_id>')
+def metodoPagamento(user_id):
+    return render_template("escolher_saldo.html", user_id=user_id)
+    
+#TEMPLATE FINAL GERAR LINK PAGAMENTOS
+#=============================================
+@app.route('/comprar_saldo/<string:user_id>')
+def comprarSaldo(user_id):
 
     # Buscar a última compra desse usuário
-    compra_rf = compras_rf_model.collection.find_one(
+    compras_app = compras_app_model.collection.find_one(
         {"user_id": user_id},
         sort=[("_id", -1)]
     )
@@ -747,34 +743,114 @@ def review_compra(user_id):
     cpf_value = user.get('cpf') if user else ""
     email_value = user.get('email') if user else ""
 
-    # Se não existir compra ainda
-    if not compra_rf:
+   
+    if not compras_app:
         return render_template(
-            "rifa/review.html",
+            "compra_balance.html",
             user_id=user_id,
             nome=nome_value,
-            balance=user.get("balance", 0),
             cpf=cpf_value,
             email=email_value,
             valor=0,
             valor_final=0,
             quantity=0,
-            tickets=[]
+            
         )
 
     return render_template(
-        "rifa/review.html",
+        "compra_balance.html",
         user_id=user_id,
         nome=nome_value,
         cpf=cpf_value,
         email=email_value,
-        balance=user.get("balance", 0),
-        valor=compra_rf.get("valor_unit"),
-        valor_final=compra_rf.get("valor"),
-        quantity=compra_rf.get("quantity"),
-        tickets=compra_rf.get("tickets", [])
+        valor=compras_app.get("valor"),
+        valor_final=compras_app.get("valor"),
+        quantity=compras_app.get("quantity"),
     )
                    
+#=====================================================
+# COMPRAS APP PIX
+#=====================================================
+@app.route('/comprar/api/<string:user_id>')
+def comprarApi(user_id):
+
+    # Buscar a última compra desse usuário
+    compras_app = compras_app_model.collection.find_one(
+        {"user_id": user_id},
+        sort=[("_id", -1)]
+    )
+
+    user = user_model.get_user_by_id(user_id)
+
+    nome_value = user.get('nome') if user else ""
+    cpf_value = user.get('cpf') if user else ""
+    email_value = user.get('email') if user else ""
+
+   
+    if not compras_app:
+        return render_template(
+            "compra_balance_pix.html",
+            user_id=user_id,
+            nome=nome_value,
+            cpf=cpf_value,
+            email=email_value,
+            valor=0,
+            valor_final=0,
+            quantity=0,
+            
+        )
+
+    return render_template(
+        "compra_balance_pix.html",
+        user_id=user_id,
+        nome=nome_value,
+        cpf=cpf_value,
+        email=email_value,
+        valor=compras_app.get("valor"),
+        valor_final=compras_app.get("valor"),
+        quantity=compras_app.get("quantity"),
+    )
+                   
+#===================================================================================================
+# COMPRAS APP
+#===================================================================================================
+@app.route("/compras_app/<string:user_id>", methods=["POST"])
+def comprasApp(user_id):
+    data = request.get_json()
+
+    required_fields = ["valor", "quantity"]
+    for field in required_fields:
+        if field not in data or not data[field]:
+            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
+
+    user = user_model.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+
+    new_compras_app = {
+        "user_id": user_id,
+        "valor": float(data["valor"]),
+        "quantity": int(data["quantity"]),
+        "created_at": datetime.utcnow()
+    }
+
+    compras_app_id = compras_app_model.create_compras_app(new_compras_app)
+
+    return jsonify({"id": str(compras_app_id)}), 201
+#===========================================================
+# -PAGAMENTO VIA SOMENTE PIX PREFERENCE MERCADO´PAGO 
+#===========================================================
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -833,10 +909,8 @@ def create_purchase(user_id):
 #=======================================================================
 # COMPRA DE BALANCE API MERCADO PAGO 
 
-@app.route('/comprar_saldo')
-def comprarSaldo():
-    return render_template("compra_balance.html")
-    
+
+
     
 @app.route('/create_payment_preference', methods=['POST'])
 def create_payment_preference():
@@ -911,7 +985,7 @@ def pagamento_preference(user_id):
     cpf = request.args.get("cpf") or ""
     qtd = int(request.args.get("qtd") or 0)
 
-    valor_total = qtd * 2.50
+    valor_total = qtd * 1
 
     # preference gerar_link_pagamento()
     payment_data = {
@@ -984,7 +1058,7 @@ sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
 # ===========================================
 @app.route("/payment_qrcode_pix/pagamento_pix/<string:user_id>")
 def pagamento_pix(user_id):
-    compra_rf = compras_rf_model.collection.find_one(
+    compras_app = compras_app_model.collection.find_one(
             {"user_id": user_id},
             sort=[("_id", -1)]
         )
@@ -997,10 +1071,10 @@ def pagamento_pix(user_id):
     telefone = request.args.get("telefone") or ""
     qtd = int(request.args.get("qtd") or 0)
 
-    amount = qtd * 0.05
+    valor_total = qtd * 0.05
 
     payment_data = {
-        "transaction_amount": amount,
+        "transaction_amount": valor_total,
         "description": "Livro",
         "payment_method_id": "pix",
         "payer": {
@@ -1027,7 +1101,7 @@ def pagamento_pix(user_id):
     documento = criar_documento_pagamento(
         payment_id=payment_id,
         status=status,
-        valor=amount,
+        valor=valor_total,
         user_id=user_id,
         email_user=email
        
@@ -1039,9 +1113,9 @@ def pagamento_pix(user_id):
     tx = mp["point_of_interaction"]["transaction_data"]
 
     return render_template(
-        "rifa/transaction_pix.html",
+        "/transaction_pix.html",
         qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
-        valor=f"R$ {amount:.2f}",
+        valor=f"R$ {valor_total:.2f}",
         description="Livro",
         qr_code_cola=tx["qr_code"],
         status=status,
@@ -1244,7 +1318,7 @@ def success():
 
 @app.route("/compra/recusada")
 def preference_payment_success():
-    return render_template("rifa/recusada.html")
+    return render_template("compra_recusada.html")
     
 @app.route("/compra/recusada/<string:user_id>")
 def compra_recusada_raffle(user_id):
@@ -1254,6 +1328,8 @@ def compra_recusada_raffle(user_id):
 @app.route("/assinatura/<string:user_id>")    
 def assinatura(user_id):
     return render_template("assinatura_raffles.html",user_id=user_id)
+
+
 #===========================================================================================
 # -CRUD USERS MACHINEs
 #===========================================================================================

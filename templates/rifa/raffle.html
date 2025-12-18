@@ -227,7 +227,8 @@
                 <!-- Imagem menor no centro -->        
                 <!-- <img class="center-image" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764599109/FB_IMG_1764597201315-removebg-preview_eptaed.png" alt="Imagem Menor"> -->        
                         
-                <div class="main-statement"><b>por</b> <h4>R$2.50</h4> cada número</div>        
+                <div class="main-statement"><b>por</b> <h4>R$2.50</h4> cada número</div>   
+                <div class="main-statement"><b>Data</b><h4 id="data_sorteio">{{dataProximoConcurso}}</h4></div>     
             </div>        
         
            
@@ -317,7 +318,7 @@
                         <div class="total">        
                             <div>Valor final</div>        
                             <div id="total-value">R$ 0,00</div>    
-                            <span id="codigo">1234</span>    
+                              
                         </div>        
                         <div class="purchase">        
                             <div class="purchase-overlay">        
@@ -346,7 +347,7 @@
                                     </div>        
                                 </form>        
                             </div>        
-                            <button onclick="checkQuantity()">Selecione seu numeros</button>        
+                            <button onclick="checkQuantity()">Selecione seu numero</button>        
                         </div>        
                     </div>        
                 </section>        
@@ -428,7 +429,8 @@ withdrawBtn.addEventListener("click", async () => {
                              .map(i => i.value)
                              .filter(v => v !== "");
         const body = {
-            data_sorteio: new Date().toISOString(),
+            data_sorteio: data_sorteio,
+            <!-- data_sorteio: new Date().toISOString(), -->
             tickets: tickets,
             valor: valorTotal,
             quantity: tickets.length
