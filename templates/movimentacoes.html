@@ -4,82 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saldo e Movimentações da Conta</title>
-    <!-- Linka o arquivo CSS externo -->
-      <link rel="stylesheet" href="{{ url_for('static', filename='css/movimentacoes.css') }}">
-    <!-- Opcional: Adiciona ícones para um visual melhor -->
-   
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/movimentacoes.css') }}">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Minha Conta</h1>
-        </header>
 
-        <section class="balance-section">
-            <div class="balance-card">
-                <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1762726173/logo_dna0xx.jpg" alt="Logo" class="logo">
-                <h2>Saldo Disponível</h2>
-                <p class="balance-amount" id="balance">{{balance}}</p>
-                <p class="account-info" id="user_id">nome:{{user_id}}</p>
-                <p class="account-info" id="cpf">cpf:{{cpf}}</p>
-               
-                
-                
-            </div>
-        </section>
+<div class="container">
 
-        <section class="transactions-section">
-            <h2>Últimas Movimentações</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th id="data">Data</th>
-                        <th id="id">Id</th>
-                        <th id≈"title">Descrição</th>
-                        <th id="tipo">Tipo</th>
-                        <th id="valor">Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!--  (saída) -->
-                    <tr class="expense">
-                        <td>{{data}}</td>
-                        <td>{{saque_id}}</td>
-                        <td>{{descricao}}</td>                        
-                        <td>Saída</td>
-                        <td>- R$ {{valor_saque}}</td>
-                    </tr>
-                    <!-- (entrada) -->
-                    <tr class="income">
-                        <td>{{data}}</td>
-                        <td>{{payment_id}}</td>                        
-                        <td>{{descricao}}</td>
-                        <td>Entrada</td>
-                        <td>+ R$ {{valor}}</td>
-                    </tr>
-                    <tr class="expense">
-                        <td>{{data}}</td>
-                        <td>{{saque_id}}</td>                        
-                        <td>{{descricao}}</td>
-                        <td>Saída</td>
-                        <td>- R$ {{valor_saque}}</td>
-                    </tr>
-                    <tr class="income">
-                        <td>{{data}}</td>
-                        <td>{{payment_id}}</td>                        
-                        <td>{{descricao}}</td>
-                        <td>Entrada</td>
-                        <td>+ R$ {{valor}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
-    </div>
-    <!-- Usando módulos ES6 -->
-    <script type="module">
-      import Symbol from "{{ url_for('static', filename='js/') }}";
-    
-      window.USER_ID = "{{ user_id }}";
-    </script>
+    <section class="balance-section">
+        <div class="balance-card">
+            <img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png">
+            <h2>Saldo Disponível</h2>
+            <p class="balance-amount" id="balance">{{ balance }}</p>
+            <p class="account-info">ID: {{ user_id }}</p>
+            <p class="account-info">CPF: {{ cpf }}</p>
+        </div>
+    </section>
+
+    <section class="transactions-section">
+        <h2>Últimas Movimentações</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>ID</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for mov in movimentacoes %}
+                <tr class="{{ 'income' if mov.tipo == 'Entrada' else 'expense' }}">
+                    <td>{{ mov.data }}</td>
+                    <td>{{ mov.id }}</td>
+                    <td>{{ mov.descricao }}</td>
+                    <td>{{ mov.tipo }}</td>
+                    <td>
+                        {% if mov.tipo == 'Entrada' %}
+                            + R$ {{ mov.valor }}
+                        {% else %}
+                            - R$ {{ mov.valor }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+</div>
+
+<script>
+    window.USER_ID = "{{ user_id }}";
+</script>
+
 </body>
 </html>

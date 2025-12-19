@@ -6,44 +6,120 @@
     <title>Painel de Saques - Pix</title>
   
     <style>
-    /* Reset básico e fontes */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
-    body {
-        font-family: sans-serif;
-        background-color: #f4f4f4;
-        padding: 20px;
-    }
-    
+   *{margin:0;padding:0;box-sizing:border-box}
+   
+   body{
+       min-height:100vh;
+       background:#1e1e1e;
+       font-family:monospace;
+       color:#fff;
+       overflow:hidden;
+       touch-action:none;
+       justify-content:center;
+       align-items:center;
+   
+   }
+   
+   /* HEADER */
+   header{
+       width:100%;
+       background:#0f1720;
+       border-bottom:1px solid #2b2b2b;
+       display:flex;
+       justify-content:center;
+       align-items:center;
+       padding:80px 0;
+   }
+   
+   .logo img{
+       width:90px;
+       height:90px;
+       border-radius:50%;
+       background:#fff;
+       box-shadow:
+           0 0 10px #8a2be2,
+           0 0 40px #8a2be2;
+   }
+   
     .dashboard-container {
-        max-width: 600px;
-        margin: 0 auto;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        overflow: hidden;
+    background:#111827;
+    border-radius:14px;
+    padding:24px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    
+    }
+
+    /* FOOTER */
+    .footer{
+        position:fixed;
+        bottom:0;
+        left:0;
+        width:100%;
+        background:#0f1720;
+        border-top:1px solid #2b2b2b;
+        padding:14px 10px;
+        z-index:10;
     }
     
-    header {
-        background-color: #007bff; /* Cor primária, ajuste conforme desejar */
-        color: white;
-        padding: 20px;
-        text-align: center;
+    .footer-content{
+        max-width:500px;
+        margin:0 auto;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:10px;
+        text-align:center;
     }
+    
+    .footer-logos{
+        display:flex;
+        gap:18px;
+        align-items:center;
+        justify-content:center;
+    }
+    
+    .footer-logos img{
+        height:28px;
+        filter:brightness(1.1);
+    }
+    
+    .footer-text{
+        font-size:12px;
+        opacity:.85;
+        display:flex;
+        flex-direction:column;
+        gap:2px;
+    }
+    
+    
+    .pix-logo{
+        display:flex;
+        justify-content:center;
+        margin:6px 0 14px;
+    }
+    
+    .pix-logo img{
+        height:42px;
+    }
+    
+    
     
     main {
         padding: 20px;
     }
     
     .balance-card {
-        background-color: #e9ecef;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
+     background:#111827;
+     text-align:center;
+    border-radius:14px;
+    padding:24px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
     }
     
     .balance-amount {
@@ -76,6 +152,10 @@
     .withdraw-btn:hover {
         background-color: #218838;
     }
+
+    h2 {
+    	text-align:center;
+    }
     
     /* Responsividade: Para telas menores que 600px (mobile-first, então ajustes são mínimos) */
     @media (max-width: 600px) {
@@ -90,10 +170,13 @@
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <header>
-            <h1>Painel de Saques</h1>
+ <header>
+            <div class="logo">
+                <img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png">
+            </div>
         </header>
+    <div class="dashboard-container">
+       
         
         <main>
             <section class="balance-card">
@@ -105,6 +188,9 @@
 
             <section class="withdraw-section">
                 <h2>Solicitar Saque via Pix</h2>
+                <div class="pix-logo">
+                        <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290951/pix-icon_ixm2o0.svg" alt="Pix" draggable="false">        
+                        </div>
                 <div class="pix-area">
                     <label for="pix-key">Sua Chave Pix:</label>
                     <input type="text" id="chave_pix" value="{{chave_pix}}">
@@ -116,50 +202,80 @@
             </section>
         </main>
     </div>
+   <footer class="footer">
+       <div class="footer-content">
+           <div class="footer-logos">
 
+        <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290951/pix-icon_ixm2o0.svg" alt="Pix" draggable="false">        
+ 
+           </div>
+   
+           <div class="footer-text">
+               <strong>Saques 100% seguro</strong>
+               <span>Transações processadas via plataforma somente com a chave pix titular conta/span>
+               <span>Seus dados são protegidos com criptografia e padrões de segurança</span>
+           </div>
+       </div>
+   </footer>
+   
     <!-- Script  -->
    <script>
-    const userId = "{{ user_id }}"; // passe isso no render_template
-    
-    document.querySelector(".withdraw-btn").addEventListener("click", async () => {
-        const valorInput = document.getElementById("valor_saque");
-        const valor = parseFloat(valorInput.value);
-    
-        if (!valor || valor < 5) {
-            alert("Valor mínimo para saque é R$ 5,00");
-            return;
-        }
-    
-        try {
-            const res = await fetch(`/saque/${userId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    valor_saque: valor
-                })
-            });
-    
-            const data = await res.json();
-    
-            if (!res.ok) {
-                alert(data.error || "Erro ao sacar");
-                return;
-            }
-    
-            alert(data.message);
-    
-            // atualiza saldo na tela
-            document.querySelector(".balance-amount").innerText =
-                "R$" + data.novo_saldo.toFixed(2);
-    
-            valorInput.value = "";
-    
-        } catch (e) {
-            alert("Erro de conexão");
-        }
-    });
-    </script>
+   const userId = "{{ user_id }}"; // vindo do render_template
+   
+   document.querySelector(".withdraw-btn").addEventListener("click", async () => {
+       const valorInput = document.getElementById("valor_saque");
+       const valor = parseFloat(valorInput.value);
+       const chavePix = document.getElementById("chave_pix")?.value || "";
+   
+       if (!valor || valor < 0.01) {
+           alert("Valor mínimo para saque é R$ 0,01");
+           return;
+       }
+   
+       try {
+           // SAQUE
+           const res = await fetch(`/saque/${userId}`, {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ valor_saque: valor })
+           });
+   
+           const data = await res.json();
+   
+           if (!res.ok) {
+               alert(data.error || "Erro ao sacar");
+               return;
+           }
+   
+           document.querySelector(".balance-amount").innerText =
+               "R$ " + data.novo_saldo.toFixed(2);
+   
+           valorInput.value = "";
+   
+           // REGISTRO DO SAQUE
+           const resRegistro = await fetch(`/registrar/saques/${userId}`, {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                   nome: "{{ nome }}",
+                   valor: valor,
+                   chave_pix: chavePix
+               })
+           });
+   
+           const json = await resRegistro.json();
+   
+           if (resRegistro.status === 201) {
+               
+               window.location.href = `/acesso/users/pagamentos/${userId}`;
+           } else {
+               alert(json.error || "Erro ao registrar saque");
+           }
+   
+       } catch (e) {
+           alert("Erro de conexão");
+       }
+   });
+   </script>
 </body>
 </html>

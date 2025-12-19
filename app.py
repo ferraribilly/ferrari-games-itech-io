@@ -520,31 +520,57 @@ def acesso_users_machine_poker_girls(user_id):
         return render_template("slotmachine_duends.html", user_id=user_id, balance=balance_value)
     else:
         return "Usuário não encontrado"
-          
+
+
+
+
+
+
 #============================================================
-# -MOVIMENTACOES DENTRO APP
+# - MOVIMENTACOES DENTRO APP (PAGAMENTOS APPROVED + SAQUES)
 #============================================================
 @app.route("/acesso/users/pagamentos/<string:user_id>")
 def acesso_users_movimentacoes(user_id):
-    # Busca o usuário pelo ID
     user = user_model.get_user_by_id(user_id)
-    
+    if not user:
+        return "Nenhum usuário encontrado"
 
-    if user:
-        nome_value = user.get('nome')
-        cpf_value = user.get('cpf')
-        balance_value = user.get('balance', 0)
+    pagamentos_all = pagamento_model.get_all_pagamentos()
+    saques_all = saques_model.get_all_saques()
 
-        return render_template(
-            "movimentacoes.html",
-            user_id=user_id,
-            nome=nome_value,
-            cpf=cpf_value,
-            balance=balance_value
-        )
-    else:
-        return "Nenhum usuário encontrado no banco de dados."
+    movimentacoes = []
 
+    # PAGAMENTOS APPROVED DO USUÁRIO
+    for p in pagamentos_all:
+        if p.get("user_id") == user_id and p.get("status") == "approved":
+            movimentacoes.append({
+                "data": p.get("created_at"),
+                "id": p.get("payment_id"),
+                "descricao": "Pagamento aprovado",
+                "tipo": "Entrada",
+                "valor": p.get("valor")
+            })
+
+    # SAQUES DO USUÁRIO
+    for s in saques_all:
+        if s.get("user_id") == user_id:
+            movimentacoes.append({
+                "data": s.get("created_at"),
+                "id": s.get("saque_id"),
+                "descricao": "Saque realizado",
+                "tipo": "Saída",
+                "valor": s.get("valor")
+            })
+
+    movimentacoes.sort(key=lambda x: x["data"], reverse=True)
+
+    return render_template(
+        "movimentacoes.html",
+        user_id=user_id,
+        cpf=user.get("cpf"),
+        balance=user.get("balance", 0),
+        movimentacoes=movimentacoes
+    )
 #=====================================================
 # saques
 #=====================================================
@@ -604,6 +630,39 @@ def sacar(user_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+
+#============================================================================
+# SALVAR SAQUES
+#============================================================================
+@app.route("/registrar/saques/<string:user_id>", methods=["POST"])
+def registrarSaques(user_id):
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "JSON inválido"}), 400
+
+    required_fields = ["nome", "valor", "chave_pix"]
+    for field in required_fields:
+        if field not in data or not data[field]:
+            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
+
+    user = user_model.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+
+    new_saques = {
+        "user_id": user_id,
+        "nome": data["nome"],
+        "chave_pix": data["chave_pix"],
+        "valor": float(data["valor"]),
+        "status": "em auditoria",
+        "created_at": datetime.utcnow()
+    }
+
+    saques_id = saques_model.create_saques(new_saques)
+
+    return jsonify({"id": str(saques_id)}), 201
 #=============================================================================
 # COMPRAS DE RAFFLES COM BALANCE DISPONIVEL NA CONTA
 #=============================================================================
