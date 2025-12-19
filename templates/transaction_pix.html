@@ -284,7 +284,9 @@
 
             <p>Abra seu aplicativo de pagamento e escolha <b>Ler QR Code</b></p>
             <span>Aponte a câmera do seu celular</span>
-
+            <div id="status-area">
+                    <!-- Atualizações de status aparecerão aqui -->
+             </div>
             <div class="qrcode-info">
                 <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/cellphone-icon_remhjc.svg" draggable="false">
             </div>
@@ -364,42 +366,64 @@ document.addEventListener("DOMContentLoaded", function () {
     copyMobileBtn.onclick = copiarPix;
 });
 
+
+
+
+  
+
+   
+        // Conectar ao servidor Socket.IO
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Ouvir o evento 'payment_update'
+        socket.on('payment_update', function(data) {
+            console.log('Atualização recebida:', data);
+            var statusArea = document.getElementById('status-area');
+            var p = document.createElement('p');
+            p.textContent = 'Pagamento ID: ' + data.payment_id + ' - Novo Status: ' + data.status;
+            statusArea.appendChild(p);
+        });
+
+
+
+
+
 // ===== SOCKET.IO =====
-const paymentId = "{{ payment_id }}";
-const userId = "{{ user_id }}";
-const socket = io(window.location.origin);
-
-socket.on("connect", () => {
-    socket.emit("join_payment", { payment_id: paymentId });
-});
-
-socket.on("payment_update", (data) => {
-    if (data.payment_id !== paymentId) return;
-
-    const div = document.getElementById("notifications");
-    div.innerHTML = "";
-
-    const p = document.createElement("p");
-
-    if (data.status === "approved") {
-        p.style.color = "green";
-        p.innerText = "✅ Pagamento aprovado!";
-        div.appendChild(p);
-
-        setTimeout(() => {
-            window.location.href = `/carregar/atualizar/compra/sucesso/users/${userId}`;
-        }, 3000);
-
-    } else if (data.status === "rejected") {
-        p.style.color = "red";
-        p.innerText = "❌ Pagamento recusado!";
-        div.appendChild(p);
-
-        setTimeout(() => {
-            window.location.href = `/compra/recusada/${userId}`;
-        }, 3000);
-    }
-});
+<!-- const paymentId = "{{ payment_id }}"; -->
+<!-- const userId = "{{ user_id }}"; -->
+<!-- const socket = io(window.location.origin); -->
+<!--  -->
+<!-- socket.on("connect", () => { -->
+<!--     socket.emit("join_payment", { payment_id: paymentId }); -->
+<!-- }); -->
+<!--  -->
+<!-- socket.on("payment_update", (data) => { -->
+<!--     if (data.payment_id !== paymentId) return; -->
+<!--  -->
+<!--     const div = document.getElementById("notifications"); -->
+<!--     div.innerHTML = ""; -->
+<!--  -->
+<!--     const p = document.createElement("p"); -->
+<!--  -->
+<!--     if (data.status === "approved") { -->
+<!--         p.style.color = "green"; -->
+<!--         p.innerText = "✅ Pagamento aprovado!"; -->
+<!--         div.appendChild(p); -->
+<!--  -->
+<!--         setTimeout(() => { -->
+<!--             window.location.href = `/carregar/atualizar/compra/sucesso/users/${userId}`; -->
+<!--         }, 3000); -->
+<!--  -->
+<!--     } else if (data.status === "rejected") { -->
+<!--         p.style.color = "red"; -->
+<!--         p.innerText = "❌ Pagamento recusado!"; -->
+<!--         div.appendChild(p); -->
+<!--  -->
+<!--         setTimeout(() => { -->
+<!--             window.location.href = `/compra/recusada/${userId}`; -->
+<!--         }, 3000); -->
+<!--     } -->
+<!-- }); -->
 </script>
 
 </body>

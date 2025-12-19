@@ -1201,67 +1201,109 @@ def join_payment_room(data):
 # ===========================================
 # WEBHOOK MERCADO PAGO (FINAL AJUSTADO)
 # ===========================================
-@app.route("/notificacoes", methods=["POST"])
-def handle_webhook():
+# @app.route("/notificacoes", methods=["POST"])
+# def handle_webhook():
+#     data = request.json
+#     if not data or data.get("type") != "payment":
+#         return "", 204
+# 
+#     payment_id = str(data["data"]["id"])
+#     payment_details = get_payment_details(payment_id)
+#     if not payment_details:
+#         return "", 204
+# 
+#     status = payment_details.get("status")
+#     valor = payment_details.get("transaction_amount")
+#     external_reference = payment_details.get("external_reference")
+# 
+#     # IGNORA LIXO DO MERCADO PAGO
+#     if status == "cancelled":
+#         return "", 204
+# 
+#     pagamento = pagamentos_collection.find_one({"_id": payment_id})
+#     if not pagamento:
+#         # webhook NÃO cria pagamento
+#         return "", 204
+# 
+#     # GARANTE VALOR (não deixa virar None)
+#     if not valor:
+#         valor = pagamento.get("valor", 0)
+# 
+#     pagamentos_collection.update_one(
+#         {"_id": payment_id},
+#         {"$set": {
+#             "status": status,
+#             "valor": valor,
+#             "external_reference": external_reference,
+#             "data_atualizacao": datetime.utcnow()
+#         }}
+#     )
+# 
+#     atualizar_status_pagamento(payment_id, status)
+# 
+#     # SOCKET SEM BLOQUEIO
+#     if status == "approved":
+#         socketio.emit(
+#             "payment_update",
+#             {
+#                 "status": "approved",
+#                 "payment_id": payment_id,
+#                 "valor": valor
+#             },
+#             room=payment_id
+#         )
+# 
+#     print(f"[WEBHOOK] {payment_id} | {status} | R$ {valor}")
+#     return "", 204
+
+@app.route('/notificacoes', methods=['POST'])
+def receive_webhook():
     data = request.json
-    if not data or data.get("type") != "payment":
-        return "", 204
+    # O Mercado Pago envia o tópico (topic) e o ID do recurso (resource_id ou data.id)
+    # Para o Checkout Pro, o resource_id geralmente é o ID do pagamento.
+    payment_id = data.get('data', {}).get('id')
+    topic = data.get('topic') or data.get('type')
 
-    payment_id = str(data["data"]["id"])
-    payment_details = get_payment_details(payment_id)
-    if not payment_details:
-        return "", 204
+    if topic == 'payment' and payment_id:
+        # Consultar a API do Mercado Pago para obter detalhes do pagamento
+        url = f"api.mercadopago.com{payment_id}"
+        headers = {
+            "Authorization": f"Bearer {ACCESS_TOKEN}"
+        }
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                payment_data = response.json()
+                status = payment_data.get('status')
+                # Atualizar o MongoDB
+                pagamentos_collection.update_one(
+                    {'id': payment_id},
+                    {'$set': {'status': status, 'data': payment_data}},
+                    upsert=True
+                )
+                # Emitir evento Socket.IO para o frontend
+                socketio.emit(
+                    'payment_update',
+                    {'payment_id': payment_id, 'status': status},
+                    broadcast=True
+                )
+                print(f"Pagamento {payment_id} atualizado para status: {status}")
+        except requests.exceptions.RequestException as e:
+            print(f"Erro ao consultar API do Mercado Pago: {e}")
 
-    status = payment_details.get("status")
-    valor = payment_details.get("transaction_amount")
-    external_reference = payment_details.get("external_reference")
+    # É crucial retornar um status HTTP 200 OK para o Mercado Pago
+    return jsonify({"status": "success"}), 200
 
-    # IGNORA LIXO DO MERCADO PAGO
-    if status == "cancelled":
-        return "", 204
-
-    pagamento = pagamentos_collection.find_one({"_id": payment_id})
-    if not pagamento:
-        # webhook NÃO cria pagamento
-        return "", 204
-
-    # GARANTE VALOR (não deixa virar None)
-    if not valor:
-        valor = pagamento.get("valor", 0)
-
-    pagamentos_collection.update_one(
-        {"_id": payment_id},
-        {"$set": {
-            "status": status,
-            "valor": valor,
-            "external_reference": external_reference,
-            "data_atualizacao": datetime.utcnow()
-        }}
-    )
-
-    atualizar_status_pagamento(payment_id, status)
-
-    # SOCKET SEM BLOQUEIO
-    if status == "approved":
-        socketio.emit(
-            "payment_update",
-            {
-                "status": "approved",
-                "payment_id": payment_id,
-                "valor": valor
-            },
-            room=payment_id
-        )
-
-    print(f"[WEBHOOK] {payment_id} | {status} | R$ {valor}")
-    return "", 204
-
-
+    
 def get_payment_details(payment_id):
     url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
     headers = {"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}
     r = requests.get(url, headers=headers, timeout=10)
     return r.json() if r.status_code == 200 else None
+
+
+
+
 
 
 
