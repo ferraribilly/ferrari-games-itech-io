@@ -9,48 +9,7 @@
     body{
     	overflow:hidden;
     }
-   /* FOOTER */
-   .footer{
-       position:fixed;
-       bottom:0;
-       left:0;
-       width:100%;
-       background:#0f1720;
-       border-top:1px solid #2b2b2b;
-       padding:14px 10px;
-       z-index:10;
-   }
-   
-   .footer-content{
-       max-width:500px;
-       margin:0 auto;
-       display:flex;
-       flex-direction:column;
-       align-items:center;
-       gap:10px;
-       text-align:center;
-   }
-   
-   .footer-logos{
-       display:flex;
-       gap:18px;
-       align-items:center;
-       justify-content:center;
-   }
-   
-   .footer-logos img{
-       height:28px;
-       filter:brightness(1.1);
-   }
-   
-   .footer-text{
-       font-size:12px;
-       opacity:.85;
-       display:flex;
-       flex-direction:column;
-       gap:2px;
-       color:#fff;
-   }
+  
    
    
    .pix-logo{
@@ -133,21 +92,7 @@
         </div>
     </div>
 </main>
-<!-- FOOTER -->
-<footer class="footer">
-    <div class="footer-content">
-        <div class="footer-logos">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZHT_LjEqGReK2sRQkYoGogO57sbGudHsw_P4Eb97uYg&s=10" alt="Mercado Pago">
-        <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290951/pix-icon_ixm2o0.svg" alt="Pix" draggable="false">        
-        </div>
 
-        <div class="footer-text">
-            <strong>Pagamento 100% Seguro</strong>
-            <span>Transações processadas via API oficial do Mercado Pago</span>
-            <span>Seus dados são protegidos com criptografia e padrões de segurança</span>
-        </div>
-    </div>
-</footer>
 
 <script src="{{ url_for('static', filename='js/see-tickets.js') }}"></script>
 

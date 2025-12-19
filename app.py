@@ -968,67 +968,67 @@ def create_purchase(user_id):
 #=======================================================================
 # COMPRA DE BALANCE API MERCADO PAGO 
 
-
-
-    
-@app.route('/create_payment_preference', methods=['POST'])
-def create_payment_preference():
-    data = request.get_json()
-    amount = data.get('amount')
-    user_id = data.get('user_id')
-
-    preference_data = {
-        "items": [
-            {
-                "title": "Livro",
-                "quantity": 1,
-                "unit_price": float(amount)
-            }
-        ],
-        #Configura a URL notifiaçao 
-        "notification_url": f"https://ferrari-games-itech-io.onrender.com/notificacoes{user_id}",
-        "external_reference": user_id # Armazena o ID do usuario para referencia
-    }
-
-    preference_response = sdk.preference().create(preference_data)
-    preference = preference_response["response"]
-
-    return jsonify({"preference_id": preference["id"]})
-
-
-@app.route('/notificacoes', methods=["POST"])    
-def mercadopago_webhook():
-    data = request.get_json()
-    payment_id = data.get('data', {}).get('id')
-
-    if payment_id:
-        payment_info = sdk.payment().get(payment_id)
-        status = payment_info["response"]["status"]
-        user_id = payment_info["response"].get("external_reference")
-        amount = payment_info["response"].get("transaction_amount", 0)
-
-        if status == "approved":
-            users_collection.update_one(
-                {"_id": user_id},
-                {"$inc": {"balance": float(amount)}}
-            )
-            msg = f"Saldo do usuário {user_id} atualizado com {amount}!"
-            print(msg)
-
-            socketio.emit(
-                "payment_update",
-                {
-                    "status": status,
-                    "message": msg,
-                    "payment_id": payment_id,
-                    "amount": amount
-                },
-                room=payment_id
-            )
-            print(f"[WEBHOOK] {msg} | ID: {payment_id}")
-            return jsonify({"status": "success"}), 200
-
-    return jsonify({"status": "error"}), 400
+# 
+# 
+#     
+# @app.route('/create_payment_preference', methods=['POST'])
+# def create_payment_preference():
+#     data = request.get_json()
+#     amount = data.get('amount')
+#     user_id = data.get('user_id')
+# 
+#     preference_data = {
+#         "items": [
+#             {
+#                 "title": "Livro",
+#                 "quantity": 1,
+#                 "unit_price": float(amount)
+#             }
+#         ],
+#         #Configura a URL notifiaçao 
+#         "notification_url": f"https://ferrari-games-itech-io.onrender.com/notificacoes{user_id}",
+#         "external_reference": user_id # Armazena o ID do usuario para referencia
+#     }
+# 
+#     preference_response = sdk.preference().create(preference_data)
+#     preference = preference_response["response"]
+# 
+#     return jsonify({"preference_id": preference["id"]})
+# 
+# 
+# @app.route('/notificacoes', methods=["POST"])    
+# def mercadopago_webhook():
+#     data = request.get_json()
+#     payment_id = data.get('data', {}).get('id')
+# 
+#     if payment_id:
+#         payment_info = sdk.payment().get(payment_id)
+#         status = payment_info["response"]["status"]
+#         user_id = payment_info["response"].get("external_reference")
+#         amount = payment_info["response"].get("transaction_amount", 0)
+# 
+#         if status == "approved":
+#             users_collection.update_one(
+#                 {"_id": user_id},
+#                 {"$inc": {"balance": float(amount)}}
+#             )
+#             msg = f"Saldo do usuário {user_id} atualizado com {amount}!"
+#             print(msg)
+# 
+#             socketio.emit(
+#                 "payment_update",
+#                 {
+#                     "status": status,
+#                     "message": msg,
+#                     "payment_id": payment_id,
+#                     "amount": amount
+#                 },
+#                 room=payment_id
+#             )
+#             print(f"[WEBHOOK] {msg} | ID: {payment_id}")
+#             return jsonify({"status": "success"}), 200
+# 
+#     return jsonify({"status": "error"}), 400
 #==========================================================================
 #==========================================================================
 #==========================================================================
@@ -1270,55 +1270,42 @@ def atualizar_status_pagamento(payment_id, status):
 # WEBHOOK MERCADO PAGO (ADICIONAR LINHAS)
 # ===========================================
 
-# @app.route("/notificacoes", methods=["POST"])
-# def handle_webhook():
-#     data = request.json
-#     if not data:
-#         return "", 204
-# 
-#     if data.get("type") == "payment":
-#         payment_id = data["data"]["id"]
-#         payment_details = get_payment_details(payment_id)
-#         if not payment_details:
-#             return "", 204
-# 
-#         status = payment_details.get("status")
-# 
-#         
-# 
-#         atualizar_status_pagamento(payment_id, status)
-# 
-#         if status == "approved":
-#             msg = "Pagamento aprovado"
-#         else:
-#             msg = f"Status atualizado: {status}"
-#             
-# 
-# 
-# 
-#           # Logica para atualizar o saldo "balance " no MongoDB
-#           users_collection.update_one(
-#             {"_id": user_id},
-#             {"$inc": {"balance": float(amount)}}
-#           )
-#           print(f"Saldo do usuario {user_id} atualizado com sucesso!")            
-# 
-# 
-#             
-# 
-#         socketio.emit(
-#             "payment_update",
-#             {
-#                 "status": status,
-#                 "message": msg,
-#                 "payment_id": payment_id
-#             },
-#             room=payment_id
-#         )
-# 
-#         print(f"[WEBHOOK] {msg} | ID: {payment_id}")
-# 
-#     return "", 204
+@app.route("/notificacoes", methods=["POST"])
+def handle_webhook():
+    data = request.json
+    if not data:
+        return "", 204
+
+    if data.get("type") == "payment":
+        payment_id = data["data"]["id"]
+        payment_details = get_payment_details(payment_id)
+        if not payment_details:
+            return "", 204
+
+        status = payment_details.get("status")
+
+        
+
+        atualizar_status_pagamento(payment_id, status)
+
+        if status == "approved":
+            msg = "Pagamento aprovado"
+        else:
+            msg = f"Status atualizado: {status}"
+            
+        socketio.emit(
+            "payment_update",
+            {
+                "status": status,
+                "message": msg,
+                "payment_id": payment_id
+            },
+            room=payment_id
+        )
+
+        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
+
+    return "", 204
 # ===========================================
 
 def get_payment_details(payment_id):
