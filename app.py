@@ -1213,11 +1213,21 @@ def handle_webhook():
         return "", 204
 
     status = payment_details.get("status")
-    valor = payment_details.get("transaction_amount", 0)
+    valor = payment_details.get("transaction_amount")
     external_reference = payment_details.get("external_reference")
 
-    pagamento_atual = pagamentos_collection.find_one({"_id": payment_id})
-    status_anterior = pagamento_atual.get("status") if pagamento_atual else None
+    # IGNORA LIXO DO MERCADO PAGO
+    if status == "cancelled":
+        return "", 204
+
+    pagamento = pagamentos_collection.find_one({"_id": payment_id})
+    if not pagamento:
+        # webhook NÃO cria pagamento
+        return "", 204
+
+    # GARANTE VALOR (não deixa virar None)
+    if not valor:
+        valor = pagamento.get("valor", 0)
 
     pagamentos_collection.update_one(
         {"_id": payment_id},
@@ -1226,32 +1236,22 @@ def handle_webhook():
             "valor": valor,
             "external_reference": external_reference,
             "data_atualizacao": datetime.utcnow()
-        }},
-        upsert=True
+        }}
     )
 
     atualizar_status_pagamento(payment_id, status)
 
-    # NÃO DISPARA SOCKET REPETIDO
-    if status_anterior == status:
-        return "", 204
-
-    # SOCKET SÓ PARA STATUS ÚTEIS
-    if status not in ["approved", "rejected"]:
-        return "", 204
-
-    msg = "Pagamento aprovado" if status == "approved" else "Pagamento recusado"
-
-    socketio.emit(
-        "payment_update",
-        {
-            "status": status,
-            "message": msg,
-            "payment_id": payment_id,
-            "valor": valor
-        },
-        room=payment_id
-    )
+    # SOCKET SEM BLOQUEIO
+    if status == "approved":
+        socketio.emit(
+            "payment_update",
+            {
+                "status": "approved",
+                "payment_id": payment_id,
+                "valor": valor
+            },
+            room=payment_id
+        )
 
     print(f"[WEBHOOK] {payment_id} | {status} | R$ {valor}")
     return "", 204
