@@ -13,7 +13,7 @@ body{
     background:#1e1e1e;
     font-family:monospace;
     color:#fff;
-    overflow:hidden;
+    <!-- overflow:hidden; -->
     touch-action:none;
 
 }
@@ -153,6 +153,17 @@ header{
 .pix-logo img{
     height:42px;
 }
+
+ /* Responsividade: Para telas menores que 600px (mobile-first, então ajustes são mínimos) */
+    @media (max-width: 600px) {
+        body {
+            padding: 10px;
+        }
+        .dashboard-container {
+            border-radius: 0; /* Ocupa toda a largura em mobile */
+            box-shadow: none;
+        }
+    }
 
 </style>
 </head>
