@@ -1187,10 +1187,86 @@ def pagamento_pix(user_id):
 
 # ===========================================
 
+# ===========================================
+# SOCKET.IO — ENTRAR NA SALA CORRETO
+# ===========================================
 @socketio.on("join_payment")
 def join_payment_room(data):
-    room = data["payment_id"]
-    join_room(room)
+    payment_id = str(data.get("payment_id"))
+    if not payment_id:
+        return
+    join_room(payment_id)
+
+
+# ===========================================
+# WEBHOOK MERCADO PAGO (FINAL AJUSTADO)
+# ===========================================
+@app.route("/notificacoes", methods=["POST"])
+def handle_webhook():
+    data = request.json
+    if not data or data.get("type") != "payment":
+        return "", 204
+
+    payment_id = str(data["data"]["id"])
+    payment_details = get_payment_details(payment_id)
+    if not payment_details:
+        return "", 204
+
+    status = payment_details.get("status")
+    valor = payment_details.get("transaction_amount", 0)
+    external_reference = payment_details.get("external_reference")
+
+    pagamento_atual = pagamentos_collection.find_one({"_id": payment_id})
+    status_anterior = pagamento_atual.get("status") if pagamento_atual else None
+
+    pagamentos_collection.update_one(
+        {"_id": payment_id},
+        {"$set": {
+            "status": status,
+            "valor": valor,
+            "external_reference": external_reference,
+            "data_atualizacao": datetime.utcnow()
+        }},
+        upsert=True
+    )
+
+    atualizar_status_pagamento(payment_id, status)
+
+    # NÃO DISPARA SOCKET REPETIDO
+    if status_anterior == status:
+        return "", 204
+
+    # SOCKET SÓ PARA STATUS ÚTEIS
+    if status not in ["approved", "rejected"]:
+        return "", 204
+
+    msg = "Pagamento aprovado" if status == "approved" else "Pagamento recusado"
+
+    socketio.emit(
+        "payment_update",
+        {
+            "status": status,
+            "message": msg,
+            "payment_id": payment_id,
+            "valor": valor
+        },
+        room=payment_id
+    )
+
+    print(f"[WEBHOOK] {payment_id} | {status} | R$ {valor}")
+    return "", 204
+
+
+def get_payment_details(payment_id):
+    url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
+    headers = {"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}
+    r = requests.get(url, headers=headers, timeout=10)
+    return r.json() if r.status_code == 200 else None
+
+
+
+
+
 
 
 
@@ -1301,76 +1377,8 @@ def save_imagem_rifa():
 
     # return "", 204
 # ===========================================
-# ===========================================
-# WEBHOOK MERCADO PAGO
-# ===========================================
-
-@app.route("/notificacoes", methods=["POST"])
-def handle_webhook():
-    data = request.json
-    if not data or data.get("type") != "payment":
-        return "", 200
-
-    payment_id = data["data"]["id"]
-    payment_details = get_payment_details(payment_id)
-    if not payment_details:
-        return "", 200
-
-    status = payment_details.get("status")
-    status_detail = payment_details.get("status_detail")
-    valor = payment_details.get("transaction_amount", 0)
-
-    # >>> BLOQUEIA LIXO <<<
-    if status in ["cancelled", "rejected"] or status_detail == "expired":
-        print(f"[WEBHOOK IGNORADO] {payment_id} | {status} | {status_detail}")
-        return "", 200
-
-    # >>> EVITA DUPLICAR APPROVED <<<
-    if status == "approved":
-        ja_existe = pagamentos_collection.find_one(
-            {"_id": payment_id, "status": "approved"}
-        )
-        if ja_existe:
-            return "", 200
-
-    # >>> SALVA SOMENTE STATUS VÁLIDO <<<
-    pagamentos_collection.update_one(
-        {"_id": payment_id},
-        {"$set": {
-            "status": status,
-            "valor": valor,
-            "data_atualizacao": datetime.utcnow(),
-            "detalhes_webhook": payment_details
-        }},
-        upsert=True
-    )
-
-    atualizar_status_pagamento(payment_id, status)
-
-    msg = "Pagamento aprovado" if status == "approved" else f"Status: {status}"
-
-    # >>> SOCKET FUNCIONANDO <<<
-    socketio.emit(
-        "payment_update",
-        {
-            "status": status,
-            "message": msg,
-            "payment_id": payment_id,
-            "valor": valor
-        },
-        room=payment_id,
-        namespace="/"
-    )
-
-    print(f"[WEBHOOK OK] {msg} | ID: {payment_id} | R$ {valor}")
-    return "", 200
 
 
-def get_payment_details(payment_id):
-    url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
-    headers = {"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}
-    r = requests.get(url, headers=headers, timeout=10)
-    return r.json() if r.status_code == 200 else None
 #=======================================================================
 # ATUALIZAR BALANCE COM VALOR APPROVED 
 #=======================================================================
