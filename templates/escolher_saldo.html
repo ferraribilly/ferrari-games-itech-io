@@ -8,12 +8,17 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 
+html,body{
+    width:100%;
+    height:100%;
+}
+
 body{
-    min-height:100vh;
     background:#1e1e1e;
     font-family:monospace;
     color:#fff;
-    <!-- overfloy-y:auto; -->
+    overflow-y:auto;
+    padding-bottom:140px; /* espaço pro footer */
 }
 
 /* HEADER */
@@ -24,96 +29,74 @@ header{
     display:flex;
     justify-content:center;
     align-items:center;
-    padding:20px 0;
+    padding:16px 0;
 }
 
 .logo img{
-    width:80px;
-    height:80px;
+    width:70px;
+    height:70px;
     border-radius:50%;
     background:#fff;
-    box-shadow:0 0 10px #8a2be2,0 0 40px #8a2be2;
 }
 
 /* TÍTULO */
 .title{
     text-align:center;
-    margin:25px 0;
-    font-size:20px;
+    margin:20px 0;
+    font-size:18px;
     color:#a78bfa;
 }
 
 /* CONTAINER SEÇÃO */
 .section{
-    max-width:440px;
-    margin:0 auto 30px;
-    padding:0 15px;
+    width:100%;
+    max-width:420px;
+    margin:0 auto 24px;
+    padding:0 12px;
 }
 
 .section h5{
-    margin-bottom:12px;
-    font-size:16px;
+    margin-bottom:10px;
+    font-size:14px;
     opacity:.8;
     text-align:center;
 }
 
-.pix-logo{
+/* LOGOS */
+.pix-logo,
+.preference-logo{
     display:flex;
     justify-content:center;
-    margin:6px 0 14px;
+    margin:6px 0 12px;
     background:#333;
-    border-radius:20px;
+    border-radius:16px;
+    padding:8px;
 }
 
-.pix-logo img{
-    height:60px;
-    
-}
-.preference-logo {
-    display:flex;
-    justify-content:center;
-    margin:6px 0 14px;
-    background:#333;
-    border-radius:20px;
-    
-    
-}
-
-.preference-logo img {
-	height:100px;
-	border-radius:40px;
-	
-	
-	
-}
+.pix-logo img{height:48px}
+.preference-logo img{height:70px}
 
 /* GRID */
-.container-link-pagamento{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:12px;
-}
-
-/* GRID */
+.container-link-pagamento,
 .container-cartao-credito{
     display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:12px;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
 }
+
 /* CARD */
 .container-item{
     background:#111827;
-    border-radius:14px;
-    padding:14px;
+    border-radius:12px;
+    padding:12px;
     display:flex;
     flex-direction:column;
-    gap:10px;
-    box-shadow:0 6px 20px rgba(0,0,0,.4);
+    gap:8px;
 }
 
 /* TEXTO */
 .qtd{
-    font-size:13px;
+    font-size:12px;
     opacity:.7;
     text-align:center;
 }
@@ -121,15 +104,14 @@ header{
 /* BOTÕES */
 .link-pagar-preference,
 .pix{
-    height:46px;
-    border-radius:10px;
+    height:42px;
+    border-radius:8px;
     display:flex;
     justify-content:center;
     align-items:center;
     text-decoration:none;
     color:#fff;
-    font-size:15px;
-    cursor:pointer;
+    font-size:14px;
 }
 
 .link-pagar-preference{
@@ -140,9 +122,6 @@ header{
     background:linear-gradient(135deg,#16a34a,#22c55e);
 }
 
-.link-pagar-preference:hover,
-.pix:hover{opacity:.9}
-
 /* FOOTER */
 .footer{
     position:fixed;
@@ -151,47 +130,46 @@ header{
     width:100%;
     background:#0f1720;
     border-top:1px solid #2b2b2b;
-    padding:14px 10px;
-    z-index:10;
+    padding:10px;
 }
 
 .footer-content{
-    max-width:500px;
+    max-width:420px;
     margin:0 auto;
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:10px;
+    gap:8px;
     text-align:center;
 }
 
 .footer-logos{
     display:flex;
-    gap:18px;
-    align-items:center;
-    justify-content:center;
+    gap:14px;
 }
 
 .footer-logos img{
-    height:28px;
-    filter:brightness(1.1);
+    height:24px;
 }
 
 .footer-text{
-    font-size:12px;
+    font-size:11px;
     opacity:.85;
-    display:flex;
-    flex-direction:column;
-    gap:2px;
 }
 
-/* MOBILE */
-@media(max-width:400px){
-    .container-link-pagamento{
+/* MOBILE PEQUENO (A10) */
+@media(max-width:360px){
+    .container-link-pagamento,
+    .container-cartao-credito{
         grid-template-columns:1fr;
+    }
+
+    .title{
+        font-size:16px;
     }
 }
 </style>
+</head>
 </head>
 
 <body>

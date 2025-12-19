@@ -5,169 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Saques - Pix</title>
   
-    <style>
-   *{margin:0;padding:0;box-sizing:border-box}
-   
-   body{
-       min-height:100vh;
-       background:#1e1e1e;
-       font-family:monospace;
-       color:#fff;
-       overflow:hidden;
-       touch-action:none;
-       justify-content:center;
-       align-items:center;
-   
-   }
-   
-   /* HEADER */
-   header{
-       width:100%;
-       background:#0f1720;
-       border-bottom:1px solid #2b2b2b;
-       display:flex;
-       justify-content:center;
-       align-items:center;
-       padding:80px 0;
-   }
-   
-   .logo img{
-       width:90px;
-       height:90px;
-       border-radius:50%;
-       background:#fff;
-       box-shadow:
-           0 0 10px #8a2be2,
-           0 0 40px #8a2be2;
-   }
-   
-    .dashboard-container {
-    background:#111827;
-    border-radius:14px;
-    padding:24px;
-    box-shadow:0 10px 30px rgba(0,0,0,.5);
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-    
-    }
-
-    /* FOOTER */
-    .footer{
-        position:fixed;
-        bottom:0;
-        left:0;
-        width:100%;
-        background:#0f1720;
-        border-top:1px solid #2b2b2b;
-        padding:14px 10px;
-        z-index:10;
-    }
-    
-    .footer-content{
-        max-width:500px;
-        margin:0 auto;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        gap:10px;
-        text-align:center;
-    }
-    
-    .footer-logos{
-        display:flex;
-        gap:18px;
-        align-items:center;
-        justify-content:center;
-    }
-    
-    .footer-logos img{
-        height:28px;
-        filter:brightness(1.1);
-    }
-    
-    .footer-text{
-        font-size:12px;
-        opacity:.85;
-        display:flex;
-        flex-direction:column;
-        gap:2px;
-    }
-    
-    
-    .pix-logo{
-        display:flex;
-        justify-content:center;
-        margin:6px 0 14px;
-    }
-    
-    .pix-logo img{
-        height:42px;
-    }
-    
-    
-    
-    main {
-        padding: 20px;
-    }
-    
-    .balance-card {
+ <style>
+ *{margin:0;padding:0;box-sizing:border-box}
+ 
+ html,body{
+     width:100%;
+     height:100%;
+     overflow-x:hidden;
+ }
+ 
+ body{
+     background:#1e1e1e;
+     font-family:monospace;
+     color:#fff;
+ }
+ 
+ /* HEADER */
+ header{
+     width:100%;
+     background:#0f1720;
+     border-bottom:1px solid #2b2b2b;
+     display:flex;
+     justify-content:center;
+     align-items:center;
+     padding:30px 0;
+ }
+ 
+ .logo img{
+     width:70px;
+     height:70px;
+     border-radius:50%;
+     background:#fff;
+     box-shadow:0 0 10px #8a2be2,0 0 30px #8a2be2;
+ }
+ 
+ /* CONTAINER */
+ .dashboard-container{
+     width:100%;
+     max-width:480px;
+     margin:20px auto 120px;
+     padding:16px;
      background:#111827;
+     border-radius:14px;
+     box-shadow:0 10px 30px rgba(0,0,0,.5);
+     display:flex;
+     flex-direction:column;
+     gap:16px;
+ }
+ 
+ /* MAIN */
+ main{
+     width:100%;
+ }
+ 
+ /* SALDO */
+ .balance-card{
+     width:100%;
+     background:#0b1220;
+     border-radius:14px;
+     padding:16px;
      text-align:center;
-    border-radius:14px;
-    padding:24px;
-    box-shadow:0 10px 30px rgba(0,0,0,.5);
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-    }
-    
-    .balance-amount {
-        font-size: 2em;
-        font-weight: bold;
-        color: #007bff;
-    }
-    
-    .withdraw-section h2 {
-        margin-bottom: 15px;
-    }
-    
-    .pix-area input, .pix-area button {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-    }
-    
-    .withdraw-btn {
-        background-color: #28a745; /* Cor verde para ação de saque */
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-size: 1em;
-    }
-    
-    .withdraw-btn:hover {
-        background-color: #218838;
-    }
+     display:flex;
+     flex-direction:column;
+     gap:10px;
+ }
+ 
+ .balance-amount{
+     font-size:1.8rem;
+     font-weight:bold;
+     color:#00aaff;
+ }
+ 
+ /* SAQUE */
+ .withdraw-section{
+     width:100%;
+     display:flex;
+     flex-direction:column;
+     gap:12px;
+ }
+ 
+ .pix-logo{
+     display:flex;
+     justify-content:center;
+ }
+ 
+ .pix-logo img{
+     height:36px;
+ }
+ 
+ .pix-area{
+     display:flex;
+     flex-direction:column;
+     gap:10px;
+ }
+ 
+ .pix-area input,
+ .pix-area button{
+     width:100%;
+     padding:12px;
+     border-radius:8px;
+     border:none;
+     font-size:14px;
+ }
+ 
+ .pix-area input{
+     background:#fff;
+     color:#000;
+ }
+ 
+ .withdraw-btn{
+     background:#22c55e;
+     color:#fff;
+     font-weight:bold;
+ }
+ 
+ .withdraw-btn:active{
+     transform:scale(.98);
+ }
 
-    h2 {
-    	text-align:center;
-    }
-    
-    /* Responsividade: Para telas menores que 600px (mobile-first, então ajustes são mínimos) */
-    @media (max-width: 600px) {
-        body {
-            padding: 10px;
-        }
-        .dashboard-container {
-            border-radius: 0; /* Ocupa toda a largura em mobile */
-            box-shadow: none;
-        }
-    }
-    </style>
+ h2 {
+ 	text-align:center;
+ }
+ 
+ /* FOOTER */
+ .footer{
+     position:fixed;
+     bottom:0;
+     left:0;
+     width:100%;
+     background:#0f1720;
+     border-top:1px solid #2b2b2b;
+     padding:10px 8px;
+ }
+ 
+ .footer-content{
+     max-width:480px;
+     margin:0 auto;
+     display:flex;
+     flex-direction:column;
+     align-items:center;
+     gap:8px;
+     text-align:center;
+ }
+ 
+ .footer-logos img{
+     height:26px;
+ }
+ 
+ .footer-text{
+     font-size:11px;
+     opacity:.85;
+ }
+ 
+ /* AJUSTE EXTRA A10 / TELAS PEQUENAS */
+ @media (max-width:360px){
+     .balance-amount{font-size:1.5rem}
+     header{padding:20px 0}
+ }
+ </style>
 </head>
 <body>
  <header>
@@ -279,3 +274,4 @@
    </script>
 </body>
 </html>
+

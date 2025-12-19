@@ -4,7 +4,222 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saldo e Movimentações da Conta</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/movimentacoes.css') }}">
+    <style>
+ *{margin:0;padding:0;box-sizing:border-box}
+ 
+ html, body{
+     height:100%;
+     overflow-y:auto;
+     overflow-x:hidden;
+     -webkit-overflow-scrolling:touch;
+ }
+ 
+ body{
+     min-height:100vh;
+     background:#1e1e1e;
+     font-family:monospace;
+     color:#fff;
+     justify-content:center;
+     align-items:center;
+     text-align:center;
+     touch-action:auto;
+ }
+ 
+ .container{
+     background:#111827;
+     border-radius:14px;
+     padding:24px;
+     box-shadow:0 10px 30px rgba(0,0,0,.5);
+     display:flex;
+     flex-direction:column;
+     gap:14px;
+     min-height:100vh;
+     padding-bottom:160px;
+ }
+ 
+ /* HEADER */
+ header{
+     width:100%;
+     background:#0f1720;
+     border-bottom:1px solid #2b2b2b;
+     display:flex;
+     justify-content:center;
+     align-items:center;
+     padding:80px 0;
+ }
+ 
+ .logo img{
+     width:90px;
+     height:90px;
+     border-radius:50%;
+     background:#fff;
+     box-shadow:
+         0 0 10px #8a2be2,
+         0 0 40px #8a2be2;
+ }
+ 
+ .dashboard-container{
+     background:#111827;
+     border-radius:14px;
+     padding:24px;
+     box-shadow:0 10px 30px rgba(0,0,0,.5);
+     display:flex;
+     flex-direction:column;
+     gap:14px;
+ }
+ 
+ h1, h2{
+     color:#0056b3;
+ }
+ 
+ .balance-card{
+     background:#111827;
+     text-align:center;
+     border-radius:14px;
+     padding:24px;
+     box-shadow:0 10px 30px rgba(0,0,0,.5);
+     display:flex;
+     flex-direction:column;
+     gap:14px;
+ }
+ 
+ .balance-card img.logo{
+     width:60px;
+     height:auto;
+     margin-bottom:15px;
+     border-radius:50%;
+ }
+ 
+ .balance-amount{
+     font-size:2.5em;
+     font-weight:bold;
+     margin:10px 0;
+ }
+ 
+ .account-info{
+     font-size:0.9em;
+     opacity:0.8;
+ }
+ 
+ .transactions-section{
+     width:100%;
+     overflow-x:auto;
+ }
+ 
+ .transactions-section h2{
+     margin-bottom:15px;
+ }
+ 
+ table{
+     width:100%;
+     border-collapse:collapse;
+     margin-top:10px;
+     font-size:0.9em;
+     min-width:700px;
+ }
+ 
+ table th,
+ table td{
+     padding:12px;
+     text-align:left;
+     border-bottom:1px solid #ddd;
+     word-break:break-word;
+ }
+ 
+ table thead th{
+     background-color:#0056b3;
+     color:white;
+     font-weight:normal;
+ }
+ 
+ /* FOOTER */
+ .footer{
+     position:fixed;
+     bottom:0;
+     left:0;
+     width:100%;
+     background:#0f1720;
+     border-top:1px solid #2b2b2b;
+     padding:14px 10px;
+     z-index:10;
+ }
+ 
+ .footer-content{
+     max-width:500px;
+     margin:0 auto;
+     display:flex;
+     flex-direction:column;
+     align-items:center;
+     gap:10px;
+     text-align:center;
+ }
+ 
+ .footer-logos{
+     display:flex;
+     gap:18px;
+     align-items:center;
+     justify-content:center;
+ }
+ 
+ .footer-logos img{
+     height:28px;
+     filter:brightness(1.1);
+ }
+ 
+ .footer-text{
+     font-size:12px;
+     opacity:.85;
+     display:flex;
+     flex-direction:column;
+     gap:2px;
+ }
+ 
+ .logo{
+     display:flex;
+     justify-content:center;
+     margin:6px 0 14px;
+ }
+ 
+ .logo img{
+     height:42px;
+ }
+ 
+ /* entradas e saídas */
+ .income td:last-child{
+     color:#28a745;
+     font-weight:bold;
+ }
+ 
+ .expense td:last-child{
+     color:#dc3545;
+     font-weight:bold;
+ }
+ 
+ tbody tr:hover{
+     background-color:#f1f1f1;
+ }
+ 
+ /* RESPONSIVO */
+ @media (max-width:768px){
+     table th,
+     table td{
+         padding:8px;
+         font-size:0.8em;
+     }
+ 
+     .balance-card{
+         transform:none;
+     }
+ }
+ 
+ @media (max-width:480px){
+     table th,
+     table td{
+         padding:6px;
+         font-size:12px;
+     }
+ }
+</style>
 </head>
 <body>
 
@@ -62,3 +277,4 @@
 
 </body>
 </html>
+

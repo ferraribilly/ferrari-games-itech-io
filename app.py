@@ -1051,7 +1051,7 @@ def pagamento_preference(user_id):
         "items": [
             {
                 "id": user_id,
-                "title": "Block Gold",
+                "title": "Services",
                 "quantity": 1,
                 "currency_id": "BRL",
                 "unit_price": valor_total
@@ -1134,7 +1134,7 @@ def pagamento_pix(user_id):
 
     payment_data = {
         "transaction_amount": valor_total,
-        "description": "Livro",
+        "description": "Services",
         "payment_method_id": "pix",
         "payer": {
             "email": email,
@@ -1226,7 +1226,7 @@ def handle_audio_upload(audio_blob):
         upload_result = cloudinary.uploader.upload(
             temp_file_path,
             resource_type="video", 
-            folder="audio_uploads" # Pasta opcional no Cloudinary
+            folder="uploads" # Pasta que tenho e unica cloudinary 
         )
 
         # Limpar o arquivo temporário
@@ -1251,23 +1251,58 @@ def save_imagem_rifa():
         return jsonify({"message": "URL salva com sucesso"}), 200
     return jsonify({"error": "URL não fornecida"}), 400
 
+
+
+
+
+
 # ===========================================
 # WEBHOOK MERCADO PAGO 
 # ===========================================
 
-# ===========================================
-# ATUALIZAR STATUS NO BANCO (ADICIONAR)
-# ===========================================
+# @app.route("/notificacoes", methods=["POST"])
+# def handle_webhook():
+#     data = request.json
+#     if not data:
+#         return "", 204
+# 
+#     if data.get("type") == "payment":
+#         payment_id = data["data"]["id"]
+#         payment_details = get_payment_details(payment_id)
+#         if not payment_details:
+#             return "", 204
+# 
+#         status = payment_details.get("status")
+# 
+#         
+# 
+#         atualizar_status_pagamento(payment_id, status)
+# 
+#         if status == "approved":
+#             msg = "Pagamento aprovado"
+#         else:
+#             msg = f"Status atualizado: {status}"
+#             
+#         socketio.emit(
+#             "payment_update",
+#             {
+#                 "status": status,
+#                 "message": msg,
+#                 "payment_id": payment_id
+#             },
+#             room=payment_id
+#         )
+# 
+#         
+# 
+#         
+# 
+#         print(f"[WEBHOOK] {msg} | ID: {payment_id}")
 
-def atualizar_status_pagamento(payment_id, status):
-    PagamentoModel().collection.update_one(
-        {"payment_id": str(payment_id)},
-        {"$set": {"status": status}}
-    )
-
-
+    # return "", 204
 # ===========================================
-# WEBHOOK MERCADO PAGO (ADICIONAR LINHAS)
+# ===========================================
+# WEBHOOK MERCADO PAGO
 # ===========================================
 
 @app.route("/notificacoes", methods=["POST"])
@@ -1283,8 +1318,19 @@ def handle_webhook():
             return "", 204
 
         status = payment_details.get("status")
+        valor = payment_details.get("transaction_amount", 0)
 
-        
+        # ATUALIZA BANCO (ANTES DO SOCKET)
+        pagamentos_collection.update_one(
+            {"_id": payment_id},
+            {"$set": {
+                "status": status,
+                "valor": valor,
+                "data_atualizacao": datetime.utcnow(),
+                "detalhes_webhook": payment_details
+            }},
+            upsert=True
+        )
 
         atualizar_status_pagamento(payment_id, status)
 
@@ -1292,21 +1338,21 @@ def handle_webhook():
             msg = "Pagamento aprovado"
         else:
             msg = f"Status atualizado: {status}"
-            
+
         socketio.emit(
             "payment_update",
             {
                 "status": status,
                 "message": msg,
-                "payment_id": payment_id
+                "payment_id": payment_id,
+                "valor": valor
             },
             room=payment_id
         )
 
-        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
+        print(f"[WEBHOOK] {msg} | ID: {payment_id} | Valor: R$ {valor}")
 
     return "", 204
-# ===========================================
 
 def get_payment_details(payment_id):
     url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
@@ -1352,6 +1398,7 @@ def deposito(user_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/compra/sucesso')
 def success():

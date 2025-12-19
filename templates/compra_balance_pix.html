@@ -13,9 +13,9 @@ body{
     background:#1e1e1e;
     font-family:monospace;
     color:#fff;
-    <!-- overflow:hidden; -->
-    touch-action:none;
-
+    overflow-y:auto;        /* FIX */
+    overflow-x:hidden;
+    touch-action:auto;      /* FIX */
 }
 
 /* HEADER */
@@ -26,12 +26,12 @@ header{
     display:flex;
     justify-content:center;
     align-items:center;
-    padding:20px 0;
+    padding:16px 0;
 }
 
 .logo img{
-    width:90px;
-    height:90px;
+    width:80px;
+    height:80px;
     border-radius:50%;
     background:#fff;
     box-shadow:
@@ -43,46 +43,57 @@ header{
 .container{
     width:100%;
     max-width:420px;
-    margin:40px auto;
-    padding:20px;
+    margin:20px auto 40px;   /* FIX */
+    padding:16px;
 }
 
 /* CARD */
 .card{
     background:#111827;
     border-radius:14px;
-    padding:24px;
+    padding:20px;
     box-shadow:0 10px 30px rgba(0,0,0,.5);
     display:flex;
     flex-direction:column;
-    gap:14px;
+    gap:12px;
 }
 
 .card h4{
     text-align:center;
-    font-size:22px;
-    margin-bottom:10px;
+    font-size:20px;
+    margin-bottom:6px;
     color:#a78bfa;
+}
+
+/* PIX LOGO */
+.pix-logo{
+    display:flex;
+    justify-content:center;
+    margin:4px 0 10px;
+}
+
+.pix-logo img{
+    height:38px;
 }
 
 /* INFO */
 .info{
     display:flex;
     justify-content:space-between;
-    font-size:16px;
+    font-size:14px;          /* FIX */
     border-bottom:1px solid #2b2b2b;
     padding-bottom:6px;
+    gap:8px;
 }
 
-.info span:last-child{
-    color:#e5e7eb;
-    font-weight:bold;
+.info span{
+    word-break:break-word;  /* FIX */
 }
 
 /* VALOR */
 .valor{
     text-align:center;
-    font-size:26px;
+    font-size:24px;
     font-weight:bold;
     margin:10px 0;
     color:#22c55e;
@@ -91,82 +102,24 @@ header{
 /* BOTÃO */
 .purchase{
     width:100%;
-    height:56px;
+    min-height:56px;
     background:linear-gradient(135deg,#6366f1,#8b5cf6);
     color:#fff;
     border:0;
     border-radius:10px;
-    font-size:18px;
-    cursor:pointer;
+    font-size:16px;          /* FIX */
 }
 
-.purchase:hover{opacity:.9}
-/* FOOTER */
-.footer{
-    position:fixed;
-    bottom:0;
-    left:0;
-    width:100%;
-    background:#0f1720;
-    border-top:1px solid #2b2b2b;
-    padding:14px 10px;
-    z-index:10;
+/* MOBILE EXTRA (Samsung A10) */
+@media (max-width: 360px){
+    header{padding:12px 0}
+    .logo img{width:70px;height:70px}
+    .card{padding:16px}
+    .valor{font-size:22px}
+    .purchase{font-size:15px}
 }
-
-.footer-content{
-    max-width:500px;
-    margin:0 auto;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-    text-align:center;
-}
-
-.footer-logos{
-    display:flex;
-    gap:18px;
-    align-items:center;
-    justify-content:center;
-}
-
-.footer-logos img{
-    height:28px;
-    filter:brightness(1.1);
-}
-
-.footer-text{
-    font-size:12px;
-    opacity:.85;
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-}
-
-
-.pix-logo{
-    display:flex;
-    justify-content:center;
-    margin:6px 0 14px;
-}
-
-.pix-logo img{
-    height:42px;
-}
-
- /* Responsividade: Para telas menores que 600px (mobile-first, então ajustes são mínimos) */
-    @media (max-width: 600px) {
-        body {
-            padding: 10px;
-        }
-        .container {
-            border-radius: 0; /* Ocupa toda a largura em mobile */
-            box-shadow: none;
-        }
-        
-    }
-
 </style>
+
 </head>
 
 <body>
