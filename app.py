@@ -1104,12 +1104,14 @@ def pagamento_pix(user_id):
         "/transaction_pix.html",
         qrcode=f"data:image/png;base64,{tx['qr_code_base64']}",
         valor=f"R$ {valor_total:.2f}",
-        description="Livro",
+        description="Services",
         qr_code_cola=tx["qr_code"],
         status=status,
         payment_id=payment_id,
         user_id=user_id
     )
+
+    
 #==============================================
 # WEBHOOK MERCADO PAGO E SOCKET
 #============================================

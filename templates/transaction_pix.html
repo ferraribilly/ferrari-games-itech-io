@@ -330,7 +330,7 @@
 
  <!-- SOCKET.IO CDN -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script>
+<script>      
 document.addEventListener("DOMContentLoaded", function () {      
       
     const copyBtn = document.getElementById("copy");      
@@ -374,43 +374,43 @@ document.addEventListener("DOMContentLoaded", function () {
 });      
       
       
-// ===== SOCKET.IO =====
-var paymentId = "{{ payment_id }}";
-var userId = "{{ user_id }}";
-var socket = io(window.location.origin);
-
-socket.on("connect", function () {
-    socket.emit("join_payment", { payment_id: paymentId });
-});
-
-socket.on("payment_update", async function (data) {
-    if (data.payment_id !== paymentId) return;
-
-    var div = document.getElementById("notifications");
-    var p = document.createElement("p");
-
-    if (data.status === "approved") {
-        p.style.color = "green";
-        p.innerText = "✅ Pagamento aprovado!";
-        div.innerHTML = "";
-        div.appendChild(p);
-
-
-        setTimeout(() => {
-            window.location.href = `/compra/sucesso/pix/${userId}`;
-        }, 3000);
-
-    } else if (data.status === "rejected") {
-        p.style.color = "red";
-        p.innerText = "❌ Pagamento recusado!";
-        div.appendChild(p);
-
-        setTimeout(() => {
-            window.location.href = `/compra/recusada/${userId}`;
-        }, 3000);
-    }
-});
+// ===== SOCKET.IO =====      
+var paymentId = "{{ payment_id }}";      
+var userId = "{{ user_id }}";      
+var socket = io(window.location.origin);      
+      
+socket.on("connect", function () {      
+    socket.emit("join_payment", { payment_id: paymentId });      
+});      
+      
+socket.on("payment_update", async function (data) {      
+    if (data.payment_id !== paymentId) return;      
+      
+    var div = document.getElementById("notifications");      
+    var p = document.createElement("p");      
+      
+    if (data.status === "approved") {      
+        p.style.color = "green";      
+        p.innerText = "✅ Pagamento aprovado!";      
+        div.innerHTML = "";      
+        div.appendChild(p);      
+      
+      
+        setTimeout(function () {      
+            window.location.href = `/compra/sucesso/pix/${userId}`;      
+        }, 3000);      
+      
+    } else {      
+        p.style.color = "red";      
+        p.innerText = "❌ Pagamento recusado!";      
+        div.innerHTML = "";      
+        div.appendChild(p);      
+      
+        setTimeout(function () {      
+            window.location.href = `/compra/recusada/${userId}`;      
+        }, 3000);      
+    }      
+});      
 </script>
-
 </body>
 </html>
