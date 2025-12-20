@@ -1249,10 +1249,8 @@ def compra_recusada_pix(user_id):
 #=================================
 @socketio.on("join_payment")
 def join_payment_room(data):
-    payment_id = str(data.get("payment_id"))
-    if not payment_id:
-        return
-    join_room(payment_id)
+    room = data["payment_id"]
+    join_room(room)
     
 #==================================
 cloudinary.config(
