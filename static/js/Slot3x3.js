@@ -169,7 +169,7 @@ export default class Slot {
     document.getElementById("deposit-btn")
       .addEventListener("click", () => {
         window.location.href =
-          `/users/loja/virtual/compras/${window.USER_ID}`;
+          `/metodos/pagamento/${window.USER_ID}`;
       });
   }
 
