@@ -1115,46 +1115,46 @@ def pagamento_pix(user_id):
 #==============================================
 # WEBHOOK MERCADO PAGO E SOCKET
 #============================================
-@app.route("/notificacoes", methods=["POST"])  
-def handle_webhook():  
-    data = request.json  
-    if not data:  
-        return "", 204  
-  
-    if data.get("type") == "payment":  
-        payment_id = data["data"]["id"]  
-        payment_details = get_payment_details(payment_id)  
-        if not payment_details:  
-            return "", 204  
-  
-        status = payment_details.get("status")  
-  
-          
-  
-        atualizar_status_pagamento(payment_id, status)  
-  
-        if status == "approved":  
-            msg = "Pagamento aprovado"  
-        else:  
-            msg = f"Status atualizado: {status}"  
-              
-        socketio.emit(  
-            "payment_update",  
-            {  
-                "status": status,  
-                "message": msg,  
-                "payment_id": payment_id  
-            },  
-            room=payment_id  
-        )  
-  
-          
-  
-          
-  
-        print(f"[WEBHOOK] {msg} | ID: {payment_id}")  
-  
-    return "", 204
+# @app.route("/notificacoes", methods=["POST"])  
+# def handle_webhook():  
+#     data = request.json  
+#     if not data:  
+#         return "", 204  
+#   
+#     if data.get("type") == "payment":  
+#         payment_id = data["data"]["id"]  
+#         payment_details = get_payment_details(payment_id)  
+#         if not payment_details:  
+#             return "", 204  
+#   
+#         status = payment_details.get("status")  
+#   
+#           
+#   
+#         atualizar_status_pagamento(payment_id, status)  
+#   
+#         if status == "approved":  
+#             msg = "Pagamento aprovado"  
+#         else:  
+#             msg = f"Status atualizado: {status}"  
+#               
+#         socketio.emit(  
+#             "payment_update",  
+#             {  
+#                 "status": status,  
+#                 "message": msg,  
+#                 "payment_id": payment_id  
+#             },  
+#             room=payment_id  
+#         )  
+#   
+#           
+#   
+#           
+#   
+#         print(f"[WEBHOOK] {msg} | ID: {payment_id}")  
+#   
+#     return "", 204
 
 def get_payment_details(payment_id):
     url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
@@ -1162,6 +1162,48 @@ def get_payment_details(payment_id):
     r = requests.get(url, headers=headers, timeout=10)
     return r.json() if r.status_code == 200 else None    
 
+
+
+
+# ===========================================  
+# WEBHOOK MERCADO PAGO (SUBSTITUIR TUDO)  
+# ===========================================  
+  
+@app.route("/notificacoes", methods=["POST"])  
+def handle_webhook():  
+    data = request.json  
+    if not data:  
+        return "", 200  
+  
+    payment_id = None  
+  
+    if "data" in data and "id" in data["data"]:  
+        payment_id = data["data"]["id"]  
+    elif "id" in data:  
+        payment_id = data["id"]  
+  
+    if not payment_id:  
+        return "", 200  
+  
+    payment_details = get_payment_details(payment_id)  
+    if not payment_details:  
+        return "", 200  
+  
+    status = payment_details.get("status")  
+  
+    
+  
+    socketio.emit(  
+        "payment_update",  
+        {  
+            "status": status,  
+            "payment_id": str(payment_id)  
+        },  
+        room=str(payment_id)  
+    )  
+  
+    return "", 200  
+  
 #=================================
 # PAGINA RETORNO SUCCESS PREFERENCE
 #==================================
@@ -1252,11 +1294,14 @@ def compra_recusada_pix(user_id):
 #==================================
 # SOCKET RELACIONADO AOS WEBHOOK MP
 #=================================
+# @socketio.on("join_payment")
+# def join_payment_room(data):
+#     room = data["payment_id"]
+#     join_room(room)
+    
 @socketio.on("join_payment")
 def join_payment_room(data):
-    room = data["payment_id"]
-    join_room(room)
-    
+    join_room(data["payment_id"])    
 #==================================
 cloudinary.config(
     cloud_name="dptprh0xk",
