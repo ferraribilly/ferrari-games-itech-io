@@ -284,9 +284,7 @@
 
             <p>Abra seu aplicativo de pagamento e escolha <b>Ler QR Code</b></p>
             <span>Aponte a câmera do seu celular</span>
-            <div id="status-area">
-                    <!-- Atualizações de status aparecerão aqui -->
-             </div>
+           
             <div class="qrcode-info">
                 <img src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764290948/cellphone-icon_remhjc.svg" draggable="false">
             </div>
@@ -377,26 +375,26 @@ document.addEventListener("DOMContentLoaded", function () {
       
       
 // ===== SOCKET.IO =====
-const paymentId = "{{ payment_id }}";
-const userId = "{{ user_id }}";
-const socket = io(window.location.origin);
+var paymentId = "{{ payment_id }}";
+var userId = "{{ user_id }}";
+var socket = io(window.location.origin);
 
-socket.on("connect", () => {
+socket.on("connect", function () {
     socket.emit("join_payment", { payment_id: paymentId });
 });
 
-socket.on("payment_update", (data) => {
+socket.on("payment_update", async function (data) {
     if (data.payment_id !== paymentId) return;
 
-    const div = document.getElementById("notifications");
-    div.innerHTML = "";
-
-    const p = document.createElement("p");
+    var div = document.getElementById("notifications");
+    var p = document.createElement("p");
 
     if (data.status === "approved") {
         p.style.color = "green";
         p.innerText = "✅ Pagamento aprovado!";
+        div.innerHTML = "";
         div.appendChild(p);
+
 
         setTimeout(() => {
             window.location.href = `/compra/sucesso/pix/${userId}`;

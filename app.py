@@ -1113,43 +1113,46 @@ def pagamento_pix(user_id):
 #==============================================
 # WEBHOOK MERCADO PAGO E SOCKET
 #============================================
-@app.route("/notificacoes", methods=["POST"])
-def handle_webhook():
-    data = request.json
-    if not data:
-        return "", 204
-
-    if data.get("type") == "payment":
-        payment_id = data["data"]["id"]
-        payment_details = get_payment_details(payment_id)
-        if not payment_details:
-            return "", 204
-
-        status = payment_details.get("status")
-
-        
-
-        atualizar_status_pagamento(payment_id, status)
-
-        if status == "approved":
-            msg = "Pagamento aprovado"
-        else:
-            msg = f"Status atualizado: {status}"
-            
-        socketio.emit(
-            "payment_update",
-            {
-                "status": status,
-                "message": msg,
-                "payment_id": payment_id
-            },
-            room=payment_id
-        )
-
-        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
-
-    return "", 204   
-
+@app.route("/notificacoes", methods=["POST"])  
+def handle_webhook():  
+    data = request.json  
+    if not data:  
+        return "", 204  
+  
+    if data.get("type") == "payment":  
+        payment_id = data["data"]["id"]  
+        payment_details = get_payment_details(payment_id)  
+        if not payment_details:  
+            return "", 204  
+  
+        status = payment_details.get("status")  
+  
+          
+  
+        atualizar_status_pagamento(payment_id, status)  
+  
+        if status == "approved":  
+            msg = "Pagamento aprovado"  
+        else:  
+            msg = f"Status atualizado: {status}"  
+              
+        socketio.emit(  
+            "payment_update",  
+            {  
+                "status": status,  
+                "message": msg,  
+                "payment_id": payment_id  
+            },  
+            room=payment_id  
+        )  
+  
+          
+  
+          
+  
+        print(f"[WEBHOOK] {msg} | ID: {payment_id}")  
+  
+    return "", 204
 
 def get_payment_details(payment_id):
     url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
