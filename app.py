@@ -964,77 +964,6 @@ def create_purchase(user_id):
 
 
 
-#=======================================================================
-#=======================================================================
-# COMPRA DE BALANCE API MERCADO PAGO 
-
-# 
-# 
-#     
-# @app.route('/create_payment_preference', methods=['POST'])
-# def create_payment_preference():
-#     data = request.get_json()
-#     amount = data.get('amount')
-#     user_id = data.get('user_id')
-# 
-#     preference_data = {
-#         "items": [
-#             {
-#                 "title": "Livro",
-#                 "quantity": 1,
-#                 "unit_price": float(amount)
-#             }
-#         ],
-#         #Configura a URL notifiaçao 
-#         "notification_url": f"https://ferrari-games-itech-io.onrender.com/notificacoes{user_id}",
-#         "external_reference": user_id # Armazena o ID do usuario para referencia
-#     }
-# 
-#     preference_response = sdk.preference().create(preference_data)
-#     preference = preference_response["response"]
-# 
-#     return jsonify({"preference_id": preference["id"]})
-# 
-# 
-# @app.route('/notificacoes', methods=["POST"])    
-# def mercadopago_webhook():
-#     data = request.get_json()
-#     payment_id = data.get('data', {}).get('id')
-# 
-#     if payment_id:
-#         payment_info = sdk.payment().get(payment_id)
-#         status = payment_info["response"]["status"]
-#         user_id = payment_info["response"].get("external_reference")
-#         amount = payment_info["response"].get("transaction_amount", 0)
-# 
-#         if status == "approved":
-#             users_collection.update_one(
-#                 {"_id": user_id},
-#                 {"$inc": {"balance": float(amount)}}
-#             )
-#             msg = f"Saldo do usuário {user_id} atualizado com {amount}!"
-#             print(msg)
-# 
-#             socketio.emit(
-#                 "payment_update",
-#                 {
-#                     "status": status,
-#                     "message": msg,
-#                     "payment_id": payment_id,
-#                     "amount": amount
-#                 },
-#                 room=payment_id
-#             )
-#             print(f"[WEBHOOK] {msg} | ID: {payment_id}")
-#             return jsonify({"status": "success"}), 200
-# 
-#     return jsonify({"status": "error"}), 400
-#==========================================================================
-#==========================================================================
-#==========================================================================
-
-
-
 
        
 @app.route("/compra/preference/pagamento_pix/<string:user_id>")
@@ -1181,137 +1110,151 @@ def pagamento_pix(user_id):
         payment_id=payment_id,
         user_id=user_id
     )
+#==============================================
+# WEBHOOK MERCADO PAGO E SOCKET
+#============================================
+@app.route("/notificacoes", methods=["POST"])
+def handle_webhook():
+    data = request.json
+    if not data:
+        return "", 204
+
+    if data.get("type") == "payment":
+        payment_id = data["data"]["id"]
+        payment_details = get_payment_details(payment_id)
+        if not payment_details:
+            return "", 204
+
+        status = payment_details.get("status")
+
+        
+
+        atualizar_status_pagamento(payment_id, status)
+
+        if status == "approved":
+            msg = "Pagamento aprovado"
+        else:
+            msg = f"Status atualizado: {status}"
+            
+        socketio.emit(
+            "payment_update",
+            {
+                "status": status,
+                "message": msg,
+                "payment_id": payment_id
+            },
+            room=payment_id
+        )
+
+        print(f"[WEBHOOK] {msg} | ID: {payment_id}")
+
+    return "", 204   
+
+
+def get_payment_details(payment_id):
+    url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
+    headers = {"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}
+    r = requests.get(url, headers=headers, timeout=10)
+    return r.json() if r.status_code == 200 else None    
+
+#=================================
+# PAGINA RETORNO SUCCESS PREFERENCE
+#==================================
+@app.route('/compra/sucesso')
+def success_preference():
+    return render_template("/carregando.html")
+#========================================
+# PAGINA RETORNO SOCKET WEBHOOK
+#========================================
+@app.route('/compra/sucesso/pix/<string:user_id>')
+def success_pix(user_id):
+    user = user_model.get_user_by_id(user_id)
+    compras_app = compras_app_model.collection.find_one(
+        {"user_id": user_id},
+        sort=[("_id", -1)]
+    )
+
+    valor = compras_app.get("valor", 0) if compras_app else 0
+    nome = user.get("nome")
+
+    return render_template(
+        "sucesso.html",
+        user_id=user_id,
+        valor=valor,
+        nome=nome
+    )
+
+#=======================================================================
+# ATUALIZAR BALANCE COM VALOR APPROVED 
+#=======================================================================
+@app.route("/deposito/atualizado/balance/<string:user_id>", methods=["POST"])
+def deposito(user_id):
+    try:
+        data = request.get_json()
+        valor = data.get("valor")
+
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            return jsonify({"error": "valor inválido"}), 400
+
+        try:
+            object_id = ObjectId(user_id)
+        except:
+            return jsonify({"error": "ID inválido"}), 400
+
+        result = user_model.collection.find_one_and_update(
+            {"_id": object_id},
+            {"$inc": {"balance": valor}},
+            return_document=True
+        )
+
+        if not result:
+            return jsonify({"error": "usuário não encontrado"}), 404
+
+        return jsonify({
+            "message": "saldo atualizado com sucesso",
+            "novo_saldo": result["balance"]
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+#==========================================
+# ATUALIZAR COMPRA E SALDO DO USER       
+#=========================================         
+#==========================================
+# PAGINA RETORNO RECUSADA PREFERENCE
+#==========================================
+@app.route("/compra/recusada")
+def preference_payment_success():
+    return render_template("compra_recusada.html")
+#==============================================
+# PAGINA RETORNO SOCKET
+#=============================================    
+@app.route("/compra/recusada/<string:user_id>")
+def compra_recusada_pix(user_id):
+    return render_template("rifa/recusada.html", user_id=user_id)    
 # ===========================================
 
-# SOCKET.IO - SALA POR PAGAMENTO
+
 
 # ===========================================
 
-# ===========================================
-# SOCKET.IO — ENTRAR NA SALA CORRETO
-# ===========================================
+
+
+#==================================
+# SOCKET RELACIONADO AOS WEBHOOK MP
+#=================================
 @socketio.on("join_payment")
 def join_payment_room(data):
     payment_id = str(data.get("payment_id"))
     if not payment_id:
         return
     join_room(payment_id)
-
-
-# ===========================================
-# WEBHOOK MERCADO PAGO (FINAL AJUSTADO)
-# ===========================================
-# @app.route("/notificacoes", methods=["POST"])
-# def handle_webhook():
-#     data = request.json
-#     if not data or data.get("type") != "payment":
-#         return "", 204
-# 
-#     payment_id = str(data["data"]["id"])
-#     payment_details = get_payment_details(payment_id)
-#     if not payment_details:
-#         return "", 204
-# 
-#     status = payment_details.get("status")
-#     valor = payment_details.get("transaction_amount")
-#     external_reference = payment_details.get("external_reference")
-# 
-#     # IGNORA LIXO DO MERCADO PAGO
-#     if status == "cancelled":
-#         return "", 204
-# 
-#     pagamento = pagamentos_collection.find_one({"_id": payment_id})
-#     if not pagamento:
-#         # webhook NÃO cria pagamento
-#         return "", 204
-# 
-#     # GARANTE VALOR (não deixa virar None)
-#     if not valor:
-#         valor = pagamento.get("valor", 0)
-# 
-#     pagamentos_collection.update_one(
-#         {"_id": payment_id},
-#         {"$set": {
-#             "status": status,
-#             "valor": valor,
-#             "external_reference": external_reference,
-#             "data_atualizacao": datetime.utcnow()
-#         }}
-#     )
-# 
-#     atualizar_status_pagamento(payment_id, status)
-# 
-#     # SOCKET SEM BLOQUEIO
-#     if status == "approved":
-#         socketio.emit(
-#             "payment_update",
-#             {
-#                 "status": "approved",
-#                 "payment_id": payment_id,
-#                 "valor": valor
-#             },
-#             room=payment_id
-#         )
-# 
-#     print(f"[WEBHOOK] {payment_id} | {status} | R$ {valor}")
-#     return "", 204
-
-@app.route('/notificacoes', methods=['POST'])
-def receive_webhook():
-    data = request.json
-    # O Mercado Pago envia o tópico (topic) e o ID do recurso (resource_id ou data.id)
-    # Para o Checkout Pro, o resource_id geralmente é o ID do pagamento.
-    payment_id = data.get('data', {}).get('id')
-    topic = data.get('topic') or data.get('type')
-
-    if topic == 'payment' and payment_id:
-        # Consultar a API do Mercado Pago para obter detalhes do pagamento
-        url = f"api.mercadopago.com{payment_id}"
-        headers = {
-            "Authorization": f"Bearer {ACCESS_TOKEN}"
-        }
-        try:
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                payment_data = response.json()
-                status = payment_data.get('status')
-                # Atualizar o MongoDB
-                pagamentos_collection.update_one(
-                    {'id': payment_id},
-                    {'$set': {'status': status, 'data': payment_data}},
-                    upsert=True
-                )
-                # Emitir evento Socket.IO para o frontend
-                socketio.emit(
-                    'payment_update',
-                    {'payment_id': payment_id, 'status': status},
-                    broadcast=True
-                )
-                print(f"Pagamento {payment_id} atualizado para status: {status}")
-        except requests.exceptions.RequestException as e:
-            print(f"Erro ao consultar API do Mercado Pago: {e}")
-
-    # É crucial retornar um status HTTP 200 OK para o Mercado Pago
-    return jsonify({"status": "success"}), 200
-
     
-def get_payment_details(payment_id):
-    url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
-    headers = {"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}
-    r = requests.get(url, headers=headers, timeout=10)
-    return r.json() if r.status_code == 200 else None
-
-
-
-
-
-
-
-
-
-
-
-
+#==================================
 cloudinary.config(
     cloud_name="dptprh0xk",
     api_key="445146224712139",
@@ -1319,7 +1262,9 @@ cloudinary.config(
     secure=True
 )
 
-# Mensagens
+#=============================================
+# ENVIAR MENSAGENS
+#=============================================
 @socketio.on('enviar_mensagem_frontend')
 def handle_message(data):
     user_id = data.get('user_id', 'Anon')
@@ -1328,7 +1273,9 @@ def handle_message(data):
         'user_id': user_id,
         'tipo': 'recebida'
     }, broadcast=True)
-
+#=============================================
+# ENVIAR AUDIOS
+#=============================================
 @socketio.on('upload_audio')
 def handle_audio_upload(audio_blob):
     # audio_blob é um objeto Bytes (buffer)
@@ -1359,7 +1306,9 @@ def handle_audio_upload(audio_blob):
         print(f"Erro no upload: {e}")
         socketio.emit('upload_error', {'message': 'Falha no upload do áudio'})
 
-# ====================== IMAGEM ======================
+# ================================================
+# UPLOADS DE IMAGENS PARA CLOUDINARY
+# ================================================
 @app.route('/api/save-image', methods=['POST'])
 def save_imagem_rifa():
     data = request.get_json()
@@ -1374,104 +1323,24 @@ def save_imagem_rifa():
 
 
 
-# ===========================================
-# WEBHOOK MERCADO PAGO 
-# ===========================================
 
-# @app.route("/notificacoes", methods=["POST"])
-# def handle_webhook():
-#     data = request.json
-#     if not data:
-#         return "", 204
-# 
-#     if data.get("type") == "payment":
-#         payment_id = data["data"]["id"]
-#         payment_details = get_payment_details(payment_id)
-#         if not payment_details:
-#             return "", 204
-# 
-#         status = payment_details.get("status")
-# 
-#         
-# 
-#         atualizar_status_pagamento(payment_id, status)
-# 
-#         if status == "approved":
-#             msg = "Pagamento aprovado"
-#         else:
-#             msg = f"Status atualizado: {status}"
-#             
-#         socketio.emit(
-#             "payment_update",
-#             {
-#                 "status": status,
-#                 "message": msg,
-#                 "payment_id": payment_id
-#             },
-#             room=payment_id
-#         )
-# 
-#         
-# 
-#         
-# 
-#         print(f"[WEBHOOK] {msg} | ID: {payment_id}")
-
-    # return "", 204
-# ===========================================
-
-
-#=======================================================================
-# ATUALIZAR BALANCE COM VALOR APPROVED 
-#=======================================================================
-@app.route("/deposito/atualizado/balance/<string:user_id>", methods=["POST"])
-def deposito(user_id):
-    try:
-        data = request.get_json()
-        valor_total = data.get("valor_total")
-
-        if not isinstance(valor_total, (int, float)) or valor_total <= 0:
-            return jsonify({"error": "valor inválido"}), 400
-
-        try:
-            object_id = ObjectId(user_id)
-        except:
-            return jsonify({"error": "ID inválido"}), 400
-
-        result = user_model.collection.find_one_and_update(
-            {"_id": object_id},
-            {"$inc": {"balance": valor_total}},
-            return_document=True
-        )
-
-        if not result:
-            return jsonify({"error": "usuário não encontrado"}), 404
-
-        return jsonify({
-            "message": "saldo atualizado com sucesso",
-            "novo_saldo": result["balance"]
-        }), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/compra/sucesso')
-def success():
-    return render_template("/loading.html")
-#=================================================================================================
     
-#----------------------------------------------------------
-# -PAGAMENTO RECUSADO
-#----------------------------------------------------------
 
-@app.route("/compra/recusada")
-def preference_payment_success():
-    return render_template("compra_recusada.html")
+
+
+
+
+
+
+
+
+
+
+
+
     
-@app.route("/compra/recusada/<string:user_id>")
-def compra_recusada_raffle(user_id):
-    return render_template("rifa/recusada.html", user_id=user_id)
+
+
 
 
 @app.route("/assinatura/<string:user_id>")    

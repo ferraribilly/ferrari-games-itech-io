@@ -329,101 +329,89 @@
 </main>
 
 
-<script src="{{ url_for('static', filename='js/see-tickets.js') }}"></script>
+
  <!-- SOCKET.IO CDN -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {      
+      
+    const copyBtn = document.getElementById("copy");      
+    const copyMobileBtn = document.getElementById("copy-mobile");      
+    const qrcodeText = document.getElementById("qrcode-text");      
+    const copiedCodeBox = document.getElementById("copied-code");      
+      
+    function copiarPix() {      
+        const text = qrcodeText.textContent.trim();      
+        if (!text) return;      
+      
+        // COPY FORÇADO      
+        const ta = document.createElement("textarea");      
+        ta.value = text;      
+        document.body.appendChild(ta);      
+        ta.select();      
+        document.execCommand("copy");      
+        document.body.removeChild(ta);      
+      
+        // MENSAGEM FORÇADA (IGNORA CSS)      
+        copiedCodeBox.textContent = "Código copiado!";      
+        copiedCodeBox.style.setProperty("display", "block", "important");      
+        copiedCodeBox.style.setProperty("visibility", "visible", "important");      
+        copiedCodeBox.style.setProperty("opacity", "1", "important");      
+        copiedCodeBox.style.setProperty("position", "relative", "important");      
+        copiedCodeBox.style.setProperty("z-index", "99999", "important");      
+        copiedCodeBox.style.background = "#16a34a";      
+        copiedCodeBox.style.color = "#fff";      
+        copiedCodeBox.style.padding = "8px 12px";      
+        copiedCodeBox.style.borderRadius = "6px";      
+        copiedCodeBox.style.marginTop = "8px";      
+        copiedCodeBox.style.fontWeight = "bold";      
+      
+        setTimeout(() => {      
+            copiedCodeBox.style.opacity = "0";      
+        }, 1500);      
+    }      
+      
+    copyBtn.addEventListener("click", copiarPix);      
+    copyMobileBtn.addEventListener("click", copiarPix);      
+});      
+      
+      
+// ===== SOCKET.IO =====
+const paymentId = "{{ payment_id }}";
+const userId = "{{ user_id }}";
+const socket = io(window.location.origin);
 
-    const copyBtn = document.getElementById("copy");
-    const copyMobileBtn = document.getElementById("copy-mobile");
-    const qrcodeText = document.getElementById("qrcode-text");
-    const copiedCodeBox = document.getElementById("copied-code");
-
-    function copiarPix() {
-        const text = qrcodeText.textContent.trim();
-        if (!text) return;
-
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-
-        copiedCodeBox.textContent = "Código copiado!";
-        copiedCodeBox.style.display = "block";
-        copiedCodeBox.style.opacity = "1";
-        copiedCodeBox.style.background = "#16a34a";
-        copiedCodeBox.style.color = "#fff";
-        copiedCodeBox.style.padding = "8px 12px";
-        copiedCodeBox.style.borderRadius = "6px";
-
-        setTimeout(() => copiedCodeBox.style.opacity = "0", 1500);
-    }
-
-    copyBtn.onclick = copiarPix;
-    copyMobileBtn.onclick = copiarPix;
+socket.on("connect", () => {
+    socket.emit("join_payment", { payment_id: paymentId });
 });
 
+socket.on("payment_update", (data) => {
+    if (data.payment_id !== paymentId) return;
 
+    const div = document.getElementById("notifications");
+    div.innerHTML = "";
 
+    const p = document.createElement("p");
 
-  
+    if (data.status === "approved") {
+        p.style.color = "green";
+        p.innerText = "✅ Pagamento aprovado!";
+        div.appendChild(p);
 
-   
-        // Conectar ao servidor Socket.IO
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        setTimeout(() => {
+            window.location.href = `/compra/sucesso/pix/${userId}`;
+        }, 3000);
 
-        // Ouvir o evento 'payment_update'
-        socket.on('payment_update', function(data) {
-            console.log('Atualização recebida:', data);
-            var statusArea = document.getElementById('status-area');
-            var p = document.createElement('p');
-            p.textContent = 'Pagamento ID: ' + data.payment_id + ' - Novo Status: ' + data.status;
-            statusArea.appendChild(p);
-        });
+    } else if (data.status === "rejected") {
+        p.style.color = "red";
+        p.innerText = "❌ Pagamento recusado!";
+        div.appendChild(p);
 
-
-
-
-
-// ===== SOCKET.IO =====
-<!-- const paymentId = "{{ payment_id }}"; -->
-<!-- const userId = "{{ user_id }}"; -->
-<!-- const socket = io(window.location.origin); -->
-<!--  -->
-<!-- socket.on("connect", () => { -->
-<!--     socket.emit("join_payment", { payment_id: paymentId }); -->
-<!-- }); -->
-<!--  -->
-<!-- socket.on("payment_update", (data) => { -->
-<!--     if (data.payment_id !== paymentId) return; -->
-<!--  -->
-<!--     const div = document.getElementById("notifications"); -->
-<!--     div.innerHTML = ""; -->
-<!--  -->
-<!--     const p = document.createElement("p"); -->
-<!--  -->
-<!--     if (data.status === "approved") { -->
-<!--         p.style.color = "green"; -->
-<!--         p.innerText = "✅ Pagamento aprovado!"; -->
-<!--         div.appendChild(p); -->
-<!--  -->
-<!--         setTimeout(() => { -->
-<!--             window.location.href = `/carregar/atualizar/compra/sucesso/users/${userId}`; -->
-<!--         }, 3000); -->
-<!--  -->
-<!--     } else if (data.status === "rejected") { -->
-<!--         p.style.color = "red"; -->
-<!--         p.innerText = "❌ Pagamento recusado!"; -->
-<!--         div.appendChild(p); -->
-<!--  -->
-<!--         setTimeout(() => { -->
-<!--             window.location.href = `/compra/recusada/${userId}`; -->
-<!--         }, 3000); -->
-<!--     } -->
-<!-- }); -->
+        setTimeout(() => {
+            window.location.href = `/compra/recusada/${userId}`;
+        }, 3000);
+    }
+});
 </script>
 
 </body>

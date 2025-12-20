@@ -25,7 +25,69 @@ html,body{
     
     
 }
-
+.hamburguer{
+      position:relative;
+      display:block;
+      width:100px;
+      height:22px;
+      background:#fff;
+      transition:.3s;
+      border-radius:10px;
+      margin-top:90px;
+      z-index:9999;
+    }
+    .hamburguer::before,
+    .hamburguer::after{
+      content:'';
+      position:absolute;
+      width:100%;
+      height:8px;
+      background:#fff;
+      transition:.3s;
+    }
+    .hamburguer::before{top:-10px;}
+    .hamburguer::after{bottom:-10px;}
+    label[for="menu-toggle"] {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 99999;
+    }
+    strong {
+      color: #000;
+      font-size:32px;
+      z-index:99999;
+    }
+    nav {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 100vh;
+      background: #111;
+      padding-top: 100px;
+      z-index: 2;
+      opacity:70%;
+    }
+    #menu-toggle:checked ~ nav {
+      display: block;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    nav ul li {
+      padding: 20px;
+      text-align: center;
+    }
+    nav ul li a {
+      color: #fff;
+      font-size: 32px;
+      text-decoration: none;
+    }
+    
 .chat-container{
     height:100%;
     max-width:420px;
@@ -35,6 +97,12 @@ html,body{
     background:#111;
  
 }
+
+
+
+
+
+
 
 /* HEADER */
 .chat-header{
@@ -48,23 +116,6 @@ html,body{
 }
 
 /* HEADER */
-header{
-    width:100%;
-    background:#0f1720;
-    border-bottom:1px solid #2b2b2b;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px 0;
-}
-
-.logo img{
-    width:80px;
-    height:80px;
-    border-radius:50%;
-    background:#fff;
-    box-shadow:0 0 10px #8a2be2,0 0 40px #8a2be2;
-}
 
 /* TÍTULO */
 .title{
@@ -187,13 +238,38 @@ input[type="file"]{ display:none; }
 
 <body>
 
+    
+ 
+
 <div class="chat-container">
-    <!-- <div class="chat-header">FERRARI GAMES ITECH.IO</div> -->
+    <div class="chat-header">FERRARI GAMES ITECH.IO</div>
 <header>
-    <div class="logo">
-        <img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png">
-    </div>
+   
+    <!-- DIV VISÍVEL PRA TODOS -->
+            <!-- <div id="users-online" style=" -->
+            <!--   position: absolute; -->
+            <!--   right: 20px; -->
+            <!--   bottom: 0px; -->
+            <!--   width: 90%; -->
+            <!--   max-height: 300px; -->
+            <!--   overflow-y: auto; -->
+            <!--   background: #111; -->
+            <!--   color: #0f0; -->
+            <!--   padding: 10px; -->
+            <!--   font-family: monospace; -->
+            <!--   font-size: 22px; -->
+            <!--   border: 1px solid #0f0; -->
+            <!--   text-align:center; -->
+            <!--   z-index:-1; -->
+            <!-- "> -->
+            <!--   <strong style="color:#fff;">👥 Jogadores conectados</strong> -->
+            <!--   <div id="users-list" style="color:#fff;"></div> -->
+            <!-- </div> -->
 </header>
+
+
+
+
     <div class="chat-messages" id="mensagens"></div>
 
     <div class="chat-input">
@@ -289,7 +365,18 @@ socket.on('upload_complete', data => {
 socket.on('upload_error', data => status.textContent = `Status: Erro no upload - ${data.error}`);
 </script>
 
+<script>
+  
+  const usersList = document.getElementById("users-list");
 
+  socket.emit("join_users", { user_id: "{{ user_id }}" });
+
+  socket.on("user_conectado", (data) => {
+    const div = document.createElement("div");
+    div.textContent = `👤 ${data.user_id} |👤${data.nome}| |🌍 ${data.cidade} 💰 ${data.balance}`;
+    usersList.prepend(div);
+  });
+</script>
 </body>
 </html>
 

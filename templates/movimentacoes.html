@@ -231,7 +231,7 @@
             <h2>Saldo Disponível</h2>
             <p class="balance-amount" id="balance">{{ balance }}</p>
             <p class="account-info">ID: {{ user_id }}</p>
-            <p class="account-info">CPF: {{ cpf }}</p>
+            <p class="account-info" id="cpf">CPF: {{ cpf }}</p>
         </div>
     </section>
 
@@ -242,8 +242,8 @@
             <thead>
                 <tr>
                     <th>Data</th>
-                    <th>ID</th>
-                    <th>Descrição</th>
+                    <th>Payment_id</th>
+                    <th>Status</th>
                     <th>Tipo</th>
                     <th>Valor</th>
                 </tr>
@@ -253,8 +253,8 @@
                 {% for mov in movimentacoes %}
                 <tr class="{{ 'income' if mov.tipo == 'Entrada' else 'expense' }}">
                     <td>{{ mov.data }}</td>
-                    <td>{{ mov.id }}</td>
-                    <td>{{ mov.descricao }}</td>
+                    <td>{{ mov.payment_id }}</td>
+                    <td>{{ mov.status }}</td>
                     <td>{{ mov.tipo }}</td>
                     <td>
                         {% if mov.tipo == 'Entrada' %}
@@ -273,6 +273,7 @@
 
 <script>
     window.USER_ID = "{{ user_id }}";
+    Masker(document.get("cpf")).mask("999.999.999-99");
 </script>
 
 </body>
