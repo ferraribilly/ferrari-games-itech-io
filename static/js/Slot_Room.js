@@ -40,6 +40,7 @@ export default class Slot {
       ["13","15","15"]
     ];
     
+
     this.nextSymbols = JSON.parse(JSON.stringify(this.currentSymbols));
     this.container = domElement;
 
@@ -107,6 +108,7 @@ export default class Slot {
     };
   }
 
+  // >>> CORRIGIDO: NÃO CHAMA /rodar NO LOAD <<<
   async init() {
     this.balance = parseFloat(
       this.balanceUI.textContent
@@ -153,97 +155,18 @@ export default class Slot {
     msg.style.position = "absolute";
     msg.style.top = "50%";
     msg.style.left = "50%";
-    msg.style.zIndex = "9999";
     msg.style.transform = "translate(-50%, -50%)";
-    msg.style.background = "#222";
+    msg.style.background = "#333";
     msg.style.padding = "20px";
     msg.style.color = "white";
     msg.style.border = "2px solid #000";
     msg.style.textAlign = "center";
     msg.style.width = "580px";
-    msg.style.borderRadius = "10px";
-    msg.style.boxShadow = "0 0 20px black";
-    
-    msg.innerHTML = `
-    <div id="envelope-card" style="
-        position:absolute;
-        top:-130px;
-        left:50%;
-        transform:translateX(-50%);
-        width:160px;
-        height:110px;
-        background:red;
-        border-radius:8px;
-        cursor:pointer;
-        box-shadow:0 8px 15px rgba(0,0,0,.5);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-    ">
-        <span style="font-size:60px;">✉️</span>
-    
-        <div id="envelope-balloon" style="
-            position:absolute;
-            bottom:120%;
-            left:50%;
-            transform:translateX(-50%);
-            background:white;
-            color:black;
-            padding:12px;
-            border-radius:10px;
-            width:260px;
-            display:none;
-            box-shadow:0 5px 15px rgba(0,0,0,.4);
-        ">
-            Quer fazer parte dos admin da plataforma e ganhar a cada deposito?  
-            <br><br>
-            <a href="#" style="color:#0066ff; font-weight:bold;">Clique aqui</a>
-        </div>
-    </div>
-    
-    <p style="font-size:20px; margin-bottom:12px;">Saldo insuficiente!!</p>
-    
-    <div id="ad-card" style="
-        width:100%;
-        height:220px;
-        background:#000;
-        border-radius:8px;
-        overflow:hidden;
-        margin-bottom:15px;
-        border:1px solid #555;
-    ">
-        <video 
-          src="SEU_VIDEO_AQUI.mp4"
-          autoplay
-          muted
-          loop
-          playsinline
-          style="width:100%; height:100%; object-fit:cover;">
-        </video>
-    </div>
-    
-    <button id="deposit-btn" style="
-        width:100%;
-        padding:12px;
-        font-size:22px;
-        cursor:pointer;
-        border:none;
-        border-radius:6px;
-        background:blue;
-        color:#fff;
-    ">
-      Ir para Depósitos
-    </button>
-    `;
-    
+    msg.innerHTML =
+      `<p>Saldo insuficiente!!</p>
+       <button id="deposit-btn">Ir para Depósitos</button>`;
+
     document.body.appendChild(msg);
-    
-    const envelope = document.getElementById("envelope-card");
-    const balloon = document.getElementById("envelope-balloon");
-    
-    envelope.addEventListener("click", () => {
-        balloon.style.display = balloon.style.display === "block" ? "none" : "block";
-    });
 
     document.getElementById("deposit-btn")
       .addEventListener("click", () => {
@@ -259,7 +182,7 @@ export default class Slot {
 
     let backend = null;
     try {
-      const resp = await fetch(`/rodar/${window.USER_ID}`, {
+      const resp = await fetch(`/rodar_multiplayer/${ROOM_ID}/${window.USER_ID}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bet: this.betValue })
@@ -295,12 +218,8 @@ export default class Slot {
       this.stopSpinSound.play().catch(()=>{});
     }
 
-    if (backend?.wins) {
-      backend.wins.forEach(win => {
-        this.highlightWin(win.positions);
-        this.activatePayline(win.payline);
-      });
-    }
+    if (backend?.wins)
+      backend.wins.forEach(win => this.highlightWin(win.positions));
 
     this.updateUI(backend?.win ? parseFloat(backend.win) : 0);
 
@@ -322,23 +241,6 @@ export default class Slot {
     positions.forEach(([c, r]) => {
       const el = this.reels[c].symbolContainer.children[r];
       if (el) el.classList.add("win");
-    });
-  }
-
-  activatePayline(payline) {
-    if (!payline) return;
-    const ids = Array.isArray(payline) ? payline : [payline];
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.style.opacity = "1";
-      el.style.filter = "drop-shadow(0 0 8px white)";
-      el.classList.add("active-payline");
-      setTimeout(() => {
-        el.style.opacity = "";
-        el.style.filter = "";
-        el.classList.remove("active-payline");
-      }, 1500);
     });
   }
 

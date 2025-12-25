@@ -6,68 +6,33 @@
 <title>Plataforma Ferrari Games itech.io</title>
 <style>
   body {
-    margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #111;
+    background-color: #000;
+    color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    color: #fff;
     padding: 10px;
+    margin: 0;
+    overflow-x: hidden;
   }
 
-  .user-panel {
-    width: 100%;
-    max-width: 660px;
-    background: rgba(0,0,0,0.7);
-    border-radius: 15px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 30px;
-    box-shadow: 0 0 20px rgba(255,255,255,0.2);
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .user-photo {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1763000057/Pngtree_casino_poker_chips_falling_with_21201916_hkt3kp.png');
-    background-size: cover;
-    background-position: center;
-    margin-right: 20px;
-    margin-bottom: 10px;
-    border: 2px solid #fff;
-  }
-.logo img {
+  .logo img {
     height: 100px;
     max-width: 100px;
-    background:#fff;
-    border-radius:50%;
-    box-shadow:
-     0 0 10px #8a2be2,   /* Brilho interno suave */
-     0 0 40px #8a2be2,   /* Brilho externo mais forte */
-     0 0 80px #8a2be2;   /* Brilho ainda mais espalhado */
-     text-shadow:
-     0 0 5px #fff,       /* Brilho no texto */
-     0 0 10px #8a2be2;
-    }
-}
-  .user-info {
-    display: flex;
-    flex-direction: column;
-    text-align: center;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #8a2be2, 0 0 40px #8a2be2, 0 0 80px #8a2be2;
   }
 
-  .user-info span {
-    margin-bottom: 5px;
-    font-size: 16px;
-  }
-
-  .user-info span strong {
+  .titulo-secao {
+    width: 100%;
+    max-width: 1000px;
+    margin: 20px 0 10px 10px;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
     color: #ffd700;
   }
 
@@ -76,42 +41,30 @@
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
     width: 100%;
-    max-width: 560px;
+    max-width: 1000px;
   }
 
   .game {
     position: relative;
     width: 100%;
     padding-top: 100%;
-    background-size: 120%;
+    background-size: cover;
     background-position: center;
     border-radius: 15px;
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    animation: backgroundMove 10s infinite alternate linear;
+    box-shadow: 0 0 10px #111, 0 0 40px #111, 0 0 80px #111;
   }
 
   .game:hover {
-    animation: pulse 1s infinite, backgroundMove 10s infinite alternate linear;
+    transform: scale(1.05);
     box-shadow: 0 0 20px rgba(255,255,255,0.5);
-  }
-
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-  }
-
-  @keyframes backgroundMove {
-    0% { background-position: center top; }
-    50% { background-position: center center; }
-    100% { background-position: center bottom; }
   }
 
   .game-label {
     position: absolute;
-    top: 10px;
+    bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
     color: #fff;
@@ -119,174 +72,118 @@
     background: rgba(0,0,0,0.5);
     padding: 5px 10px;
     border-radius: 8px;
-    pointer-events: none;
-    font-size: 22px;
-   
-    aling-items:center;
-    justify-content:center;
+    font-size: 16px;
+    text-align: center;
   }
-.titulo-container {
-    text-align: center; /* Centraliza o título e o slogan */
-    margin-bottom: 20px; /* Adiciona espaço abaixo do contêiner, se necessário */
-}
 
-.titulo-container h1 {
-    font-size: 3em; /* Tamanho da fonte grande para o título */
-    color: #fff; /* Cor escura para destaque */
-    margin-bottom: 0.2em; /* Espaço pequeno entre o título e o slogan */
-    font-weight: 700; /* Negrito para o título */
-    text-transform: uppercase; /* Deixa o título em maiúsculas, se desejar */
-}
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
 
+  .modal-content {
+    background: #000;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 0 25px rgba(255,255,255,.3);
+  }
 
+  .modal-content h2 {
+    margin-bottom: 20px;
+  }
 
-/* MODAL */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.85);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
-}
+  .modal-content button {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+  }
 
-.modal-content{
-  background:#000;
-  border-radius:15px;
-  padding:30px;
-  text-align:center;
-  width:90%;
-  max-width:400px;
-  box-shadow:0 0 25px rgba(255,255,255,.3);
-}
+  .btn-criar {
+    background: gold;
+    color: #000;
+  }
 
-.modal-content h2{
-  margin-bottom:20px;
-}
+  .btn-jogar {
+    background: #1e90ff;
+    color: #fff;
+  }
 
-.modal-content button{
-  width:100%;
-  padding:15px;
-  margin:10px 0;
-  font-size:16px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-.btn-criar{
-  background:gold;
-  color:#000;
-}
-
-.btn-jogar{
-  background:#1e90ff;
-  color:#fff;
-}
   @media (max-width: 500px) {
-    .user-photo {
-      margin-right: 0;
-    }
-    .user-info {
-      font-size: 14px;
-    }
-    .game-label {
-      font-size: 12px;
-      padding: 3px 6px;
-    }
+    .game-label { font-size: 12px; padding: 3px 6px; }
   }
-
-</style>
-
 </style>
 </head>
 <body>
+  <div class="logo">
+    <a href="#"><img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png" alt="Logo"></a>
+  </div>
+
   <audio id="ambienteSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765497375/no-time-left-the-final-battle-epic-soundtrack-no13-vos-studio-387551_tzzl94.mp3" loop autoplay></audio>
-<div class="user-panel">
-  
-     <div class="logo">
-            <a href="#">
-      <img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png" alt="Logo do sistema">
-            </a>
-        </div>
-</div>
 
-<div class="grid-container">
-  <a href="/acesso/users/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765459482/Screenshot_20251211-101658_2_l62kgf.jpg');">
-    <div class="titulo-container">
-        <h1>FORTUNE MONEY</h1>
-        <p class="slogan">novo jogo.</p>
+  <!-- SLOTS -->
+  <div class="titulo-secao">Slots e Rifas</div>
+  <div class="grid-container">
+    <a href="#" class="game" style="background-image: url('');">
+      <div class="game-label">Roletas Online "EM BREVE" voce criara sua propia maquina e convidar apostadores e duelar seus saldo</div>
+    </a>
+    <a href="/acesso/users/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765459482/Screenshot_20251211-101658_2_l62kgf.jpg');">
+      <div class="game-label">FORTUNE MONEY</div>
+    </a>
+    <a href="/acesso/users/3x3/{{user_id}}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765403339/Screenshot_20251210-184433_2_abzq81.jpg');">
+      <div class="game-label">Fortune era egpcia</div>
+    </a>
+    <a href="/acesso/users/fortune/duends/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765490175/Screenshot_20251211-185016_2_gaa74o.jpg');">
+      <div class="game-label">Fortune Pote Ouro</div>
+    </a>
+    <a href="/acesso/users/fortune/cofre/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765494761/Screenshot_20251211-200830_2_uszftz.jpg');">
+      <div class="game-label">Fortune Cofre Premiado</div>
+    </a>
+    <a href="/acesso/users/fortune/girls/{{ user_id }}" class="game" style="background-image: url('');">
+      <div class="game-label">Fortune Girls Poker</div>
+    </a>
+  </div>
+
+  <!-- RIFAS -->
+  <div class="titulo-secao">Rifas</div>
+  <div class="grid-container">
+    <a href="javascript:void(0)" class="game" onclick="abrirModal()" style="background-image:url('https://res.cloudinary.com/dptprh0xk/image/upload/v1764290951/loterias-caixa-logo_u3arzq.png');">
+      <div class="game-label">SAV AWARD</div>
+    </a>
+   <div></div>
+     
+  </div>
+
+  <div class="modal" id="modalRifa">
+    <div class="modal-content">
+      <h2>SAV AWARD</h2>
+      <button class="btn-criar" onclick="location.href='/assinatura/{{ user_id }}'">Organizar uma rifa</button>
+      <button class="btn-jogar" onclick="location.href='/index/users/{{ user_id }}'">Jogar</button>
     </div>
-    
-  </a>
-   
+  </div>
 
-  <a href="/acesso/users/3x3/{{user_id}}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765403339/Screenshot_20251210-184433_2_abzq81.jpg');">
-   <div class="titulo-container">
-       <h1>Fortune era egpcia</h1>
-       <p class="slogan">Novo Jogo.</p>
-   </div>
-   
-  </a>
-
- <div class="game"
-         onclick="abrirModal()"
-         style="background-image:url('https://res.cloudinary.com/dptprh0xk/image/upload/v1764290951/loterias-caixa-logo_u3arzq.png');">
-      <div class="titulo-container">
-        <h1>SAV AWARD</h1>
-        <p>rifas online</p>
-      </div>
-    </div>
-  
-
-  <a href="/acesso/users/fortune/duends/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765490175/Screenshot_20251211-185016_2_gaa74o.jpg');">    <div class="titulo-container">
-        <h1>Fortune Pote Ouro</h1>
-        <p class="slogan">Novo Jogo.</p>
-    </div>
-    
-  </a>
-
-  <a href="/acesso/users/fortune/cofre/{{ user_id }}" class="game" style="background-image: url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765494761/Screenshot_20251211-200830_2_uszftz.jpg');"> <div class="titulo-container">
-        <h1>Fortune Cofre Premiado</h1>
-        <p class="slogan">Novo Jogo.</p>
-    </div>
-    
-  </a>
-
- <div class="modal" id="modalRifa">
-   <div class="modal-content">
-     <h2>SAV AWARD</h2>
- 
-     <button class="btn-criar"
-       onclick="location.href='/assinatura/{{ user_id }}'">
-       Organizar uma rifa
-     </button>
- 
-     <button class="btn-jogar"
-       onclick="location.href='/index/users/{{ user_id }}'">
-       Jogar
-     </button>
-   </div>
- </div>
- 
-</div>
 <script>
 window.USER_ID = "{{ user_id }}";
 function abrirModal(){
   document.getElementById('modalRifa').style.display='flex';
 }
-
 document.getElementById('modalRifa').onclick = function(e){
   if(e.target === this){
     this.style.display='none';
   }
 }
 </script>
-
-
 </body>
 </html>
-
-

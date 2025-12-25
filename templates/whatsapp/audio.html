@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chamada de Áudio Flask-SocketIO</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Chamada de Áudio (Beta)</h1>
+    <input type="text" id="username" placeholder="Seu nome de usuário">
+    <input type="text" id="room" placeholder="Nome da sala">
+    <button onclick="joinRoom()">Entrar na Sala</button>
+    
+    <div id="chat-area" style="display: none;">
+        <p>Conectado. Esperando outro usuário...</p>
+        <audio id="remoteAudio" autoplay controls></audio>
+    </div>
+
+    <script>
+        const socket = io.connect('http://' + document.domain + ':' + location.port);
+        let pc; // RTCPeerConnection
+        let localStream;
+        const remoteAudio = document.getElementById('remoteAudio');
+        const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
+
+        // ... (Código JavaScript para WebRTC e Socket.IO) ...
+        // A implementação completa do WebRTC em JS é extensa.
+        // Você pode encontrar tutoriais completos sobre a API WebRTC em fontes como [html5rocks.com](http://www.html5rocks.com/en/tutorials/webrtc/basics/) ou vídeos no YouTube.
+
+        // ... (Exemplo de como enviar eventos para o backend) ...
+        function sendWebrtcEvent(event) {
+            event.room = document.getElementById('room').value;
+            socket.emit('webrtc_event', event);
+        }
+
+        socket.on('user_joined', (data) => {
+            console.log(data.username + ' entrou na sala. Iniciando chamada...');
+            // Lógica para iniciar a oferta WebRTC aqui
+        });
+        
+        socket.on('webrtc_event', (data) => {
+            // Lógica para processar ofertas, respostas e candidatos ICE recebidos
+        });
+    </script>
+</body>
+</html>

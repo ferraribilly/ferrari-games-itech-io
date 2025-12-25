@@ -1,151 +1,173 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <!-- Configura a visualização para a largura do dispositivo e garante o zoom inicial -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planos de Assinatura Raffles</title>
-   <style>
-   /* Estilos básicos e reset simples */
-   * {
-       box-sizing: border-box;
-       margin: 0;
-       padding: 0;
-   }
-   
-   body {
-       font-family: sans-serif;
-       background-color: #f4f4f4;
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       min-height: 100vh;
-       padding: 20px;
-   }
-   
-   /* O container principal usa Flexbox para organizar os planos */
-   .pricing-container {
-       display: flex;
-       flex-direction: column; /* Coloca os itens em coluna por padrão (mobile-first) */
-       gap: 20px;
-       width: 100%;
-       max-width: 1000px;
-   }
-   
-   .pricing-plan {
-       background-color: #fff;
-       padding: 30px;
-       border-radius: 8px;
-       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-       text-align: center;
-       transition: transform 0.3s ease;
-   }
-   
-   .pricing-plan:hover {
-       transform: translateY(-5px);
-   }
-   
-   .pricing-plan.featured {
-       border: 2px solid #007bff;
-       box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
-   }
-   
-   h3 {
-       margin-bottom: 15px;
-       font-size: 1.5rem;
-   }
-   
-   .price {
-       font-size: 3rem;
-       font-weight: bold;
-       color: #007bff;
-       margin-bottom: 20px;
-   }
-   
-   .price span {
-       font-size: 1rem;
-       font-weight: normal;
-       color: #666;
-   }
-   
-   ul {
-       list-style: none;
-       margin-bottom: 30px;
-   }
-   
-   li {
-       padding: 10px 0;
-       border-bottom: 1px solid #eee;
-   }
-   
-   .btn {
-       display: inline-block;
-       padding: 12px 25px;
-       background-color: #007bff;
-       color: white;
-       text-decoration: none;
-       border-radius: 5px;
-       transition: background-color 0.3s ease;
-   }
-   
-   .btn:hover {
-       background-color: #0056b3;
-   }
-   
-   /* Media Query para telas maiores (tablets e desktops) */
-   @media (min-width: 768px) {
-       .pricing-container {
-           flex-direction: row; /* Muda para linha em telas maiores */
-           justify-content: center;
-           align-items: flex-start; /* Alinha os planos pelo topo para que fiquem uniformes */
-       }
-   
-       .pricing-plan {
-           flex: 1; /* Distribui o espaço igualmente entre os planos */
-           max-width: 300px;
-       }
-   }
-   </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planos de Assinatura Raffles</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* FORM ARRUMADO */
+.token-form {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.token-form label {
+    font-weight: bold;
+    text-align: center;
+}
+
+.token-form input {
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+
+.token-form button {
+    padding: 12px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.token-form button:hover {
+    background-color: #0056b3;
+}
+
+/* PLANOS */
+.pricing-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.pricing-plan {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.pricing-plan.featured {
+    border: 2px solid #007bff;
+}
+
+.price {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+ul {
+    list-style: none;
+    margin-bottom: 30px;
+}
+
+li {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+@media (min-width: 768px) {
+    .pricing-container {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .pricing-plan {
+        flex: 1;
+        max-width: 300px;
+    }
+}
+</style>
 </head>
+
 <body>
 
-    <div class="pricing-container">
-        <div class="pricing-plan">
-            <h3>Básico</h3>
-            <p class="price">R$ 19,90<span>/mês</span></p>
-            <ul>
-                <li> 50 "Numeros" ou 50 "Nomes"</li>
-                <li>Direcionamento whatsapp</li>
-                <li>Suporte básico</li>
-            </ul>
-            <a href="#" class="btn">Assinar Básico</a>
-        </div>
+<form class="token-form">
+    <label>Acesso Admin</label>
+    <input type="text" placeholder="Coloque seu token">
+    <button type="submit">Acessar</button>
+</form>
 
-        <div class="pricing-plan featured">
-            <h3>Pro</h3>
-            <p class="price">R$ 49,90<span>/mês</span></p>
-            <ul>
-                <li>Todas as funcionalidades do Básico</li>
-                <li>99 "Numeros ou 99 "Nomes</li>
-                <li>Suporte prioritário</li>
-            </ul>
-            <a href="#" class="btn">Assinar Pro</a>
-        </div>
-
-        <div class="pricing-plan">
-            <h3>Ultimate</h3>
-            <p class="price">R$ 99,90<span>/mês</span></p>
-            <ul>
-                <li>Todas as funcionalidades Pro</li>
-                <li>Crie Videos Propagandas</li>
-                <li>Pagamentos com Api Mercado Pago</li>
-                <li>Checkout Pro</li>
-                <li>Chat Tempo Real com Participantes</li>
-                <li>Suporte 24/7</li>
-            </ul>
-            <a href="#" class="btn">Assinar Ultimate</a>
-        </div>
+<div class="pricing-container">
+    <div class="pricing-plan">
+        <h3>Básico</h3>
+        <p class="price">R$ 19,90</p>
+        <ul>
+            <li>50 Números ou Nomes</li>
+            <li>Direcionamento WhatsApp</li>
+            <li>Suporte básico</li>
+        </ul>
+        <a href="#" class="btn">Assinar Básico</a>
     </div>
+
+    <div class="pricing-plan featured">
+        <h3>Pro</h3>
+        <p class="price">R$ 49,90</p>
+        <ul>
+            <li>Todas do Básico</li>
+            <li>99 Números ou Nomes</li>
+            <li>Suporte prioritário</li>
+        </ul>
+        <a href="#" class="btn">Assinar Pro</a>
+    </div>
+
+    <div class="pricing-plan">
+        <h3>Ultimate</h3>
+        <p class="price">R$ 99,90</p>
+        <ul>
+            <li>Todas do Pro</li>
+            <li>Vídeos propaganda</li>
+            <li>Mercado Pago API</li>
+            <li>Checkout Pro</li>
+            <li>Chat em tempo real</li>
+            <li>Suporte 24/7</li>
+        </ul>
+        <a href="#" class="btn">Assinar Ultimate</a>
+    </div>
+</div>
 
 </body>
 </html>

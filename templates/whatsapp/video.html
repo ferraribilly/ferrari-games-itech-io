@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Chamada Responsiva</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100vh;background:#000;overflow:hidden}
+
+.video-container{position:relative;width:100%;height:100%;display:flex;justify-content:center;align-items:center}
+
+.main-video-feed{position:absolute;top:0;left:0;width:100%;height:100%}
+.main-video-feed video{width:100%;height:100%;object-fit:cover}
+
+.user-name{position:fixed;bottom:100px;left:10px;color:#fff;background:rgba(0,0,0,.5);padding:5px 10px;border-radius:5px}
+
+.local-video-feed{position:absolute;top:20px;right:20px;width:100px;height:150px;background:#333;border-radius:10px;overflow:hidden;z-index:10;border:2px solid #fff}
+.local-video-feed video{width:100%;height:100%;object-fit:cover}
+
+.call-controls{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:20px;z-index:20;background:rgba(0,0,0,.6);padding:10px 20px;border-radius:30px}
+
+.control-btn{background:rgba(255,255,255,.2);border:none;border-radius:50%;width:50px;height:50px;color:#fff;font-size:20px;cursor:pointer;display:flex;justify-content:center;align-items:center}
+.end-call-btn{background:#ff3b30}
+
+@media(max-width:600px){
+.local-video-feed{width:90px;height:130px}
+.call-controls{bottom:100px}
+}
+</style>
+</head>
+
+<body>
+<div class="video-container">
+
+<div class="main-video-feed">
+<video id="remoteVideo" autoplay playsinline></video>
+<div class="user-name">Ferrari games</div>
+</div>
+
+<div class="local-video-feed">
+<video id="localVideo" autoplay muted playsinline></video>
+</div>
+
+<div class="call-controls">
+<button class="control-btn"><i class="fas fa-microphone"></i></button>
+<button class="control-btn"><i class="fas fa-video"></i></button>
+<button class="control-btn end-call-btn"><i class="fas fa-phone-slash"></i></button>
+</div>
+
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const socket = io({transports:['websocket']})
+let pc, localStream, room="sala1"
+
+const config={iceServers:[{urls:'stun:stun.l.google.com:19302'}]}
+
+async function pedirCamera(){
+return await navigator.mediaDevices.getUserMedia({video:true,audio:true})
+}
+
+async function joinRoom(){
+socket.emit('join',{room})
+
+localStream=await pedirCamera()
+document.getElementById('localVideo').srcObject=localStream
+
+pc=new RTCPeerConnection(config)
+localStream.getTracks().forEach(t=>pc.addTrack(t,localStream))
+
+pc.ontrack=e=>{
+document.getElementById('remoteVideo').srcObject=e.streams[0]
+}
+
+pc.onicecandidate=e=>{
+if(e.candidate) socket.emit('ice-candidate',{room,candidate:e.candidate})
+}
+
+const offer=await pc.createOffer()
+await pc.setLocalDescription(offer)
+socket.emit('offer',{room,offer})
+}
+
+socket.on('offer',async data=>{
+if(!pc){
+pc=new RTCPeerConnection(config)
+localStream.getTracks().forEach(t=>pc.addTrack(t,localStream))
+pc.ontrack=e=>{
+document.getElementById('remoteVideo').srcObject=e.streams[0]
+}
+pc.onicecandidate=e=>{
+if(e.candidate) socket.emit('ice-candidate',{room,candidate:e.candidate})
+}
+}
+await pc.setRemoteDescription(new RTCSessionDescription(data.offer))
+const answer=await pc.createAnswer()
+await pc.setLocalDescription(answer)
+socket.emit('answer',{room,answer})
+})
+
+socket.on('answer',data=>{
+pc.setRemoteDescription(new RTCSessionDescription(data.answer))
+})
+
+socket.on('ice-candidate',data=>{
+if(data.candidate) pc.addIceCandidate(new RTCIceCandidate(data.candidate))
+})
+
+joinRoom()
+</script>
+</body>
+</html>

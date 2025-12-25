@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FERRARI GAMES ITECH IO</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/whatsapp/machine.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/whatsapp/slotcanvas.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/whatsapp/controls.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/whatsapp/panel.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/whatsapp/paylines.css') }}">
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+
+
+
+
+ .clock {
+        top:0;
+        aling-items:center;
+        justify-content:center;
+        font-size: 1rem;
+        font-family: monospace;
+        color: #fff;
+        text-align:center;
+        padding: 0px 20px;
+        
+        border-radius: 10px;
+    }
+
+
+
+/* PAINEL */
+.panel{
+    position:fixed;
+        bottom:0;
+        left:0;
+        width:100%;
+        height:70px;
+        background:#fff;
+        border-top:1px solid #ddd;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:0 15px;
+        z-index:20;
+}
+
+.attach-menu{
+    position:absolute;
+    bottom:120px;
+    left:10px;
+    display:none;
+    flex-direction:column;
+    gap:10px;
+    z-index:99999;
+}
+
+.attach-menu button{
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    font-size:20px;
+}
+
+
+
+
+/* CONTROLS – ALINHAMENTO CORRETO */
+#controls{
+  width:100%;
+  display:flex;
+  border-radius:15px;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:10px;
+  background:#000;
+  box-shadow:0 0 10px #fff,0 0 20px #0ff,0 0 40px #fff;
+}
+
+#controls > .secao-saldo,
+#controls > .secao-apostas,
+#controls > .secao-ganhos{
+  flex:1;
+  padding:10px;
+  text-align:center;
+  border-radius:12px;
+  font-weight:bold;
+    
+  
+}
+
+
+.secao-saldo{color:#00ff00;}
+.secao-ganhos{color:#ffd700;}
+.secao-apostas{color:#ff4444;}
+
+.titulo-saldo,
+.titulo-ganhos,
+.titulo-apostas{
+  font-size:12px;
+  opacity:.8;
+  font-family:monospace;
+  font-weight: bold;                            
+
+  }
+.valor-saldo,
+.valor-ganhos,
+.valor-apostas{
+  font-size:12px;
+  font-family:monospace;
+  font-weight: bold;    
+  display:block;                        
+
+}
+
+
+/* USERS ABAIXO + SCROLL */
+.user-list-container{
+  width:100%;
+  background:#333;
+  border-radius:12px;
+  padding:10px;
+  max-height:250px;
+  overflow-y:auto;
+}
+
+#spin {
+	width:52px;
+    height:52px;
+    border-radius:50%;
+    background:transparent;
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    animation: spin-rotate 2.5s linear infinite,pulse-glow-spin 1s infinite;
+    transform-origin: center;
+    box-shadow:0 0 10px #fff,0 0 30px #0ff;
+    cursor:pointer;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.3rem;
+}
+
+
+@keyframes pulse-glow-spin {          
+  0% { filter: brightness(100%); }          
+  50% { filter: brightness(150%); }          
+  100% { filter: brightness(100%); }          
+}        
+@keyframes spin-rotate{
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.betPlus {
+	width:52px;
+    height:52px;
+    border-radius:50%;
+    color:green;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.3rem;
+}
+.betMinus {
+	 width:52px;
+    height:52px;
+    border-radius:50%;
+    color:red;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.3rem;
+}
+
+.auto {
+	width:52px;
+    height:52px;
+    border-radius:50%;
+    color:gold;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.3rem;
+}
+
+#autoplayBox {
+      display:none;
+      height:auto;
+      position:fixed;
+      right:80px;
+      background:#111;
+      padding:20px;
+      border-radius:10px;
+      z-index:99999;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:20px;
+    }
+
+
+    
+    #autoplayBox h3 {
+      color:white;
+      text-align:center;
+      margin:0 0 10px 0;
+    }
+    
+    #autoplayBox .autoOption { 
+      padding:30px;
+      height:auto;
+      background:#222;
+      color:white;
+      border:none;
+      border-radius:5px;
+      cursor:pointer;
+      gap:20px;
+     
+      
+    }
+    #autoplayBox .autoOption:hover {
+      background:#333;
+    }
+    
+   
+    
+
+.user-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+
+.user-item{
+  display:grid;
+  grid-template-columns:40px 1fr auto 60px;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid #fff;
+  
+  }
+
+.user-item:last-child{
+  border-bottom:none;
+}
+
+<!-- .user-avatar{ -->
+<!--   width:20px; -->
+<!--   height:20px; -->
+<!--   border-radius:50%; -->
+<!--   background:#007bff; -->
+<!--   color:#fff; -->
+<!--   display:flex; -->
+<!--   align-items:center; -->
+<!--   justify-content:center; -->
+<!--   font-weight:bold; -->
+<!-- } -->
+
+.user-name{
+  color:#fff;
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.user-status{
+  font-size:11px;
+  padding:4px 8px;
+  border-radius:10px;
+}
+
+.online{background:#1a7e3a;color:#e6ffec;}
+.offline{background:#444;color:#bbb;}
+
+.video-mini{
+  width:60px;
+  height:40px;
+  background:#000;
+  border:1px solid #0ff;
+  border-radius:6px;
+}
+
+.video-mini.off{
+  opacity:.3;
+  border-color:#555;
+}
+
+
+.local-video-feed{position:absolute;top:20px;right:20px;width:100px;height:150px;background:#333;border-radius:10px;overflow:hidden;z-index:10; border:2px solid #fff}
+.local-video-feed video{width:100%;height:100%;object-fit:cover}
+
+
+h3 {
+	color:#fff;
+}
+
+
+<!-- /* garante espaço pro panel sem mexer em nada estrutural */ -->
+<!-- .list, -->
+<!-- .user-list-container{ -->
+<!--   margin-bottom:90px; -->
+<!-- } -->
+<!--  -->
+
+
+
+.polyline-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 300px;
+  /* Garante que o SVG fique por cima da grade, se necessário */
+  pointer-events: none;
+}
+
+
+
+/* telas baixas (Galaxy A10) pequeno) */
+@media (max-height:720px){
+  .list,
+  .user-list-container{
+    margin:50px;
+    padding:30px;
+    max-height:150px;
+  }
+
+  
+  .user-item {
+          flex-wrap: wrap; /* Permite que os itens da lista quebrem linha, se necessário */
+          justify-content: space-between;
+      }
+      
+      .avatar {
+          margin-right: 10px;
+          width:32px;
+          height:32px;
+          }
+
+      
+      .panel { 	
+       height:auto;
+       background:#333;
+      }
+      #spin {
+      	width:52px;
+        height:52px;
+        font-size:1.3rem;
+              }
+     .betPlus {
+     	width:32px;
+     	height:32px;
+        font-size:1.3rem;
+     	      }
+     .betMinus {
+     	width:32px; 
+        height:32px;
+        font-size:1.3rem;
+     	   }
+
+     .auto {
+      width:32px; 
+      height:32px;
+      font-size:1.3rem;
+      }   
+
+      .panel img {
+       width:32px; 
+       height:32px;
+       
+        }  	   
+     	   
+
+      
+}
+
+
+
+
+/* Media Query para telas menores (mobile MOTOROLA MOTO G7 POWER OK) */
+@media (max-width: 600px) {
+    .user-list-container {
+        padding: 15px;
+        margin: 10px;
+        
+            }
+            
+
+    
+    .user-item {
+        flex-wrap: wrap; /* Permite que os itens da lista quebrem linha, se necessário */
+        justify-content: space-between;
+    }
+    
+    .user-avatar {
+        margin-right: 10px;
+    }
+}
+
+/* Media Query para telas menores (mobile MOTOROLA MOTO G7 POWER OK) */
+@media (max-width: 800px) {
+    .user-list-container {
+        padding: 15px;
+        margin: 10px;
+        max-height:160px;
+        
+            }
+
+    
+    .user-item {
+        flex-wrap: wrap; /* Permite que os itens da lista quebrem linha, se necessário */
+        justify-content: space-between;
+    }
+    
+    .user-avatar {
+        margin-right: 10px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<div class="local-video-feed">
+<i style="color:#fff; width:40px height:40px; padding:5px; background:red; border-radius:50%;" class="fa-solid fa-close"></i>
+<video id="localVideo" autoplay playsinline></video>
+</div>
+    <div id="slotCanvas">
+      <div id="jackpot"><h1 class="slogan"></h1></div>
+      <div id="linesLayer"></div>
+      <audio id="spinSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765318329/reelSpin_sea06g.mp3"></audio>
+      <audio id="winSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765318888/slotWin_ivooyw.mp3"></audio>
+      <audio id="stopSpinSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765319672/reelStop_znsv9k.mp3"></audio>
+      <audio id="ambienteSound" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1765320627/cinematic-egypt-music-387089_yjnfna.mp3" loop autoplay></audio>
+      
+      <div id="reels">
+        <div class="reel"></div>
+        <div class="reel"></div>
+        <div class="reel"></div>
+      </div>
+      <div class="msg" id="win"></div>
+
+    
+      
+
+     <svg class="polyline-overlay"
+          viewBox="0 0 300 300"
+          width="300"
+          height="300"
+          style="position:absolute;top:0;left:0;pointer-events:none;z-index:8;overflow:visible">
+     
+       <!-----------------------PAYLINES V ------------------------->
+      <!-- V "pra cima" -->
+      <!--["3","7","5"] -->
+      <!--Symbols_name=  ["1","wild", "1"] -->
+      <polyline 
+        points="120 180, 210 240, 290 180" 
+        fill="none" 
+        stroke="yellow" 
+        stroke-width="8"/>
+
+           <!-- V "" -->
+           <!--position win ["0","4, "2"] -->
+           <!--Symbol_name= win ["1","wild", "1"] -->
+      <polyline 
+        points="120 140, 210 190, 290 140" 
+        fill="none" 
+        stroke="gold" 
+        stroke-width="8"/>
+     
+      <!-- V "baixo" -->
+      <!--position win ["6","4", "8"] -->
+      <!--Symbol_name= win ["1","wild", "1"] -->
+         <polyline 
+           points="120 280, 210 190, 290 280" 
+           fill="none" 
+           stroke="gold" 
+           stroke-width="8"/>
+
+
+      <!-- V "baixo" -->
+      <!--position win ["3","1", "5"] -->
+      <!--Symbol_name= win ["1","wild", "1"] -->
+         <polyline 
+           points="120 130, 210 70, 290 130" 
+           fill="none" 
+           stroke="green" 
+           stroke-width="8"/>
+
+
+
+
+
+
+                   
+       <!--------------PAYLINES HORIZONTAL------------------->
+     
+       <!-- LINHA VERDE -->
+       <!-- Mover para CIMA: diminui o Y -->
+       <!-- Mover para BAIXO: aumenta o Y -->
+
+
+
+        <!-- LINHA YELLOW () -->
+        <!-- Win ["0", "1", "2"]-->
+       <polyline 
+           points="50 75, 210 75, 370 75"
+           fill="none"
+           stroke="yellow"
+           stroke-width="8"/>
+
+
+       <!-- Position Reel ["6", "4", "5"]-->
+       <!-- Symbols_name  ["1", "wild", "1"] wild na position "4" conbinacao com qualquer 2 igual-->
+       <polyline 
+         points="110 315, 210 220, 310 220"
+         fill="none"
+         stroke="green"
+         stroke-width="2"/>
+     
+       <!-- LINHA AZUL (referência) -->
+       <!-- Win ["3", "4, "5"]-->
+      <polyline 
+           points="50 195, 210 195, 370 195"
+           fill="none"
+           stroke="blue"
+           stroke-width="2"/>
+         
+         <!-- LINHA PINK -->  
+              <!-- Win ["6", "7", "8"]-->  
+              <polyline   
+                points="110 315, 210 315, 310 315"  
+                fill="none"  
+                stroke="pink"  
+                stroke-width="8"/>
+
+<!---------------------- PAYLINE VERTICAL------------------------->
+
+
+          <!-- Linha vertical única -->
+          <!--position win ["0","3", "6"] -->
+           <polyline 
+             points="70 80, 70 310"
+             fill="none"
+             stroke="yellow"
+             stroke-width="2"/>
+
+
+           <!-- Linha vertical única -->
+           <!--position win ["1","4", "7"] -->
+           <polyline 
+             points="210 80, 210 310"
+             fill="none"
+             stroke="blue"
+             stroke-width="2"/>
+
+
+             <!-- Linha vertical única -->
+             <!--position win ["2","5", "8"] -->
+            <polyline 
+              points="330 80, 330 310"
+              fill="none"
+              stroke="blue"
+              stroke-width="2"/>     
+     </svg>
+
+        <div id="controls">
+        <div class="secao-saldo">
+          <span class="titulo-saldo">saldo</span>
+          <span class="valor-saldo" id="balance">{{ balance }}</span>
+        </div>
+        <div class="secao-apostas">
+          <span class="titulo-apostas">bet</span>
+          <span class="valor-apostas" id="betValue">0.50</span>
+        </div>
+        <div class="secao-ganhos">
+          <span class="titulo-ganhos">win</span>
+          <span class="valor-ganhos" id="espeho_win">0.00</span>
+        </div>
+      
+    
+  <!-- USERS ABAIXO -->
+  <div class="user-list-container">
+  <h4 style="text-align:center;">Sala Restrita</h4>
+  <div class="clock" id="clock"></div>
+    <ul class="user-list">
+      <li class="user-item">
+       <img class="avatar" src="https://i.pravatar.cc/150?u={{ user_id }}" class="me">
+        <strong class="user-name" style="padding:10px;">{{user_nome}}</strong>
+        <span class="user-status online">Enviar convite</span>
+        <div id="remoteVideo"autoplay playsinline class="video-mini"></div>
+      </li>
+
+      <li class="user-item">
+        <img class="avatar" src="https://i.pravatar.cc/110?u=" class="me">
+        <span class="user-name" style="padding:10px;">{{user_nome}}</span>
+        <span class="user-status online">Enviar convite</span>
+        <div id="localVideo" autoplay muted playsinline class="video-mini"></div>
+      </li>
+
+      <li class="user-item">
+        <img class="avatar" src="https://i.pravatar.cc/150?u=" class="me">
+        <span class="user-name" style="padding:10px;">{{user_nome}}</span>
+        <span class="user-status online">Enviar convite</span>
+        <div class="video-mini "></div>
+      </li>
+
+      <li class="user-item">
+         <img class="avatar" src="https://i.pravatar.cc/140?u=" class="me">
+        <span class="user-name" style="padding:10px;">Ana Lima</span>
+        <span class="user-status online">Enviar convite</span>
+        <div class="video-mini"></div>
+      </li>
+
+      <li class="user-item">
+        <img class="avatar" src="https://i.pravatar.cc/150?u={{ user_id }}" class="me">
+        <span class="user-name" style="padding:10px;">Rafael Costa</span>
+        <span class="user-status online">Enviar convite</span>
+        <div class="video-mini"></div>
+      </li>
+    </ul>
+  </div>
+  <div id="autoplayBox">
+    <h3>Rodadas Automaticas</h3>
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:10px;">
+      <button class="autoOption" data-v="1"><i class="fa-solid fa-rotate"></i> 2=volta</button>
+      <button class="autoOption" data-v="2"><i class="fa-solid fa-rotate"></i> 3=volta</button>
+     
+    </div>
+    <button id="startBtn" style="width:100%; margin-top:10px; padding:15px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer;">Iniciar</button>
+  </div>
+</div>
+</div>
+
+<div class="panel">
+ 
+    
+    <div id="autoplayBtn" class="auto"><i class="fa-solid fa-play"></i></div>
+    <div onclick="betPlus()" class="betPlus"><i class="fa-solid fa-plus"></i></div>
+    <img id="spin" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1765213395/button_besouro_spin_wgir8u.png" alt="spin image">
+    <div onclick="betMinus()" class="betMinus"><i class="fa-solid fa-minus"></i></div>
+    <img class="avatar" src="https://i.pravatar.cc/150?u={{ user_id }}" class="me" onclick="toggleAttach()">
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+<!-- const socket = io({transports:['websocket']}) -->
+<!-- let pc, localStream, room="sala1" -->
+<!--  -->
+<!-- const config={iceServers:[{urls:'stun:stun.l.google.com:19302'}]} -->
+<!--  -->
+<!-- async function pedirCamera(){ -->
+<!-- return await navigator.mediaDevices.getUserMedia({video:true,audio:true}) -->
+<!-- } -->
+<!--  -->
+<!-- async function joinRoom(){ -->
+<!-- socket.emit('join',{room}) -->
+<!--  -->
+<!-- localStream=await pedirCamera() -->
+<!-- document.getElementById('localVideo').srcObject=localStream -->
+<!--  -->
+<!-- pc=new RTCPeerConnection(config) -->
+<!-- localStream.getTracks().forEach(t=>pc.addTrack(t,localStream)) -->
+<!--  -->
+<!-- pc.ontrack=e=>{ -->
+<!-- document.getElementById('remoteVideo').srcObject=e.streams[0] -->
+<!-- } -->
+<!--  -->
+<!-- pc.onicecandidate=e=>{ -->
+<!-- if(e.candidate) socket.emit('ice-candidate',{room,candidate:e.candidate}) -->
+<!-- } -->
+<!--  -->
+<!-- const offer=await pc.createOffer() -->
+<!-- await pc.setLocalDescription(offer) -->
+<!-- socket.emit('offer',{room,offer}) -->
+<!-- } -->
+<!--  -->
+<!-- socket.on('offer',async data=>{ -->
+<!-- if(!pc){ -->
+<!-- pc=new RTCPeerConnection(config) -->
+<!-- localStream.getTracks().forEach(t=>pc.addTrack(t,localStream)) -->
+<!-- pc.ontrack=e=>{ -->
+<!-- document.getElementById('remoteVideo').srcObject=e.streams[0] -->
+<!-- } -->
+<!-- pc.onicecandidate=e=>{ -->
+<!-- if(e.candidate) socket.emit('ice-candidate',{room,candidate:e.candidate}) -->
+<!-- } -->
+<!-- } -->
+<!-- await pc.setRemoteDescription(new RTCSessionDescription(data.offer)) -->
+<!-- const answer=await pc.createAnswer() -->
+<!-- await pc.setLocalDescription(answer) -->
+<!-- socket.emit('answer',{room,answer}) -->
+<!-- }) -->
+<!--  -->
+<!-- socket.on('answer',data=>{ -->
+<!-- pc.setRemoteDescription(new RTCSessionDescription(data.answer)) -->
+<!-- }) -->
+<!--  -->
+<!-- socket.on('ice-candidate',data=>{ -->
+<!-- if(data.candidate) pc.addIceCandidate(new RTCIceCandidate(data.candidate)) -->
+<!-- }) -->
+<!--  -->
+<!-- joinRoom() -->
+</script>
+<script type="module">
+  import Slot from "{{ url_for('static', filename='js/Slot3x3.js') }}";
+  import Reel from "{{ url_for('static', filename='js/Reel3x3.js') }}";
+  import Symbol from "{{ url_for('static', filename='js/Symbol3x3.js') }}";
+
+  const config = {
+    inverted: false,
+    onSpinStart: (symbols) => console.log("onSpinStart", symbols),
+    onSpinEnd: (symbols) => console.log("onSpinEnd", symbols)
+  };
+
+  const slotCanvas = new Slot(document.getElementById("slotCanvas"), config);
+  window.USER_ID = "{{ user_id }}";
+  slotCanvas.init();
+
+ function updateClock() {
+     // Cria um novo objeto Date para obter a hora atual
+     const now = new Date();
+     
+     // Formata a hora, minuto e segundo para terem sempre dois dígitos
+     // Exemplo: 08:05:01
+     const hours = String(now.getHours()).padStart(2, '0');
+     const minutes = String(now.getMinutes()).padStart(2, '0');
+     const seconds = String(now.getSeconds()).padStart(2, '0');
+     
+     // Combina as partes da hora em uma string formatada
+     const timeString = `🕖${hours}:${minutes}:${seconds}`;
+     
+     // Encontra o elemento HTML e atualiza seu conteúdo de texto
+     document.getElementById('clock').textContent = timeString;
+ }
+ 
+ // Chama a função updateClock() uma vez imediatamente para evitar um atraso inicial
+ updateClock();
+ 
+ // Atualiza o relógio a cada segundo (1000ms)
+ setInterval(updateClock, 1000);
+
+ // ====================== MENU DE ANEXOS ======================
+ function toggleAttach(){
+     const menu = document.getElementById('attachMenu');
+     menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+ }
+ 
+ if ('serviceWorker' in navigator) {
+     window.addEventListener('load', () => {
+         navigator.serviceWorker.register('/sw.js').catch(()=>{});
+     });
+ }
+ </script>
+</body>
+</html>

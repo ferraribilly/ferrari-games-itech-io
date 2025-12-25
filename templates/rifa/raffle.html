@@ -204,6 +204,7 @@
                         <input id="search-tickets" type="email" placeholder="Digite seu e-mail" required>        
                         <button type="submit">Buscar</button>   
                         
+                        
  
                     </div>        
                 </div>        
@@ -228,7 +229,6 @@
                 <!-- <img class="center-image" src="https://res.cloudinary.com/dptprh0xk/image/upload/v1764599109/FB_IMG_1764597201315-removebg-preview_eptaed.png" alt="Imagem Menor"> -->        
                         
                 <div class="main-statement"><b>por</b> <h4>R$2.50</h4> cada número</div>   
-                <div class="main-statement"><b>Data</b><h4 id="data_sorteio">{{dataProximoConcurso}}</h4></div>     
             </div>        
         
            
@@ -329,6 +329,7 @@
                                             <label>Compras</label>        
                                             <div id="see-tickets" class="see-tickets">
                                              <span>Escolhas seus numeros e boa sorte.</span>
+                                             <p>{{ticket}}</p>
                                               
                                              </div>
                                              
@@ -457,7 +458,29 @@ withdrawBtn.addEventListener("click", async () => {
     }
 });
 </script>
-
+<script>
+document.querySelector(".search-tickets-box form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("search-tickets").value.trim();
+    if (!email) return;
+    const res = await fetch(
+        `/buscar/meus_bilhetes/${window.USER_ID}?email=${encodeURIComponent(email)}`
+    );
+    const tickets = await res.json();
+    const container = document.getElementById("ticket-numbers");
+    container.innerHTML = "";
+    container.classList.add("visible");
+    if (!tickets.length) {
+        container.innerHTML = "<div>Nenhum bilhete encontrado</div>";
+        return;
+    }
+    tickets.forEach(t => {
+        const p = document.createElement("div");
+        p.textContent = t;
+        container.appendChild(div);
+    });
+});
+</script>
 <!-- GERADOR DE INPUTS — INTACTO DO JEITO QUE VOCÊ JÁ TINHA -->
 <script>
 (function(){
@@ -525,3 +548,4 @@ withdrawBtn.addEventListener("click", async () => {
          
       
       
+

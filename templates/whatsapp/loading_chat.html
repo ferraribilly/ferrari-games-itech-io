@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FERRARI GAMES ITECH IO</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body,html{
+  width:100%;
+  height:100%;
+  background:#111b21;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.container{
+  width:100%;
+  height:100%;
+  border-left:1px solid #2a3942;
+  border-bottom:6px solid #25d366;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.content{
+  margin-top:-6px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:24px;
+  text-align:center;
+  user-select:none;
+}
+
+.logo svg{
+  width:120px;
+  height:auto;
+}
+
+h1{
+  font-size:32px;
+  font-weight:300;
+  color:#e9edef;
+}
+
+p{
+  font-size:14px;
+  color:#8696a0;
+  line-height:1.4;
+}
+
+.loading-wrapper{
+  width:256px;
+  margin-top:16px;
+}
+
+.loading-bar{
+  width:100%;
+  height:8px;
+  background:#d1d7db;
+  border-radius:4px;
+  overflow:hidden;
+  position:relative;
+}
+
+.loading-bar span{
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  width:40%;
+  background:#25d366;
+  animation:loading 2s infinite linear;
+}
+
+@keyframes loading{
+  0%{ left:-40%; }
+  100%{ left:100%; }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="content">
+
+    <!-- Logo -->
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="#25d366" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.11 2 11.17c0 2.89 1.44 5.48 3.78 7.17L5 22l3.9-1.94c1.02.28 2.1.43 3.1.43 5.52 0 10-4.11 10-9.17S17.52 2 12 2z"/>
+      </svg>
+    </div>
+
+    <!-- Texto -->
+    <div>
+      <h1>Ferrari games itech io</h1>
+      <p>
+        Plataforma Privada.<br>
+        Tenha ate 99% de Fatauramento.
+      </p>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-wrapper">
+      <div class="loading-bar">
+        <span></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+  .then(registration => console.log('Service Worker Registrado', registration))
+  .catch(err => console.log('Falha no Registro do Service Worker', err));
+}
+
+self.addEventListener('push', function(event) {
+  const options = {
+    body: event.data.text(),
+    icon: 'images/icon.png'
+  };
+  event.waitUntil(
+    self.registration.showNotification('Meu Site', options)
+  );
+});
+
+self.addEventListener('sync', function(event) {
+  if (event.tag === 'enviar-dados-offline') {
+    event.waitUntil(enviarDadosSalvos());
+  }
+});
+
+</script>
+</body>
+</html>

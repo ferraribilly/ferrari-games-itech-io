@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Contatos WhatsApp Clone</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        html,body{
+            height:100%;
+        }
+
+        .contact-list-container {
+            width: 100%;
+            background-color: #fff;
+            height: 90vh;
+            overflow-y: auto;
+        }
+
+        .header {
+            background-color: #075e54;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            text-decoration: none;
+            color: #000;
+            border-bottom: 1px solid #eee;
+        }
+
+        .contact-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+
+        .contact-info {
+            flex-grow: 1;
+        }
+
+        .contact-name {
+            display: block;
+            font-weight: bold;
+        }
+
+        .last-message {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .whatsapp-icon {
+            color: #25d366;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="contact-list-container">
+        <div class="header">
+            <h1>Contatos</h1>
+        </div>
+
+        <div class="contact-list">
+            {% for user in users %}
+            <a href="/msg/privado/{{ user._id }}" class="contact-item">
+                <img src="https://i.pravatar.cc/150?u={{ user_id }}" class="profile-pic">
+                <div class="contact-info">
+                    <span class="contact-name">
+                        {{ user.nome or user.email or "Usuário" }}
+                    </span>
+                    <span class="last-message">Toque para conversar</span>
+                </div>
+                <i class="fab fa-whatsapp whatsapp-icon"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker
+                    .register('/sw.js')
+                    .catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>

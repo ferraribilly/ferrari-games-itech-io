@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chat</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
@@ -97,12 +99,6 @@ html,body{
     background:#111;
  
 }
-
-
-
-
-
-
 
 /* HEADER */
 .chat-header{
@@ -203,7 +199,9 @@ html,body{
 
 .btn-send{ background:#075e54; }
 .btn-attach{ background:#25d366; }
-
+#callVideoButton {background:gray;color:#111;}
+#callButton {background:red;color:#111;}
+#contactButton {background: purple; color:#111;}
 .attach-menu{
     position:absolute;
     bottom:60px;
@@ -225,8 +223,37 @@ html,body{
  	color:#fff;
  }
 
-.btn-img{ background:#128c7e; color:#fff; }
+.btn-img{ background:blue; color:#111; }
 .btn-audio{ background:#34b7f1; color:#fff; }
+
+/* PREVIEW — ESCONDIDO DE VERDADE */
+.image-preview-container{
+    display:none;
+    padding:10px;
+    border-bottom:1px solid #333;
+    background:transparent;
+    text-align:center;
+}
+
+#image-preview{
+    max-width:100%;
+    max-height:200px;
+    display:block;
+    margin:0 auto 10px;
+}
+
+#remove-image{
+    background:#ff4d4d;
+    border-radius:50%;
+    width:50px;
+    height:50px;
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    display:block;
+    margin:0 auto;
+}
+
 
 input[type="file"]{ display:none; }
 
@@ -242,42 +269,42 @@ input[type="file"]{ display:none; }
  
 
 <div class="chat-container">
-    <div class="chat-header">FERRARI GAMES ITECH.IO</div>
-<header>
-   
-    <!-- DIV VISÍVEL PRA TODOS -->
-            <!-- <div id="users-online" style=" -->
-            <!--   position: absolute; -->
-            <!--   right: 20px; -->
-            <!--   bottom: 0px; -->
-            <!--   width: 90%; -->
-            <!--   max-height: 300px; -->
-            <!--   overflow-y: auto; -->
-            <!--   background: #111; -->
-            <!--   color: #0f0; -->
-            <!--   padding: 10px; -->
-            <!--   font-family: monospace; -->
-            <!--   font-size: 22px; -->
-            <!--   border: 1px solid #0f0; -->
-            <!--   text-align:center; -->
-            <!--   z-index:-1; -->
-            <!-- "> -->
-            <!--   <strong style="color:#fff;">👥 Jogadores conectados</strong> -->
-            <!--   <div id="users-list" style="color:#fff;"></div> -->
-            <!-- </div> -->
-</header>
+    <div class="chat-header">WhatsApp Restrito</div>
+
 
 
 
 
     <div class="chat-messages" id="mensagens"></div>
-
+     <!-- PREVIEW -->
+    <div class="image-preview-container" id="image-preview-container">
+        <img id="image-preview" src="">
+        <button id="remove-image" ><i class="fas fa-close"></i></button>
+    </div>
     <div class="chat-input">
 
         <div class="attach-menu" id="attachMenu">
-             <button class="btn-img" onclick="document.getElementById('uploadImg').click()">🖼️</button>
-             <button id="startButton">🎤</button>
-             <button id="stopButton" disabled>🚫</button>
+             <button class="btn-img" onclick="document.getElementById('uploadImg').click()"><i class="fa-solid fa-camera"></i></button>
+             <button id="startButton"><i class="fas fa-microphone"></i></button>
+             <button id="callButton" disabled><i class="fas fa-phone"></i></button>
+             <button id="callStopButton" disabled style="display:none;"><i class="fas fa-phone-slash"></i></button>
+             <button id="contactButton" disabled>
+               <a href="/contatos/users/{{ user_id }}" style="all: unset; cursor: pointer;">
+                 <i class="fas fa-user"></i>
+               </a>
+             </button>
+
+             <button id="MensagensRecebidasButton" disabled>
+             <a href="/msg/recebida/{{ user_id }}" style="all: unset; cursor: pointer;">
+             <i class="fas fa-user"></i>
+             </a>
+             </button>
+
+             <button id="callVideoButton" disabled>
+              <a href="/chamada/video/{{ user_id }}" style="all: unset; cursor: pointer;">
+              <i class="fas fa-video"></i>
+              </a>
+             </button>
              <p id="status">Status: Pronto</p>
              <p>URL do áudio: <a id="audioUrl" href="#" target="_blank"></a></p>
         </div>
@@ -376,6 +403,32 @@ socket.on('upload_error', data => status.textContent = `Status: Erro no upload -
     div.textContent = `👤 ${data.user_id} |👤${data.nome}| |🌍 ${data.cidade} 💰 ${data.balance}`;
     usersList.prepend(div);
   });
+
+
+  /* PREVIEW IMG */
+  const fileInput = document.getElementById('uploadImg');
+  const imagePreview = document.getElementById('image-preview');
+  const previewContainer = document.getElementById('image-preview-container');
+  const removeImageButton = document.getElementById('remove-image');
+  
+  fileInput.addEventListener('change',()=>{
+      const file = fileInput.files[0];
+      if(!file || !file.type.startsWith('image/')) return;
+  
+      const reader = new FileReader();
+      reader.onload = e=>{
+          imagePreview.src = e.target.result;
+          previewContainer.style.display='block';
+      };
+      reader.readAsDataURL(file);
+  });
+  
+  removeImageButton.addEventListener('click',()=>{
+      imagePreview.src='';
+      previewContainer.style.display='none';
+      fileInput.value='';
+  });
+  
 </script>
 </body>
 </html>

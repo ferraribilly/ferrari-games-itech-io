@@ -7,7 +7,7 @@ import base64
 import qrcode
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
-from model import UsuarioModel, AdminModel, Compras_appModel, SaquesModel, Compras_rfModel, SorteioModel, Pagamento_appModel, PagamentoModel, compras_app_collection, criar_documento_pagamento_app, pagamentos_collection, criar_documento_pagamento
+from model import UsuarioModel, AdminModel, AssinaturaModel, Compras_appModel, SaquesModel, Compras_rfModel, SorteioModel, Pagamento_appModel, PagamentoModel, compras_app_collection, criar_documento_pagamento_app, pagamentos_collection, criar_documento_pagamento
 from bson.errors import InvalidId
 import os
 import re
@@ -34,15 +34,63 @@ admin_model = AdminModel()
 compras_rf_model = Compras_rfModel()
 compras_app_model = Compras_appModel()
 sorteio_model = SorteioModel()
+assinatura_model = AssinaturaModel()
 os.makedirs('static/images', exist_ok=True)
 os.makedirs('static/upload', exist_ok=True)
 CORS(app)
 
+@app.route('/loading/<string:user_id>')
+def loading(user_id):
+    return render_template("whatsapp/loading_chat.html",user_id=user_id)
+    
 
+@app.route("/game/<string:user_id>")
+def roomGame(user_id):
+    # Busca o usuário pelo ID
+    user = user_model.get_user_by_id(user_id)
+
+    if user:
+        nome_value = user.get('nome')
+        balance_value = user.get('balance')
+        if balance_value is None:
+            balance_value = ""  # ou "-" se quiser
+        else:
+            balance_value = f"{balance_value:.2f}"
+        
+        return render_template(
+            "whatsapp/game_online.html",
+            user_id=user_id,
+            nome=nome_value,
+            balance=balance_value
+        )
+    else:
+        return "Nenhum usuário encontrado no banco de dados."
+
+    
 @app.route('/msg/<string:user_id>')
 def msg(user_id):
-    return render_template("msg.html",user_id=user_id)
+    return render_template("whatsapp/msg.html",user_id=user_id)
+    
+@app.route('/msg/recebida/<string:user_id>')
+def msgRecebidas(user_id):
+    return render_template("whatsapp/mensagemRecebidas.html", user_id=user_id)
+# rota
+@app.route('/contatos/users/<string:user_id>')
+def contatos(user_id):
+    users = UsuarioModel().get_all_users()
+    return render_template(
+        "whatsapp/contatos.html",
+        users=users,
+        user_id=user_id
+    )
 
+@app.route('/chamada/video/<string:user_id>')
+def chamadaVideo(user_id):
+    return render_template("whatsapp/video.html",user_id=user_id)
+
+@app.route('/call/user/<string:user_id>')
+def call(user_id):
+    return render_template("whatsapp/msg.html",user_id=user_id)    
 #==========================================================================================
 # CRIAR REGISTRO DOS USER 
 #==========================================================================================
@@ -111,6 +159,7 @@ def delete_user(user_id):
     return jsonify({"status": "removido"}), 200
 
 
+
 #========================================
 # LOGIN CPF
 #========================================
@@ -140,39 +189,209 @@ def login():
 
 #============================================================================================
 #============================================================================================
-
+# TABELA PUBLICADA PELA BLAZE
+# SIMBOLO WILD "TIGRE":250 VEZES
+# OBJETOS DOURADOS:100 VEZES
+# JOIA VERDE:25 VEZES
+# CARTAS DE MOEDAS: 8 VEZES
+# FOGOS ARTIFICIOS: 5 VEZES
 
 #MAQUINA TEMPO REAL COM SOCKET
 #=========================================================
-# -LEVEL MAQUINA 3X3 ADCIONAR SOCKET POIS SERA TEMPO REAL.
+# -LEVEL MAQUINA 
 #=========================================================
+# ===== CORREÇÃO DIRETA (LEVEL + RARIDADE + BALANÇO) =====
+
+
+
+# LEVEL = 1
+# # LEVEL TERA 3 METODOS SERA POR CPF SELECIONADOS 
+# 
+# SYMBOL_NAMES = [
+#     '1','2','3','4','5','6','7','8','9',
+#     '10','11','12','13','14','15'
+# ]
+# 
+# SYMBOL_VALUES = {
+#     "1":  0.03,
+#     "2":  0.06,
+#     "3":  0.08,
+#     "4":  0.10,
+#     "5":  0.20,
+#     "6":  0.30,
+#     "7":  0.45,
+#     "8":  0.70,
+#     "9":  1.00,
+#     "10": 1.40,
+#     "11": 2.00,
+#     "12": 3.00,
+#     "13": 5.00,
+#     "14": 7.50,
+#     "15": 10.00,
+# }
+# 
+# class Machine:
+#     def __init__(self, balance=1000.0):
+#         self.balance = float(balance)
+# 
+# machine = Machine()
+# 
+# def random_symbol():
+#     return random.choice(SYMBOL_NAMES)
+# 
+# # -----------------------------
+# # GERADOR COM VOLATILIDADE ( -> 3x3)
+# # -----------------------------
+# def generate_grid():
+#     grid = []
+#     chance_bonus = max(1, 7 - LEVEL)
+# 
+#     for c in range(3):
+#         col = []
+#         base_symbol = random_symbol()
+#         for r in range(3):
+#             if random.randint(0, 10) < chance_bonus:
+#                 col.append(base_symbol)
+#             else:
+#                 col.append(random_symbol())
+#         grid.append(col)
+# 
+#     return grid
+# 
+# # -----------------------------
+# # CHECK WINS COMPLETO
+# # -----------------------------
+# def check_wins(grid):
+#     wins = []
+# 
+#     def addWin(type_, positions, multiplier):
+#         wins.append({
+#             "type": type_,
+#             "positions": positions,
+#             "payout": multiplier
+#         })
+# 
+#     # horizontais
+#     for r in range(3):
+#         if all(grid[c][r] == grid[0][r] for c in range(3)):
+#             addWin("horizontal", [(c,r) for c in range(3)], 5)
+# 
+#     # verticais
+#     for c in range(3):
+#         if all(grid[c][r] == grid[c][0] for r in range(3)):
+#             addWin("vertical", [(c,r) for r in range(3)], 8)
+# 
+#     # diagonais
+#     if all(grid[i][i] == grid[0][0] for i in range(3)):
+#         addWin("diagonal_principal", [(i,i) for i in range(3)], 12)
+# 
+#     if all(grid[i][2-i] == grid[0][2] for i in range(3)):
+#         addWin("diagonal_invertida", [(i,2-i) for i in range(3)], 12)
+# 
+#     # X
+#     if (
+#         grid[0][0] == grid[2][2] ==
+#         grid[0][2] == grid[2][0] ==
+#         grid[1][1]
+#     ):
+#         addWin("cruzado_x", [(0,0),(2,2),(0,2),(2,0),(1,1)], 20)
+# 
+#     # janela
+#     if (
+#         grid[0][0] == grid[2][2] ==
+#         grid[2][0] == grid[0][2]
+#     ):
+#         addWin("janela", [(0,0),(2,2),(2,0),(0,2)], 15)
+# 
+#     # V
+#     if grid[0][0] == grid[1][1] == grid[2][0]:
+#         addWin("v_baixo", [(0,0),(1,1),(2,0)], 6)
+# 
+#     if grid[0][2] == grid[1][1] == grid[2][2]:
+#         addWin("v_cima", [(0,2),(1,1),(2,2)], 6)
+# 
+#     # borda
+#     borda_pos = [
+#         (0,0),(1,0),(2,0),
+#         (0,2),(1,2),(2,2),
+#         (0,1),(2,1)
+#     ]
+#     borda = [grid[c][r] for c,r in borda_pos]
+#     if all(s == borda[0] for s in borda):
+#         addWin("janelao", borda_pos, 30)
+# 
+#     # cheio
+#     full_pos = [(c,r) for c in range(3) for r in range(3)]
+#     flat = [grid[c][r] for c,r in full_pos]
+#     if all(s == flat[0] for s in flat):
+#         addWin("cheio", full_pos, 50)
+# 
+#     return wins
+# 
+# @app.route("/rodar/<string:user_id>", methods=["POST"])
+# def rodar_machine(user_id):
+#     user = user_model.get_user_by_id(user_id)
+#     if not user:
+#         return jsonify({"error":"Usuário não encontrado"}),404
+# 
+#     user_balance = float(user.get("balance",0.0))
+# 
+#     bet_raw = request.json.get("bet") if request.json else 0.5
+#     bet = max(0.01, float(bet_raw))
+# 
+#     if user_balance < bet:
+#         return jsonify({"error":"Saldo insuficiente"}),400
+# 
+#     grid = generate_grid()
+#     wins = check_wins(grid)
+# 
+#     total_win = 0.0
+#     mega_win = False
+# 
+#     for w in wins:
+#         c,r = w["positions"][0]
+#         symbol = grid[c][r]
+#         total_win += bet * SYMBOL_VALUES[symbol] * w["payout"]
+#         if w["type"] == "cheio":
+#             mega_win = True
+# 
+#     free_spins = 10 if mega_win else 0
+#     message = "MEGA WIN" if mega_win else ""
+# 
+#     new_balance = user_balance - bet + total_win
+#     machine.balance += bet - total_win
+# 
+#     user_model.update_user(user_id, {"balance": float(new_balance)})
+# 
+#     return jsonify({
+#         "grid": grid,
+#         "win": round(total_win,2),
+#         "balance_user": round(new_balance,2),
+#         "balance_machine": round(machine.balance,2),
+#         "wins": wins,
+#         "level": LEVEL,
+#         "mega_win": mega_win,
+#         "free_spins": free_spins,
+#         "message": message
+#     })
+
+
+
+
+
+
+
 LEVEL = 1
-#SERA CONTROLADO PELO CPF OU USER_ID QUER TER EXEMPLO: CPF: 459.772.778-73 lEVEL=1 ASSIM POR DIANTE VAI TER 5 USERS AQUI OK 
-#SERA CONTROLADO COM A QUANTIDADE DE USERS CONECTADOS E TOTAL SOMADO DO BALANCE DE TODOS SE TIVER 3 USERS CADA COM 5.00 DE BALANCE 2 PERDERA 1 1 VAI GANHAR 5.00 SE FICAR JOGANDO APOS OS 2 USER TER BALANCE 0 ELE COMECA PERDER ATE PARA  OK
+
 SYMBOL_NAMES = [
-    '1','2','3',
-    '4','5','6',
-    '7','8','9',
-    '10','11','12',
-    '13','14','15',
+    '1','2','3','4','5','6','7','8','9',
+    '10','11','12','13','14','15'
 ]
 
 SYMBOL_VALUES = {
-    "1": 0.05, 
-    "2": 0.10, 
-    "3": 0.10, 
-    "4": 0.10, 
-    "5": 0.35, 
-    "6": 0.15, 
-    "7": 0.50, 
-    "8": 0.75,
-    "9": 1.00,
-    "10": 1.25,
-    "11": 1.75,
-    "12": 2.25,
-    "13": 3.75,
-    "14": 4.50,
-    "15": 5.00,
+    "1":  0.03, "2":  0.06, "3":  0.08, "4":  0.10, "5":  0.20,
+    "6":  0.30, "7":  0.45, "8":  0.70, "9":  1.00, "10": 1.40,
+    "11": 1.80, "12": 2.00, "13": 2.40, "14": 2.80, "15": 10.00,
 }
 
 class Machine:
@@ -184,112 +403,110 @@ machine = Machine()
 def random_symbol():
     return random.choice(SYMBOL_NAMES)
 
+# -----------------------------
+# GERADOR
+# -----------------------------
 def generate_grid():
-    grid = [[random_symbol() for r in range(3)] for c in range(3)]
+    grid = []
+    chance_bonus = max(1, 7 - LEVEL)
 
-    if LEVEL == 1:
-        for c in range(3):
-            sym = random_symbol()
-            for r in range(3):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-
+    for c in range(3):
+        col = []
+        base_symbol = random_symbol()
         for r in range(3):
-            sym = random_symbol()
-            for c in range(3):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-
-        sym = random_symbol()
-        for i in range(3):
-            grid[i][i] = sym if random.randint(0,1) else grid[i][i]
-
-        sym = random_symbol()
-        for i in range(3):
-            grid[i][2-i] = sym if random.randint(0,1) else grid[i][2-i]
-
-        sym = random_symbol()
-        for c,r in [(0,0),(2,2),(0,2),(2,0),(1,1)]:
-            grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-
-        sym = random_symbol()
-        for c,r in [(0,0),(2,2),(2,0),(0,2)]:
-            grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-
-        sym = random_symbol()
-        for c,r in [(0,0),(1,0),(2,0),(0,2),(1,2),(2,2),(0,1),(2,1)]:
-            grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-
-        sym = random_symbol()
-        for c in range(3):
-            for r in range(3):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-
-    elif LEVEL == 2:
-        for c in range(3):
-            sym = random_symbol()
-            for r in range(3):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-        for r in range(3):
-            sym = random_symbol()
-            for c in range(3):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
-
-    elif LEVEL == 3:
-        for c in range(3):
-            sym = random_symbol()
-            for r in range(3):
-                grid[c][r] = sym if random.randint(0,1) else grid[c][r]
+            if random.randint(0, 10) < chance_bonus:
+                col.append(base_symbol)
+            else:
+                col.append(random_symbol())
+        grid.append(col)
 
     return grid
 
+# -----------------------------
+# MAPEAMENTO PAYLINES → SVG ID
+# -----------------------------
+PAYLINE_IDS = {
+    "horizontal_0": "pyline-horizontal",
+    "horizontal_1": "pyline-horizontal1",
+    "horizontal_2": "horizontal2",
+
+    "vertical_0": "vertical",
+    "vertical_1": "vertical1",
+    "vertical_2": "vertical2",
+
+    "diagonal_principal": "payline-x",
+    "diagonal_invertida": "payline-x1",
+
+    "v_baixo": "payline-v-baixo",
+    "v_cima": "payline-v-cima1",
+
+    "cruzado_x": ["payline-x", "payline-x1"],
+    "janela": "payline-v-cima2",
+    "janelao": "payline-v-baixo1",
+    "cheio": "mega-win"
+}
+
+# -----------------------------
+# CHECK WINS
+# -----------------------------
 def check_wins(grid):
     wins = []
 
-    def addWin(type_, positions, multiplier):
+    def addWin(type_, positions, multiplier, payline_id):
         wins.append({
             "type": type_,
             "positions": positions,
-            "payout": multiplier
+            "payout": multiplier,
+            "payline": payline_id
         })
 
+    # horizontais
     for r in range(3):
         if all(grid[c][r] == grid[0][r] for c in range(3)):
-            addWin("horizontal", [(c,r) for c in range(3)], 5)
+            addWin("horizontal", [(c,r) for c in range(3)], 5, PAYLINE_IDS[f"horizontal_{r}"])
 
+    # verticais
     for c in range(3):
         if all(grid[c][r] == grid[c][0] for r in range(3)):
-            addWin("vertical", [(c,r) for r in range(3)], 8)
+            addWin("vertical", [(c,r) for r in range(3)], 8, PAYLINE_IDS[f"vertical_{c}"])
 
+    # diagonais
     if all(grid[i][i] == grid[0][0] for i in range(3)):
-        addWin("diagonal_principal", [(i,i) for i in range(3)], 12)
+        addWin("diagonal_principal", [(i,i) for i in range(3)], 12, PAYLINE_IDS["diagonal_principal"])
 
     if all(grid[i][2-i] == grid[0][2] for i in range(3)):
-        addWin("diagonal_invertida", [(i,2-i) for i in range(3)], 12)
+        addWin("diagonal_invertida", [(i,2-i) for i in range(3)], 12, PAYLINE_IDS["diagonal_invertida"])
 
-    if (
-        grid[0][0] == grid[2][2] ==
-        grid[0][2] == grid[2][0] ==
-        grid[1][1]
-    ):
-        addWin("cruzado_x", [(0,0),(2,2),(0,2),(2,0),(1,1)], 20)
+    # X
+    if grid[0][0] == grid[2][2] == grid[0][2] == grid[2][0] == grid[1][1]:
+        addWin("cruzado_x", [(0,0),(2,2),(0,2),(2,0),(1,1)], 20, PAYLINE_IDS["cruzado_x"])
 
-    if (
-        grid[0][0] == grid[2][2] ==
-        grid[2][0] == grid[0][2]
-    ):
-        addWin("janela", [(0,0),(2,2),(2,0),(0,2)], 15)
+    # janela
+    if grid[0][0] == grid[2][2] == grid[2][0] == grid[0][2]:
+        addWin("janela", [(0,0),(2,2),(2,0),(0,2)], 15, PAYLINE_IDS["janela"])
 
+    # V
+    if grid[0][0] == grid[1][1] == grid[2][0]:
+        addWin("v_baixo", [(0,0),(1,1),(2,0)], 6, PAYLINE_IDS["v_baixo"])
+
+    if grid[0][2] == grid[1][1] == grid[2][2]:
+        addWin("v_cima", [(0,2),(1,1),(2,2)], 6, PAYLINE_IDS["v_cima"])
+
+    # borda
     borda_pos = [(0,0),(1,0),(2,0),(0,2),(1,2),(2,2),(0,1),(2,1)]
-    borda = [grid[c][r] for c,r in borda_pos]
-    if all(s == borda[0] for s in borda):
-        addWin("janelao", borda_pos, 30)
+    if all(grid[c][r] == grid[0][0] for c,r in borda_pos):
+        addWin("janelao", borda_pos, 30, PAYLINE_IDS["janelao"])
 
+    # cheio
     full_pos = [(c,r) for c in range(3) for r in range(3)]
-    flat = [grid[c][r] for c,r in full_pos]
-    if all(s == flat[0] for s in flat):
-        addWin("cheio", full_pos, 50)
+    if all(grid[c][r] == grid[0][0] for c,r in full_pos):
+        addWin("cheio", full_pos, 50, PAYLINE_IDS["cheio"])
 
     return wins
 
+# -----------------------------
+# ROTA PRINCIPAL
+# -----------------------------
 @app.route("/rodar/<string:user_id>", methods=["POST"])
 def rodar_machine(user_id):
     user = user_model.get_user_by_id(user_id)
@@ -297,12 +514,7 @@ def rodar_machine(user_id):
         return jsonify({"error":"Usuário não encontrado"}),404
 
     user_balance = float(user.get("balance",0.0))
-
-    bet_raw = request.json.get("bet") if request.json else 0.5
-    try:
-        bet = max(0.01, float(bet_raw))
-    except:
-        bet = 0.5
+    bet = max(0.01, float(request.json.get("bet", 0.5)))
 
     if user_balance < bet:
         return jsonify({"error":"Saldo insuficiente"}),400
@@ -323,12 +535,8 @@ def rodar_machine(user_id):
     free_spins = 10 if mega_win else 0
     message = "MEGA WIN" if mega_win else ""
 
-    if total_win > 0:
-        new_balance = user_balance + total_win
-        machine.balance -= total_win
-    else:
-        new_balance = user_balance - bet
-        machine.balance += bet
+    new_balance = user_balance - bet + total_win
+    machine.balance += bet - total_win
 
     user_model.update_user(user_id, {"balance": float(new_balance)})
 
@@ -342,20 +550,15 @@ def rodar_machine(user_id):
         "mega_win": mega_win,
         "free_spins": free_spins,
         "message": message
-        
     })
-
-
-
-
+#===========================================================================================================
+#===========================================================================================================
+#===========================================================================================================
+# ROTAS DE NAVAEGACAO DO USERS 
 
 #==========================================================================
-# -PAINEL DE CONTROLE ACESSO TERA SOCKET MARKINK QUE VAI MOSTRA PROPAGANDAS
+# -PAINEL
 #==========================================================================
-#MENSAGEM 1 OLA {[NOME]} SEJA BEM VINDO A FERRARI GAMES GOSTARIA DE FAZER PARTE DE UNS DOS AFILIADOS DA PLATAFORMA "SIM OU NAO"
-#MENSAGEM 2 VAI DIZER JOGO E ONLINEE PODE ENTERAGIR COM FOTOS DOS GAMES E COMPARTILHAR COMPROVANTES DE GANHOS 
-#MENSAGEM 3 VC PODE CRIAR SUA BANCA COM SEUS PARTICIPANTES E SUBTRAIR SEU SALDO POR APENAS 30.00 VC PODE TER 5 PARTICIPANTES E RODAR ONLINE CADA GANHO PEGA ENTREOS DEMAIS DIVIDE A PERCA E VC GANHA ATE 0 TODOS OU VICE VERSO 
-#MENSAGEM 4 UNICA PLATAFORMA DISPONIVEL A RENDA FIXA AOS USERS RIFAS ELABORE RIFAS E GANHE MUITO POR APENAS 19.99 
 
 @app.route("/acesso/users/painel/<string:user_id>")
 def acesso_users_painel(user_id):
@@ -383,9 +586,9 @@ def acesso_users_painel(user_id):
 #==========================================================
 # -ROTA MAQUINA Fortune dollar
 #==========================================================
-# ================= SOCKET =================
+# 
 
-# ================= ROTA ===================
+
 @app.route("/acesso/users/<string:user_id>")
 def acesso_users_machine(user_id):
     user = user_model.get_user_by_id(user_id)
@@ -407,8 +610,8 @@ def acesso_users_machine(user_id):
     )
 
 
-# ============== SOCKET.IO =================
-from flask_socketio import SocketIO, emit
+# ============== SOCKET.IO  =================
+
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -453,9 +656,183 @@ def acesso_users_machine3x3(user_id):
     else:
         return "Usuário não encontrado"       
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ==============================
+# MULTIPLAYER ROOM (5 USERS)
+# ==============================
+
+#===============================
+# FLUXO  AQUI USER_ID CRIA UMA SAL USANDO COMO ACESSO SEU CNVITE QUE ELE CRIPOU NO REGISTRO DELE E VAI CRIAR A SAL 
+# REQUISITOS SALDO MIN:10.00 CADA USER E PODE TER NO MAXIMO 10 USERS CADA 1 PODERA DAR 3 RODADA POR VEZ E COMECA POR QUEM CRIOU A SALA DEPOIS SEGUENCIA E CONVERME ENRTOU 1 NA SALA OK 
+# CADA WIN SERA DIVIDIDO ENTRE OS DEAIS E DESCONTARA E BALANCE VAI PRO USER QUE GANHO ATE O BALANCE FICAR DE CADA INFERIOR  A 0.50 SERA ELEMINADO E DIRECIONADO PRA PAGINA GAMEOVER
+# CADA USER QUE CONECTAR NO JOGO SERA DEBITADO 2.00 TAXA JOGO OK EXEMPLO 5 USERS TOTAL DE TODOS 50.00 A CASA LEVA 10 ELES DISPUTA 40.00
+# MENSAGEMN AVISANDO QUAL USE VAI RODAR E TBM QUERO QUE TODO USERS VEJAM A RODADA DO ADVERSARIO OU SEJA EU RODO TODOSD VERAM EM TEMPO REAL PRA TER TRANPARENCIA 
+ROOMS = {}  # room_id -> room data
+
+MAX_USERS = 5
+GIROS_POR_USER = 3
+
+def create_room(owner_id, min_balance, invited_ids):
+    room_id = str(uuid.uuid4())
+    users = [owner_id] + invited_ids
+
+    ROOMS[room_id] = {
+        "room_id": room_id,
+        "users": users,
+        "min_balance": min_balance,
+        "giros": {u: GIROS_POR_USER for u in users},
+        "active": True
+    }
+    return room_id
+
+
+
+@app.route("/room/create", methods=["POST"])
+def create_room_route():
+    data = request.json
+    owner_id = data["owner_id"]
+    invited = data["invited"]  # lista user_id (4)
+    min_balance = float(data["min_balance"])
+
+    if len(invited) != 4:
+        return jsonify({"error": "Precisa de 4 convidados"}), 400
+
+    for uid in [owner_id] + invited:
+        u = user_model.get_user_by_id(uid)
+        if not u or float(u.get("balance", 0)) < min_balance:
+            return jsonify({"error": f"Saldo insuficiente: {uid}"}), 400
+
+    room_id = create_room(owner_id, min_balance, invited)
+    return jsonify({"room_id": room_id})
+
+
+# ==============================
+# SPIN MULTIPLAYER
+# ==============================
+@app.route("/rodar_room/<string:room_id>/<string:user_id>", methods=["POST"])
+def rodar_room(room_id, user_id):
+    room = ROOMS.get(room_id)
+    if not room or not room["active"]:
+        return jsonify({"error": "Sala inválida"}), 404
+
+    if user_id not in room["users"]:
+        return jsonify({"error": "Usuário não está na sala"}), 403
+
+    if room["giros"][user_id] <= 0:
+        return jsonify({"error": "Sem giros"}), 400
+
+    bet = float(request.json.get("bet", 0.5))
+
+    grid = generate_grid()
+    wins = check_wins(grid)
+
+    total_win = 0.0
+    for w in wins:
+        c, r = w["positions"][0]
+        symbol = grid[c][r]
+        total_win += bet * SYMBOL_VALUES[symbol] * w["payout"]
+
+    # DESCONTA GANHO DE TODOS
+    for uid in room["users"]:
+        u = user_model.get_user_by_id(uid)
+        new_balance = float(u["balance"]) - total_win
+        user_model.update_user(uid, {"balance": round(new_balance, 2)})
+
+    # GANHADOR RECEBE
+    winner = user_model.get_user_by_id(user_id)
+    user_model.update_user(
+        user_id,
+        {"balance": round(float(winner["balance"]) + total_win * len(room["users"]), 2)}
+    )
+
+    room["giros"][user_id] -= 1
+
+    if all(v == 0 for v in room["giros"].values()):
+        room["active"] = False
+
+    socketio.emit(
+        "room_spin",
+        {
+            "room_id": room_id,
+            "user_id": user_id,
+            "grid": grid,
+            "win": round(total_win, 2),
+            "giros_restantes": room["giros"],
+        },
+        room=room_id
+    )
+
+    return jsonify({
+        "grid": grid,
+        "win": round(total_win, 2),
+        "giros_restantes": room["giros"],
+        "wins": wins
+        
+    })
+
+
+# ==============================
+# SOCKET.IO MAQUINA ONLINE
+# ==============================
+@socketio.on("join_room")
+def join_room_socket(data):
+    join_room(data["room_id"])
+#==========================================================
+# -ROTA MAQUINA Fortune Era Egpcia
+#==========================================================
+@app.route("/acesso/users/onlines/<string:user_id>")
+def maquinaOnline(user_id):
+    user = user_model.get_user_by_id(user_id)
+
+    if user:
+        # Pega o balance do banco
+        balance_value = user.get('balance')
+
+        # Se for None ou inválido, não mostra 0, pode mostrar vazio ou "-"
+        if balance_value is None:
+            balance_value = ""  # ou "-" se quiser
+        else:
+            # Formata com duas casas decimais
+            balance_value = f"{balance_value:.2f}"
+
+        return render_template("slotmachine_Online.html", user_id=user_id, balance=balance_value)
+    else:
+        return "Usuário não encontrado"   
+
+
+    
+
+
 @app.route("/informacao/jogo/era_egpcia/<string:user_id>")
 def informacao_era_egpcia(user_id):
-    return render_template("help/informacao_era_egpcia.html", user_id=user_id)
+    return render_template("help/help.html", user_id=user_id)
 #==========================================================
 # -ROTA MAQUINA Fortune duends
 #==========================================================
@@ -722,17 +1099,18 @@ def compra_raffle_balance(user_id):
 #=======================================================================
 # GET MOSTRAR TODAS Tickets COMPRAS_RF  BUSCAR POR EMAIL
 #=======================================================================
-# @app.route('/buscar/compras_rf/pagamento_aprovado/approved/<string:user_id>', methods=["GET"])
-# def buscar_compras_rf(user_id):
-#     user = user_model.get_user_by_id(user_id)
-#     if not user:
-#         return jsonify({"error": "Usuário não encontrado"}), 404
-# 
-#     email_user = user.get("email")
-# 
-#     compras = compras_rf_model.get_by_email(email_user)
-# 
-#     return jsonify(compras), 200
+@app.route('/buscar/meus_bilhetes/<string:user_id>', methods=["GET"])
+def buscar_meus_bilhetes(user_id):
+    email = request.args.get("ticket")
+    if not email:
+        return jsonify({"error": "Email obrigatório"}), 400
+
+    user = user_model.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+
+    compras = compras_rf_model.get_by_email(tickets)
+    return jsonify(tickets), 200
 
 #==============================================================
 # tela inicial raffles
@@ -1423,7 +1801,6 @@ def register_admin():
         "convite": data.get("convite",""),
         "chave_pix": data.get("chave_pix",""),
         "senha": data["senha"],
-        "saldo": 0.0,
         "created_at": datetime.now()
     }
     admin_id = admin_model.create_admin(new_admin)

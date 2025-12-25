@@ -46,10 +46,10 @@ body{
   padding:10px;
   box-shadow:
   0 0 10px #fff, /* Sombra branca básica */
-  0 0 20px gold, /* Sombra de brilho ciano */
-  0 0 30px gold, /* Sombra de brilho ciano mais espalhada */
-  0 0 40px #0ff, /* Sombra de brilho ciano ainda mais espalhada */
-  0 0 50px #0ff;  /* Sombra de brilho ciano com maior alcance */
+  0 0 20px #fff, /* Sombra de brilho ciano */
+  0 0 30px #fff, /* Sombra de brilho ciano mais espalhada */
+  0 0 40px #000, /* Sombra de brilho ciano ainda mais espalhada */
+  0 0 50px #000;  /* Sombra de brilho ciano com maior alcance */
 }
 
 @keyframes piscar_slotCanvas {                                
@@ -58,15 +58,15 @@ body{
 }      
 
 
-/* #slotCanvas.inverted .reel {                                   */
-/*   transform: scaleY(-1);                                 */
-/*   border: 10px solid blue;                               */
-/* }                                 */
-/*          */
-/* #slotCanvas.inverted .reel > .icons > img {                                   */
-/*   transform: scaleY(-1);                               */
-/*   border: 10px solid blue;                                 */
-/* }   */
+#slotCanvas.inverted .reel {                                  
+  transform: scaleY(-1);                                
+  border: 10px solid blue;                              
+}                                
+        
+#slotCanvas.inverted .reel > .icons > img {                                  
+  transform: scaleY(-1);                              
+  border: 10px solid blue;                                
+}  
 
 /* ÁREA DOS REELS */
 #reels{
@@ -76,10 +76,11 @@ body{
   height:100%;
   aspect-ratio:3 / 3;
   max-height:60vh;
-  /* background-image:url('https://res.cloudinary.com/dptprh0xk/image/upload/v1765203729/pngwing.com_7_jeodlf.png'); */
+  background:;
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
+  border-radius:20px;
   box-shadow:0 0 10px orange,0 0 20px #0ff,0 0 40px #0ff;
   gap:6px;
 }
@@ -95,10 +96,26 @@ body{
   height:100%;
   overflow:hidden;
   position:relative;
-  border:2px solid orange;
   border-radius:12px;
   background:rgba(0,0,0,0.2);
+  
 }
+
+/* COLUNA */
+.reel1{
+  flex:1;
+  height:100%;
+  overflow:hidden;
+  position:relative;
+  background:white;
+  border-radius:12px;
+  
+}
+
+
+
+
+
 
 /* PILHA */
 .reel .icons{
@@ -112,6 +129,7 @@ body{
   position:relative;
   will-change:transform;
   transform:translateY(0);
+  z-index:2;
   
 }
 
@@ -132,6 +150,7 @@ body{
   object-fit:contain;
   pointer-events:none;
   
+  
 }
 
 /* ÚLTIMA LINHA */
@@ -145,7 +164,7 @@ body{
 .reel .icons .symbol.win,
 .reel .icons img.win,
 .reel .icons .emoji-symbol.win {
-  transform: scale(1.15);
+  transform: scale(0.7);
   z-index: 2;
   animation: 
     pulse-glow 1s infinite,
@@ -161,8 +180,8 @@ body{
 
 /* fundo dourado */
 @keyframes changeBackgroundColor {          
-  from { background-color: gold; opacity: 50%; border-radius: 20px;height:calc(90% / 3); }          
-  to   { background-color: gold; opacity: 50%; border-radius: 20px;height:calc(90% / 3); }          
+  /* from { background-color: gold; opacity: 50%; border-radius: 20px;height:calc(90% / 3); }           */
+  /* to   { background-color: gold; opacity: 50%; border-radius: 20px;height:calc(90% / 3); }           */
 }
 /* CONTROLS */
 #controls{

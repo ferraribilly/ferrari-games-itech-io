@@ -19,6 +19,7 @@ COMPRAS_RF_COLLECTION_NAME = "compras_rf"
 COMPRAS_APP_COLLECTION_NAME = "compras_app"
 SORTEIO_COLLECTION_NAME = "sorteio"
 SAQUES_COLLECTION_NAME = "saques"
+ASSINATURA_COLLECTION_NAME = "assinatura"
 
 
 
@@ -87,8 +88,9 @@ class PagamentoModel:
 
 #======================================================
 # COMPRAS RF
-#=====================================================
+#======================================================
 compras_rf_collection = db[COMPRAS_RF_COLLECTION_NAME]
+
 class Compras_rfModel:
     def __init__(self):
         self.collection = compras_rf_collection
@@ -100,7 +102,7 @@ class Compras_rfModel:
     def get_compras_rf(self, compras_rf_id):
         doc = self.collection.find_one({"_id": str(compras_rf_id)})
         if doc:
-            doc["_id"] = str(doc.get("_id"))
+            doc["_id"] = str(doc["_id"])
         return doc
 
     def get_compras_rf_by_id(self, compras_rf_id):
@@ -109,7 +111,7 @@ class Compras_rfModel:
     def get_all_compras_rf(self):
         docs = list(self.collection.find())
         for d in docs:
-            d["_id"] = str(d.get("_id"))
+            d["_id"] = str(d["_id"])
         return docs
 
     def update_compras_rf(self, compras_rf_id, new_data):
@@ -120,8 +122,19 @@ class Compras_rfModel:
         return result.modified_count
 
     def delete_compras_rf(self, compras_rf_id):
-        result = self.collection.delete_one({"_id": str(compras_rf_id)})
+        result = self.collection.delete_one(
+            {"_id": str(compras_rf_id)}
+        )
         return result.deleted_count
+
+    def get_by_email(self, email):
+           docs = list(self.collection.find({"email": email}))
+           tickets = []
+       
+           for d in docs:
+               tickets.extend(d.get("tickets", []))
+       
+           return tickets
 #===================================================================================================
 #SAQUES
 #===================================================================================================
@@ -423,3 +436,58 @@ class AdminModel:
 
 
 
+assinatura_collection = db[ASSINATURA_COLLECTION_NAME]
+
+def criar_documento_assinatura(payment_id, status, valor, user_id, email_user, data_criacao=None):
+    if data_criacao is None:
+        
+        data_criacao = datetime.now(timezone.utc)
+
+    return {
+        "_id": str(payment_id),
+        "status": status,
+        "valor": valor,
+        "user_id": user_id,
+        "email_user": email_user,
+        "data_criacao": data_criacao,
+        "data_atualizacao": None,
+        "detalhes_webhook": None
+    }
+
+
+class AssinaturaModel:
+    def __init__(self):
+        self.collection = assinatura_collection
+
+    def create_assinatura(self, data):
+        result = self.collection.insert_one(data)
+        return str(result.inserted_id)
+
+   
+    def get_assinatura(self, assinatura_id):
+        doc = self.collection.find_one({"_id": str(assinatura_id)})
+        if doc:
+            doc["_id"] = str(doc.get("_id"))
+        return doc
+
+    
+    def get_assinatura_by_id(self, assinatura_id):
+        return self.get_assinatura(assinatura_id)
+
+    # garantir que todos os _id venham como string
+    def get_all_assinatura(self):
+        docs = list(self.collection.find())
+        for d in docs:
+            d["_id"] = str(d.get("_id"))
+        return docs
+
+    def update_assinatura(self, assinatura_id, new_data):
+        result = self.collection.update_one(
+            {"_id": str(assinatura_id)},
+            {"$set": new_data}
+        )
+        return result.modified_count
+
+    def delete_assinatura(self, pagamento_id):
+        result = self.collection.delete_one({"_id": str(assinatura_id)})
+        return result.deleted_count
