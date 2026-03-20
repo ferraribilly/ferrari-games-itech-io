@@ -6,25 +6,32 @@ from email.message import EmailMessage
 app = Flask(__name__)
 
 def enviar_email():
-    email_user = os.environ.get("EMAIL_USER")
-    email_pass = os.environ.get("EMAIL_PASS")
+    try:
+        email_user = os.environ.get("EMAIL_USER")
+        email_pass = os.environ.get("EMAIL_PASS")
 
-    msg = EmailMessage()
-    msg['Subject'] = "Assinatura Pro"
-    msg['From'] = email_user
-    msg['To'] = "corporacaoenigmagames@gmail.com"
-    msg.set_content("Muito Obrigado por participar")
+        if not email_user or not email_pass:
+            return "ERRO: Variáveis de ambiente não definidas"
 
-    # SSL DIRETO (porta 465)
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(email_user, email_pass)
-        server.send_message(msg)
+        msg = EmailMessage()
+        msg['Subject'] = "Assinatura Pro"
+        msg['From'] = email_user
+        msg['To'] = "corporacaoenigmagames@gmail.com"
+        msg.set_content("Muito Obrigado por participar")
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(email_user, email_pass)
+            server.send_message(msg)
+
+        return "Email enviado com sucesso"
+
+    except Exception as e:
+        return f"ERRO REAL: {str(e)}"
 
 @app.route("/")
 def home():
-    enviar_email()
-    return "Email enviado"
+    return enviar_email()
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Render usa isso
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
