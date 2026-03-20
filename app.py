@@ -15,8 +15,8 @@ def enviar_email():
     msg['To'] = "corporacaoenigmagames@gmail.com"
     msg.set_content("Muito Obrigado por participar")
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
+    # SSL DIRETO (porta 465)
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(email_user, email_pass)
         server.send_message(msg)
 
@@ -26,5 +26,5 @@ def home():
     return "Email enviado"
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 10000))  # Render usa isso
     app.run(host="0.0.0.0", port=port)
