@@ -1,180 +1,240 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <title>Acesso Usuários — Login e Registro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Segoe UI, Roboto, "Helvetica Neue", Arial; }
-    html, body { height: 100%; }
-    body {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      color: #fff; padding: 20px; position: relative;
-    }
-    body::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100dvh;
-      background: url("https://res.cloudinary.com/dptprh0xk/image/upload/v1763000058/Pngtree_attractive_monkey_slot_game_character_21134749_rayvcs.png") repeat left top;
-      background-size: cover; z-index: -2; animation: 40s linear infinite LoadingBarProgress;
-    }
-    body::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(to right, #a8a8a8, #3d3d3d, transparent, #3d3d3d, #a8a8a8); background-size: 500%;
-      z-index: -1; animation: 40s linear infinite LoadingBarProgress;
-    }
-    @keyframes LoadingBarProgress { 0% { background-position: 0 0 } 100% { background-position: 125% 0 } }
-    .wrap { width: 100%; max-width: 500px; position: relative; background: rgba(0,0,0,0.6); border-radius: 14px;
-      padding: 28px; box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-    }
-    .logo { display:flex; flex-direction:column; align-items:center; margin-bottom:20px; }
-    .logo img { width:100px; height:100px; border-radius:100%; object-fit:contain; margin-bottom:10px; border:1px solid green; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
-    .typing-effect { font-family: monospace; text-align:center; white-space:nowrap; overflow:hidden; border-right:.15em solid orange; width:0; animation: typing 3.5s steps(30,end) forwards, blinking .75s step-end infinite; }
-    @keyframes typing { from { width: 0 } to { width: 100% } } @keyframes blinking { from, to { border-color: transparent } 50% { border-color: orange } }
-    .card { width:100%; } h1 { text-align:center; margin-bottom:10px; }
-    .field { margin-bottom:12px; } label { display:block; font-size:0.85rem; margin-bottom:6px; color: rgba(255,255,255,0.85); }
-    input[type="text"], input[type="email"], input[type="password"], input[type="date"] {
-      width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); color:#fff; font-size:0.98rem; outline:none;
-    }
-    input::placeholder { color: rgba(255,255,255,0.45); } input:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.22); }
-    .btn { display:inline-block; padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:600; font-size:0.98rem; }
-    .primary { background: linear-gradient(45deg, #ff357a, #fff172); color: #111; width:100%; }
-    .links { display:flex; justify-content:center; margin-top:10px; } .links a { color:#cfcfcf; text-decoration:none; font-size:0.9rem; }
-    .message { margin-top:8px; padding:8px; border-radius:8px; display:none; }
-    .msg-error { background: rgba(255,0,0,0.12); color:#ffb0b0; }
-    .msg-success { background: rgba(0,255,120,0.12); color:#8fffc3; }
-    @media (max-width:480px) { .wrap { padding:20px; } }
-  </style>
-</head>
-<body>
-  <audio id="somAmbiente" src="https://res.cloudinary.com/dptprh0xk/video/upload/v1762638299/tell-me-what-379638_uwmki4.mp3" loop autoplay></audio>
+<html lang="pt-br">
 
-  <div class="wrap">
-    <div class="logo">
-      <img src="https://res.cloudinary.com/doik0qtfr/image/upload/v1765756283/file_000000001b0071f58bcbc51e9c9d664d_rnlva3.png" alt="Logo do sistema">
-      <p class="typing-effect">Ferrari Games itech.io</p>
-      <p class="typing-effect">Jogadores e Apostadores sejam bem vindos!</p>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="theme-color" content="#36a2eb">
+        <title>Passatempo Pix Dia das Maes</title>
+        <link rel="apple-touch-icon" href="{{ url_for('static', filename='w.png') }}">
+        <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style1.css') }}">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='w.png') }}">
+    </head>
+    <style>
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 8px;
+    padding: 10px;
+}
+
+.item {
+    background: white;
+    color: black;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.item:hover {
+    background: #e0f7fa;
+}
+
+/* MODAL */
+.modal {
+    z-index: 99999;
+    display: ;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+input {
+    width: 95%;
+    margin-top: 8px;
+    padding: 8px;
+}
+.btn {
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.btn.copiar {
+    background-color: #3498db; /* Azul */
+}
+
+.btn.upload {
+    background-color: #e67e22; /* Laranja */
+}
+.qrcode {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    text-align: center;
+    margin-top: 20px;
+}
+.qrcode img {
+    max-width: 220px; /* Ajusta o tamanho se precisar */
+    height: auto;
+    margin-bottom: 10px;
+}
+ 
+
+</style>
+
+    <body>
+<!-- Botão WhatsApp -->
+<a style="background-image: url('../static/img/whatsapp-svgrepo-com.svg'); background-size: cover; background-position: center; background-repeat: no-repeat; display: block; width: 60px; height: 60spx;"
+   href="https://whatsapp.com/channel/0029VbCcVz296H4aeST8Et3K?text=Olá%2C%20quero%20mais%20informações" 
+   class="whatsapp-button" 
+   target="_blank" 
+   aria-label="Fale conosco no WhatsApp">
+</a>
+
+
+        
+    <main class="main">
+  <div class="main-child">
+
+    <!-- Card de Premiação -->
+    <div style="max-width:400px; margin:20px auto; padding:20px; border-radius:10px; 
+                background:linear-gradient(135deg, #0000008e, #3804046c); 
+                box-shadow:0 4px 10px rgba(0,0,0,0.2); text-align:center; font-family:Arial, sans-serif;">
+      
+      <h3 style="color:rgb(9, 121, 233); margin-bottom:10px;">🗓️ Data do Sorteio: <span style="color:#e74c3c;">18/05/2026</span></h3>
+      
+<!-- Botão de CTA -->
+<form class="form-cta" style="margin-top:20px;">
+  <a style="border-radius:5px; height:40px; text-align:center; font-weight:bold; 
+            margin:0; color:#fff; background-color:rgb(58, 58, 247); 
+            display:inline-block; line-height:40px; padding:0 20px; text-decoration:none;"
+     href="/gerar_numero/{{ usuario_id }}" target="_blank">
+    Participar Agora
+  </a>
+</form>
+
     </div>
 
-    <!-- LOGIN -->
-    <section class="card" id="loginSection">
-      <h1>Login</h1>
-      <form id="loginForm" autocomplete="on">
-        <div class="field">
-          <label for="cpf_login">CPF</label>
-          <input id="cpf_login" name="cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required oninput="formatCPF(this)">
-        </div>
-        <div class="field"><button type="submit" class="btn primary">Entrar</button></div>
-        <div id="loginMsg" class="message msg-error"></div>
-        <div class="links"><a href="#" onclick="toggleSection('register'); return false;">Não tem conta? Registre-se</a></div>
-      </form>
-    </section>
+  </div>
+  <div class="gradient"></div>
+</main>
 
-    <!-- REGISTRO -->
-    <section class="card" id="registerSection" style="display:none">
-      <h1>Registro de Usuário</h1>
-      <form id="registerForm" autocomplete="on">
-        <div class="field"><label for="nome">Nome</label><input id="nome" name="nome" type="text" required></div>
-        <div class="field"><label for="sobrenome">Sobrenome</label><input id="sobrenome" name="sobrenome" type="text" required></div>
-        <div class="field"><label for="cidade">Cidade</label><input id="cidade" name="cidade" type="text" required></div>
-        <div class="field"><label for="cpf">CPF</label><input id="cpf" name="cpf" type="text" inputmode="numeric" maxlength="14" required oninput="formatCPF(this)"></div>
-        <div class="field"><label for="data_nascimento">Data de nascimento</label><input id="data_nascimento" name="data_nascimento" type="date" required></div>
-        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
-        <div class="field"><label for="convite_ganbista">Convite</label><input id="convite_ganbista" name="public_key_admin" type="text" required></div>
-        <div class="field"><label for="chave_pix">Chave Pix</label><input id="chave_pix" name="chave_pix" type="text" required></div>
-        <div class="field"><label for="senha">Senha</label><input id="senha" name="senha" type="password" required></div>
-        <div class="field"><button type="submit" class="btn primary">Registrar</button></div>
-      </form>
-      <div id="registerMsg" class="message msg-error"></div>
-      <div class="links"><a href="#" onclick="toggleSection('login'); return false;">Já tem conta? Fazer login</a></div>
-    </section>
+
+
+ <footer class="footer">
+
+<section class="faq">
+<!-- <dt class="faq-question" style="color:#2c3e50; font-weight:bold; font-size:20px;">
+    Comprar Bilhete
+</dt>
+<dd class="faq-answer" style="font-family:Arial, sans-serif; overflow: auto; line-height:1.6; color:#7e7a7a;">
+    <div>
+<h2>Selecione seu Numero <br> Boa Sorte</h2>
+<div class="grid" id="grid"></div>
+        <h3>Número: <span id="numeroEscolhido"></span></h3> 
+</div>
+
+</div>
+    </div>
+</dd> -->
+
+
+               <!-- <dl class="faq-list">
+  <dt class="faq-question" style="color:#2c3e50; font-weight:bold; font-size:20px;">
+    Regras / Regulamento
+</dt>
+<dd class="faq-answer" style="font-family:Arial, sans-serif; line-height:1.6; color:#7e7a7a;">
+    <div>
+        <p style="color:#e74c3c; font-weight:bold;">
+            ✔ Ao clicar em "Aceitar", você concorda com todas as regras e normas desta plataforma.
+        </p>
+
+        <p>
+            Você declara ciência de que poderão ocorrer <span style="color:#2980b9; font-weight:bold;">mudanças</span> 
+            caso a meta não seja atingida. Nesses casos, poderá haver <span style="color:#27ae60; font-weight:bold;">reembolso automático</span> 
+            a todos os participantes, sem prejuízo aos usuários. Todo reembolso será ajustado com correções monetárias, 
+            conforme previsto em <strong>Lei Federal (Código de Defesa do Consumidor – Lei nº 8.078/1990)</strong>.
+        </p>
+
+        <p>
+            A plataforma possui uma <span style="color:#f39c12; font-weight:bold;">meta mínima de 85%</span> até 10 dias antes do sorteio. 
+            Caso não seja atingida, poderá ocorrer alteração na premiação ou reembolso integral, conforme a legislação vigente.
+        </p>
+
+        <p>
+            Os sorteios são realizados de forma <span style="color:#16a085; font-weight:bold;">transparente</span>, 
+            garantindo legitimidade e segurança. Serão considerados os 3 últimos números da extração da 
+            <strong>Loteria Federal</strong>, sendo:
+        </p>
+        <ul style="margin-left:20px;">
+            <li><strong>1º Lugar:</strong> 1º sorteio</li>
+            <li><strong>2º Lugar:</strong> 2º sorteio</li>
+            <li><strong>3º Lugar:</strong> 3º sorteio</li>
+        </ul>
+
+        <p>
+            Caso não haja ganhadores, o prêmio não será acumulado. Será realizado um novo sorteio ao vivo 
+            pelas redes sociais oficiais, com link e comprovante compartilhados publicamente.
+        </p>
+
+        <p style="color:#c0392b; font-weight:bold;">
+            ⚠ É proibido o uso de comprovantes que não pertençam ao titular da conta cadastrada. 
+            O participante será desclassificado e poderá ser enquadrado no <strong>Código Penal</strong> 
+            por crime de falsidade ideológica (Art. 299 do Código Penal).
+        </p>
+    </div>
+</dd> -->
+               <dl class="faq-list">
+     <dt class="faq-question" style="color:#cdfa04; text-align: center; font-weight:bold; font-size:20px;">
+    📈Meta atingida
+</dt>
+    <dd style="background-color: #000;" class="faq-answer">
+        <div>
+            <h2>📊 Progresso da Rifa</h2>
+  <div class="pizza-chart" id="chart">0%</div>
+
+  <h2>⏳ Prazo para Sorteio</h2>
+  <div class="time-chart" id="timeChart">0 dias</div>
+
+  <div style="text-align:center; margin-top:20px;">
+    <label for="vendidos">Números vendidos:</label>
+    <input type="number" id="vendidos" value="0" min="0" max="1000">
+    <button onclick="atualizar()">Atualizar</button>
   </div>
 
+  <div class="info-box" id="mediaDiaria">Média diária necessária: 0</div>
+          </div>
+           </dd>
+
+             <dt class="faq-question" style="color:#0377eb; text-align: center; font-weight:bold; font-size:20px;">
+    Colaboradores Evento
+</dt>
+<dd class="faq-answer" style="font-family:Arial, sans-serif; line-height:1.6; color:#7e7a7a;">
+    <div>
+            <strong></strong>
+        </p>
+        <ul style="margin-left:20px;">
+            <li><strong>Supermecado Paulao</strong></li>
+            <li><strong>W tecnologias web mobile</strong></li>
+            <li><strong>W software contabil</strong></li>
+        </ul>
+        <p style="color:#c0392b; font-weight:bold;">
+        </p>
+    </div>
+</dd>            
+</section>
+  <p>Copyright © 2026 Marca Brasil todos os direitos reservados</p>
+        </footer>
+  <script src="../static/js/script.js"></script>
+  <script src="../static/js/participantes.js"></script>
+  <script src="../static/js/numeros.js"></script>
   <script>
-    function toggleSection(type){
-      document.getElementById("loginSection").style.display = type === "login" ? "block" : "none";
-      document.getElementById("registerSection").style.display = type === "login" ? "none" : "block";
-      // limpar mensagens
-      document.getElementById("loginMsg").style.display = "none";
-      document.getElementById("registerMsg").style.display = "none";
-    }
-
-    function formatCPF(input){
-      let v = input.value.replace(/\D/g,'');
-      v = v.replace(/(\d{3})(\d)/,'$1.$2');
-      v = v.replace(/(\d{3})(\d)/,'$1.$2');
-      v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
-      input.value = v;
-    }
-
-    function onlyDigits(s){ return (s || "").toString().replace(/\D/g, ""); }
-
-    // ----- LOGIN (envia JSON) -----
-    document.getElementById("loginForm").addEventListener("submit", async function(e){
-      e.preventDefault();
-      const cpfRaw = document.getElementById("cpf_login").value;
-      const cpf = onlyDigits(cpfRaw);
-      const msg = document.getElementById("loginMsg");
-      msg.style.display = "none";
-
-      try {
-        const res = await fetch("/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cpf })
-        });
-
-        const data = await res.json();
-
-        if (res.ok && data.redirect) {
-          window.location.href = data.redirect;
-        } else {
-          msg.innerText = data.error || "Erro no login.";
-          msg.style.display = "block";
-        }
-      } catch (err) {
-        msg.innerText = "Erro de conexão.";
-        msg.style.display = "block";
-      }
-    });
-
-    // ----- REGISTRO (envia JSON para /users) -----
-    document.getElementById("registerForm").addEventListener("submit", async function(e){
-      e.preventDefault();
-      const msg = document.getElementById("registerMsg");
-      msg.style.display = "none";
-
-      const payload = {
-        nome: document.getElementById("nome").value || "",
-        sobrenome: document.getElementById("sobrenome").value || "",
-        cidade: document.getElementById("cidade").value || "",
-        cpf: document.getElementById("cpf").value || "",
-        data_nascimento: document.getElementById("data_nascimento").value || "",
-        email: document.getElementById("email").value || "",
-        convite_ganbista: document.getElementById("convite_ganbista").value || "",
-        chave_pix: document.getElementById("chave_pix").value || "",
-        senha: document.getElementById("senha").value || ""
-      };
-
-      // opcional: garantir que CPF seja enviado formatado ou sem formatação conforme seu padrão
-      // aqui envio no mesmo formato do input (com pontos/traço). A rota /login faz normalização.
-      try {
-        const res = await fetch("/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (res.status === 201 && data.id) {
-          // redireciona para loading
-          window.location.href = `/acesso/users/${data.id}`;
-        } else {
-          msg.innerText = data.error || "Erro ao registrar.";
-          msg.style.display = "block";
-        }
-      } catch (err) {
-        msg.innerText = "Erro de conexão ao registrar.";
-        msg.style.display = "block";
-      }
-    });
+    
   </script>
-</body>
+    </body>
 </html>
