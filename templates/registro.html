@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="theme-color" content="#36a2eb">
+        <title>Passatempo Pix Dia das Maes</title>
+        <link rel="apple-touch-icon" href="{{ url_for('static', filename='w.png') }}">
+        <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='w.png') }}">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+    body {
+        margin: 0;
+        top: 0;
+        background-image: url("../static/img/card_maes.png");
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        height: 100dvh;
+        width: 100vw;
+    }
+   
+
+</style>
+<body class="bg-light">
+
+<div style="background-color: rgba(240, 248, 255, 0.452); height: 100dvh;" class="container py-4">
+    <h1 class="text-center mb-4"></h1>
+    <!-- Formulário de Registro -->
+    <div style="background-color: rgba(240, 248, 255, 0.452);" class="card mb-4">
+        <div style="text-align: center; font-family: monospace; font-weight: bold;" class="card-header bg-primary text-white">Registrar Usuário</div>
+        <div class="card-body">
+            <form id="formRegistro">
+                <div class="mb-3">
+                    <label style="text-align: center; font-family: monospace; font-weight: bold;" class="form-label">Nome</label>
+                    <input type="text" class="form-control" name="nome" required>
+                </div>
+                <div class="mb-3">
+                    <label style="text-align: center; font-family: monospace; font-weight: bold;" class="form-label">CPF (somente números)</label>
+                    <input type="text" class="form-control" name="cpf" pattern="\d{11}" required>
+                </div>
+                <div class="mb-3">
+                    <label style="text-align: center; font-family: monospace; font-weight: bold;" class="form-label">Email</label>
+                    <input type="text" class="form-control" name="email" required>
+                </div>
+                <button style="width: 100%;" type="submit" class="btn btn-success">Registrar</button>
+            </form>
+            <div id="registroMsg" class="mt-2"></div>
+        </div>
+    </div>
+    <div class="card">
+    <div style="text-align: center; font-family: monospace; font-weight: bold;" class="card-header bg-info text-white">
+        Login
+    </div>
+
+    <div class="card-body">
+        <form id="formLogin">
+            <div class="mb-3">
+                <label style="text-align: center; font-family: monospace; font-weight: bold;" class="form-label">
+                    CPF (somente números)
+                </label>
+                <input id="cpfLogin" type="text" class="form-control" name="cpf" pattern="\d{11}" required>            </div>
+
+            <button style="width: 100%;" type="submit" class="btn btn-success">
+                Acessar Painel
+            </button>
+        </form>
+
+        <!-- CORRIGIDO ID -->
+        <div id="loginMsg"></div>
+    </div>
+</div>
+    </div>
+</div>
+
+
+
+<script>
+    
+// REGISTRO
+document.getElementById("formRegistro").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const formData = Object.fromEntries(new FormData(this).entries());
+
+    const res = await fetch("/registrar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+    });
+
+    const data = await res.json();
+
+    if (data.status === "sucesso") {
+        document.getElementById("registroMsg").innerHTML =
+            `<div class="alert alert-success">Cadastro realizado!</div>`;
+
+        setTimeout(() => {
+            window.location.href = `/dia_das_maes?id=${data.usuario._id}`;
+        }, 800);
+
+    } else {
+        document.getElementById("registroMsg").innerHTML =
+            `<div class="alert alert-danger">${data.mensagem}</div>`;
+    }
+});
+
+
+// LOGIN (CORRIGIDO)
+document.getElementById("formLogin").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const cpf = document.getElementById("cpfLogin").value.trim();
+
+    const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cpf: cpf })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "sucesso") {
+        window.location.href = `/dia_das_maes?id=${data.usuario_id}`;
+    } else {
+        document.getElementById("loginMsg").innerHTML =
+            `<div class="alert alert-danger">${data.mensagem}</div>`;
+    }
+});
+</script>
+</body>
+</html>
